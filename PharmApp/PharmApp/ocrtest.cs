@@ -45,10 +45,10 @@ namespace PharmApp
             }
         }
 
-        public Image<Bgr, byte> optimiseImage(Image<Bgr, byte> image)
-        {
+        //public Image<Bgr, byte> optimiseImage(Image<Bgr, byte> image)
+        //{
 
-        }
+        //}
 
         public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)
         {
