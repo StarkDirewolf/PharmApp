@@ -45,10 +45,10 @@ namespace PharmApp
             }
         }
 
-        public Image<Bgr, byte> optimiseImage(Image<Bgr, byte> image)
-        {
+        //public Image<Bgr, byte> optimiseImage(Image<Bgr, byte> image)
+        //{
 
-        }
+        //}
 
         public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)
         {
@@ -59,6 +59,7 @@ namespace PharmApp
             Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(10, 2), new Point(-1, -1));
             sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
+            ImageViewer.Show(sobel, "test");
             VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
             Mat m = new Mat();
 
