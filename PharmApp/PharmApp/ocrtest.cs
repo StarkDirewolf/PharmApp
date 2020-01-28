@@ -17,23 +17,75 @@ namespace PharmApp
 {
     class ocrtest
     {
+
+        private const int GRAY_THRESHOLD = 50,
+            GRAY_MAX = 255,
+            SOBEL_GRAY_THRESHOLD = 50,
+            SOBEL_GRAY_MAX = 255,
+            STRUCTURING_RECT_WIDTH = 10,
+            STRUCTURING_RECT_HEIGHT = 2,
+            TEXT_MIN_WIDTH = 20,
+            TEXT_MIN_HEIGHT = 5,
+            TEXT_MAX_HEIGHT = 100,
+            TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
+
+
         public void test()
         {
-            string tessdata = @"C:/Users/roboy/Downloads/tessdata-master/tessdata-master/";
-
-            using (Image<Bgr, byte> img = getScreen())
-            using (var ocrProvider = new Tesseract(tessdata, "eng", OcrEngineMode.TesseractLstmCombined))
+            using (Image<Bgr, byte> originalImage = getScreen())
+            using (Image<Gray, byte> img = getOptImage(originalImage))
+            using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
 
-                List<Image<Bgr, byte>> images = getText(img);
+                List<Rectangle> rects = getBoundingRectangles(img);
 
-                foreach (var image in images)
+                List<string> allText = new List<string>();
+
+                foreach (Rectangle rect in rects)
                 {
-
-                    ocrProvider.SetImage(image);
-                    Console.WriteLine(ocrProvider.GetUTF8Text());
-                    ImageViewer.Show(image, "test");
+                    originalImage.ROI = rect;
+                    using (Image<Bgr, byte> textImg = originalImage.Copy())
+                    {
+                        ocrProvider.SetImage(textImg);
+                        allText.Add(ocrProvider.GetUTF8Text());
+                    }
                 }
+                originalImage.ROI = Rectangle.Empty;
+
+                foreach (string text in allText)
+                {
+                    Console.WriteLine(text);
+                }
+
+                for (int i = 0; i < rects.Count; i++)
+                {
+                    Rectangle rect = rects[i];
+                    string text = allText[i];
+
+                    img.Draw(rect, new Gray(255));
+                    img.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Gray(255));
+
+                    originalImage.Draw(rect, new Bgr(Color.Red));
+                    originalImage.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Bgr(Color.Red));
+                }
+
+                using (Image<Bgr, byte> smallOrigImage = originalImage.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
+                using (Image<Gray, byte> smallImg = img.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
+                {
+                    Image<Bgr, byte> bothImages = smallOrigImage.ConcateHorizontal(smallImg.Convert<Bgr, byte>());
+
+                    ImageViewer.Show(bothImages, "test");
+                }
+
+                //List<Image<Bgr, byte>> images = getText(img);
+
+                //foreach (var image in images)
+                //{
+
+                //    ocrProvider.SetImage(image);
+                //    Console.WriteLine(ocrProvider.GetUTF8Text());
+                //    ImageViewer.Show(image, "test");
+                //}
 
                 //ocrProvider.SetImage(img);
                 //String text = ocrProvider.GetUTF8Text();
@@ -45,25 +97,29 @@ namespace PharmApp
             }
         }
 
-        //public Image<Bgr, byte> optimiseImage(Image<Bgr, byte> image)
-        //{
-
-        //}
-
-        public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)
+        /// <summary>
+        /// Take an image and returns a filtered version of the image optimised for contour detection
+        /// </summary>
+        /// <param name="img">captured image for processing</param>
+        /// <returns>optimised image for contour detection</returns>
+        private Image<Gray, byte> getOptImage(Image<Bgr, byte> img)
         {
-            List<Image<Bgr, byte>> textImages = new List<Image<Bgr, byte>>();
+            Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
 
-            Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
-
-            Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
-            Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(10, 2), new Point(-1, -1));
+            Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(SOBEL_GRAY_THRESHOLD), new Gray(SOBEL_GRAY_MAX));
+            Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));
             sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
-            ImageViewer.Show(sobel, "test");
+
+            return sobel;
+        }
+
+        private List<Rectangle> getBoundingRectangles(Image<Gray, byte> img)
+        {
             VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
             Mat m = new Mat();
 
-            CvInvoke.FindContours(sobel, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+            CvInvoke.FindContours(img, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
             List<Rectangle> list = new List<Rectangle>();
 
             for (int i = 0; i < contours.Size; i++)
@@ -71,24 +127,54 @@ namespace PharmApp
                 Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
 
                 double ar = rect.Width / rect.Height;
-                if (ar > 2 && rect.Width > 20 && rect.Height > 5 && rect.Height < 100)
+                if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
                 {
                     //rect.Inflate(new Size(2, 2));
                     list.Add(rect);
                 }
             }
 
-            foreach (var v in list)
-            {
-                img.ROI = v;
-                textImages.Add(img.Copy());
-                img.ROI = Rectangle.Empty;
-            }
-
-            return textImages;
+            return list;
         }
 
-        public Image<Bgr, byte> getScreen()
+        //public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)
+        //{
+        //    List<Image<Bgr, byte>> textImages = new List<Image<Bgr, byte>>();
+
+        //    Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
+
+        //    Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(50), new Gray(255));
+        //    Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(10, 2), new Point(-1, -1));
+        //    sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
+        //    VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+        //    Mat m = new Mat();
+
+        //    CvInvoke.FindContours(sobel, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+        //    List<Rectangle> list = new List<Rectangle>();
+
+        //    for (int i = 0; i < contours.Size; i++)
+        //    {
+        //        Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
+
+        //        double ar = rect.Width / rect.Height;
+        //        if (ar > 2 && rect.Width > 20 && rect.Height > 5 && rect.Height < 100)
+        //        {
+        //            //rect.Inflate(new Size(2, 2));
+        //            list.Add(rect);
+        //        }
+        //    }
+
+        //    foreach (var v in list)
+        //    {
+        //        img.ROI = v;
+        //        textImages.Add(img.Copy());
+        //        img.ROI = Rectangle.Empty;
+        //    }
+
+        //    return textImages;
+        //}
+
+        private Image<Bgr, byte> getScreen()
         {
             Rectangle bounds = Screen.GetBounds(Point.Empty);
             Image<Bgr, byte> img;
