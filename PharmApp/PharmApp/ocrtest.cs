@@ -32,7 +32,8 @@ namespace PharmApp
 
         public void test()
         {
-            using (Image<Bgr, byte> originalImage = getScreen())
+            //using (Image<Bgr, byte> originalImage = getScreen())
+            using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
             using (Image<Gray, byte> img = getOptImage(originalImage))
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
@@ -104,6 +105,7 @@ namespace PharmApp
         /// <returns>optimised image for contour detection</returns>
         private Image<Gray, byte> getOptImage(Image<Bgr, byte> img)
         {
+            // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
 
             Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(SOBEL_GRAY_THRESHOLD), new Gray(SOBEL_GRAY_MAX));

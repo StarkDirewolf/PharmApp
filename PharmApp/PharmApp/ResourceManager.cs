@@ -10,6 +10,7 @@ namespace PharmApp
     {
 
         public const string tessData = @"../../Resources/tessdata/";
+        public const string mickeyMousePMR = @"../../Resources/Test images/mickey_mouse.jpg";
 
     }
 }
