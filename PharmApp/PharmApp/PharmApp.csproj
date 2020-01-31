@@ -56,7 +56,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ocrtest.cs" />
+    <Compile Include="Ocrtest.cs" />
     <Compile Include="LicensePlateDetector.cs" />
     <Compile Include="CV.cs" />
     <Compile Include="QueryConstructor.cs" />

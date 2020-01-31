@@ -14,8 +14,8 @@ namespace PharmApp
         static void Main(string[] args)
         {
 
-            ocrtest t = new ocrtest();
-            t.test();
+            Ocrtest t = new Ocrtest();
+            t.Test();
         }
     }
 }

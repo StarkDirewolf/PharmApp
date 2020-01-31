@@ -12,10 +12,11 @@ using Emgu.CV.UI;
 using Emgu.CV.Util;
 using Emgu.CV.Text;
 using static Emgu.CV.OCR.Tesseract;
+using System.Diagnostics;
 
 namespace PharmApp
 {
-    class ocrtest
+    class Ocrtest
     {
 
         private const int GRAY_THRESHOLD = 50,
@@ -29,19 +30,27 @@ namespace PharmApp
             TEXT_MAX_HEIGHT = 100,
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
+        private Image<Hsv, byte> LOW_GREEN_HSV = new Image<Hsv, byte>(1, 1, new Hsv(0, 0, 0)),
+            HIGH_GREEN_HSV = new Image<Hsv, byte>(1, 1, new Hsv(150, 100, 100));
 
-        public void test()
+
+        public void Test()
         {
             //using (Image<Bgr, byte> originalImage = getScreen())
             using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
-            using (Image<Gray, byte> img = getOptImage(originalImage))
+            using (Image<Gray, byte> img = GetOptImage(originalImage))
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
+                Stopwatch stopwatch = new Stopwatch();
 
-                List<Rectangle> rects = getBoundingRectangles(img);
+                // function to isolate section of screen
+                DetectRecords(originalImage);
+
+                List<Rectangle> rects = GetBoundingRectangles(img);
 
                 List<string> allText = new List<string>();
 
+                stopwatch.Start();
                 foreach (Rectangle rect in rects)
                 {
                     originalImage.ROI = rect;
@@ -52,6 +61,9 @@ namespace PharmApp
                     }
                 }
                 originalImage.ROI = Rectangle.Empty;
+                Console.WriteLine("OCR took " + stopwatch.ElapsedMilliseconds + "ms");
+                stopwatch.Reset();
+                stopwatch.Stop();
 
                 foreach (string text in allText)
                 {
@@ -103,8 +115,11 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">captured image for processing</param>
         /// <returns>optimised image for contour detection</returns>
-        private Image<Gray, byte> getOptImage(Image<Bgr, byte> img)
+        private Image<Gray, byte> GetOptImage(Image<Bgr, byte> img)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
 
@@ -112,11 +127,15 @@ namespace PharmApp
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));
             sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
 
+            Console.WriteLine("Image optimised in " + stopwatch.ElapsedMilliseconds + "ms");
             return sobel;
         }
 
-        private List<Rectangle> getBoundingRectangles(Image<Gray, byte> img)
+        private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
             Mat m = new Mat();
 
@@ -136,7 +155,18 @@ namespace PharmApp
                 }
             }
 
+            Console.WriteLine("Bounding rectangles detected in " + stopwatch.ElapsedMilliseconds + "ms");
             return list;
+        }
+
+        private void DetectRecords(Image<Bgr, byte> img)
+        {
+
+            Mat hsv = new Mat();
+            Mat output = new Mat();
+            CvInvoke.CvtColor(img, hsv, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
+            CvInvoke.InRange(hsv, LOW_GREEN_HSV, HIGH_GREEN_HSV, output);
+            ImageViewer.Show(output, "test");
         }
 
         //public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)
@@ -176,8 +206,11 @@ namespace PharmApp
         //    return textImages;
         //}
 
-        private Image<Bgr, byte> getScreen()
+        private Image<Bgr, byte> GetScreen()
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             Rectangle bounds = Screen.GetBounds(Point.Empty);
             Image<Bgr, byte> img;
 
@@ -188,6 +221,7 @@ namespace PharmApp
                 img = new Image<Bgr, byte>(bitmap);
             }
 
+            Console.WriteLine("Screen capture took " + stopwatch.ElapsedMilliseconds + "ms");
             return img;
         }
     }
