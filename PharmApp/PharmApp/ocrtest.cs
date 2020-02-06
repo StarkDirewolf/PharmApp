@@ -18,6 +18,7 @@ namespace PharmApp
 {
     class Ocrtest
     {
+        private const bool SHOW_PATIENT_DETAILS_RECTS = true;
 
         private const int GRAY_THRESHOLD = 50,
             GRAY_MAX = 255,
@@ -30,13 +31,13 @@ namespace PharmApp
             TEXT_MAX_HEIGHT = 100,
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
-        private Image<Hsv, byte> LOW_GREEN_HSV = new Image<Hsv, byte>(1, 1, new Hsv(0, 0, 0)),
-            HIGH_GREEN_HSV = new Image<Hsv, byte>(1, 1, new Hsv(150, 100, 100));
-
+        //private Image<Bgr, byte> LOW_BLUE_BGR = new Image<Bgr, byte>(1600, 900, new Bgr(245, 234, 208)),
+        //   HIGH_BLUE_BGR = new Image<Bgr, byte>(1600, 900, new Bgr(255, 239, 213));
+        private Bgr LOW_BLUE_BGR = new Bgr(245, 234, 208), HIGH_BLUE_BGR = new Bgr(255, 239, 213);
 
         public void Test()
         {
-            //using (Image<Bgr, byte> originalImage = getScreen())
+            //using (Image<Bgr, byte> originalImage = GetScreen())
             using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
             using (Image<Gray, byte> img = GetOptImage(originalImage))
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
@@ -44,9 +45,11 @@ namespace PharmApp
                 Stopwatch stopwatch = new Stopwatch();
 
                 // function to isolate section of screen
-                DetectRecords(originalImage);
+                List<Rectangle> patientRect = DetectPatientDetails(originalImage);
+                //img.ROI = patientRect[0];
 
                 List<Rectangle> rects = GetBoundingRectangles(img);
+                img.ROI = Rectangle.Empty;
 
                 List<string> allText = new List<string>();
 
@@ -131,7 +134,7 @@ namespace PharmApp
             return sobel;
         }
 
-        private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img)
+        private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, bool textRects = false)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -147,10 +150,16 @@ namespace PharmApp
             {
                 Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
 
-                double ar = rect.Width / rect.Height;
-                if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
+                if (textRects)
                 {
-                    //rect.Inflate(new Size(2, 2));
+                    double ar = rect.Width / rect.Height;
+                    if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
+                    {
+                        list.Add(rect);
+                    }
+                }
+                else
+                {
                     list.Add(rect);
                 }
             }
@@ -159,14 +168,34 @@ namespace PharmApp
             return list;
         }
 
-        private void DetectRecords(Image<Bgr, byte> img)
+        private List<Rectangle> DetectPatientDetails(Image<Bgr, byte> img)
         {
 
-            Mat hsv = new Mat();
-            Mat output = new Mat();
-            CvInvoke.CvtColor(img, hsv, Emgu.CV.CvEnum.ColorConversion.Bgr2Hsv);
-            CvInvoke.InRange(hsv, LOW_GREEN_HSV, HIGH_GREEN_HSV, output);
-            ImageViewer.Show(output, "test");
+            using (Image<Gray, byte> blue = img.InRange(LOW_BLUE_BGR, HIGH_BLUE_BGR))
+            {
+
+                VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+                Mat m = new Mat();
+
+                CvInvoke.FindContours(blue, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
+                List<Rectangle> rects = GetBoundingRectangles(blue);
+
+                if (SHOW_PATIENT_DETAILS_RECTS)
+                {
+                    using (Image<Bgr, byte> showImage = blue.Convert<Bgr, byte>())
+                    {
+                        foreach (Rectangle rect in rects)
+                        {
+                            showImage.Draw(rect, new Bgr(Color.Red));
+                        }
+
+                        ImageViewer.Show(showImage, rects.Count.ToString());
+                    }
+                }
+
+                return rects;
+            }
         }
 
         //public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)

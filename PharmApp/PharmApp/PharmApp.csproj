@@ -242,6 +242,7 @@
     <Content Include="License-LGPL.txt" />
     <Content Include="Resources\tessdata\.gitmodules" />
     <Content Include="Resources\Test images\mickey_mouse.jpg" />
+    <Content Include="Resources\Test images\Mickey_Mouse_PMR.bmp" />
     <Content Include="Resources\Test images\mickey_mouse_request.jpg" />
     <Content Include="Resources\Test images\ramipril.jpg" />
     <Content Include="Resources\Test images\reorder.jpg" />
