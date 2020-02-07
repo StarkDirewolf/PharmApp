@@ -18,8 +18,11 @@ namespace PharmApp
 {
     class Ocrtest
     {
+        // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = true;
 
+
+        // CV settings
         private const int GRAY_THRESHOLD = 50,
             GRAY_MAX = 255,
             SOBEL_GRAY_THRESHOLD = 50,
@@ -31,9 +34,13 @@ namespace PharmApp
             TEXT_MAX_HEIGHT = 100,
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
-        //private Image<Bgr, byte> LOW_BLUE_BGR = new Image<Bgr, byte>(1600, 900, new Bgr(245, 234, 208)),
-        //   HIGH_BLUE_BGR = new Image<Bgr, byte>(1600, 900, new Bgr(255, 239, 213));
-        private Bgr LOW_BLUE_BGR = new Bgr(245, 234, 208), HIGH_BLUE_BGR = new Bgr(255, 239, 213);
+        private Bgr LOW_BLUE_PATIENT_DETAILS_BGR = new Bgr(245, 234, 208),
+            HIGH_BLUE_PATIENT_DETAILS_BGR = new Bgr(255, 239, 213);
+
+        private const int PATIENT_DETAILS_MIN_WIDTH = 20,
+            PATIENT_DETAILS_MIN_HEIGHT = 5,
+            PATIENT_DETAILS_MIN_RATIO = 2;
+
 
         public void Test()
         {
@@ -45,8 +52,33 @@ namespace PharmApp
                 Stopwatch stopwatch = new Stopwatch();
 
                 // function to isolate section of screen
-                List<Rectangle> patientRect = DetectPatientDetails(originalImage);
-                //img.ROI = patientRect[0];
+                Rectangle patientRect = DetectPatientDetails(originalImage);
+                if (!patientRect.IsEmpty)
+                {
+                    originalImage.ROI = patientRect;
+                    img.ROI = patientRect;
+
+                    Image<Bgr, byte> patientDetColour = originalImage.Copy();
+                    Image<Gray, byte> patientDetGray = img.Copy();
+
+                    List<Rectangle> patRects = GetBoundingRectangles(patientDetGray);
+
+                    List<string> allPatText = new List<string>();
+                    foreach (Rectangle rect in patRects)
+                    {
+                        patientDetColour.ROI = rect;
+                        {
+                            ocrProvider.SetImage(patientDetColour);
+                            allPatText.Add(ocrProvider.GetUTF8Text());
+                        }
+                    }
+                    foreach (string text in allPatText)
+                    {
+                        Console.WriteLine(text);
+                    }
+                }
+
+                
 
                 List<Rectangle> rects = GetBoundingRectangles(img);
                 img.ROI = Rectangle.Empty;
@@ -114,7 +146,7 @@ namespace PharmApp
         }
 
         /// <summary>
-        /// Take an image and returns a filtered version of the image optimised for contour detection
+        /// Take an image and returns a filtered version of the image optimised for text contour detection
         /// </summary>
         /// <param name="img">captured image for processing</param>
         /// <returns>optimised image for contour detection</returns>
@@ -126,14 +158,25 @@ namespace PharmApp
             // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
 
+            // Manipulates image to highlight text areas
             Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(SOBEL_GRAY_THRESHOLD), new Gray(SOBEL_GRAY_MAX));
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));
             sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
+
 
             Console.WriteLine("Image optimised in " + stopwatch.ElapsedMilliseconds + "ms");
             return sobel;
         }
 
+
+        /// <summary>
+        /// Detects contours and returns a list of bounding rectangles that contain the contours.
+        /// Can optionally filter out rectangles that are the wrong size for containing text.
+        /// Constants that hold specific settings for this can be adjusted.
+        /// </summary>
+        /// <param name="img">optimised image for contour detection</param>
+        /// <param name="textRects">if true then it filters out rectangles that are inappropriately sized for containing standard text</param>
+        /// <returns>a list of rectangles that contain the contours of the image</returns>
         private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, bool textRects = false)
         {
             Stopwatch stopwatch = new Stopwatch();
@@ -141,7 +184,6 @@ namespace PharmApp
 
             VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
             Mat m = new Mat();
-
             CvInvoke.FindContours(img, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
 
             List<Rectangle> list = new List<Rectangle>();
@@ -152,6 +194,7 @@ namespace PharmApp
 
                 if (textRects)
                 {
+                    // If text detection is desired, this filters out rectangles that are inappropriate dimensions
                     double ar = rect.Width / rect.Height;
                     if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
                     {
@@ -168,19 +211,35 @@ namespace PharmApp
             return list;
         }
 
-        private List<Rectangle> DetectPatientDetails(Image<Bgr, byte> img)
+        /// <summary>
+        /// Returns a Rectangle that contains the patient details area of an image of a patient's PMR.
+        /// Uses colour detection to find the area and filters out rectangles with invalid dimensions.
+        /// If more than one rectangle is left, an empty rectangle is returned.
+        /// This should be checked for as the method has failed.
+        /// </summary>
+        /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
+        /// <returns>a rectangle of the patient details area. Empty if the method has failed</returns>
+        private Rectangle DetectPatientDetails(Image<Bgr, byte> img)
         {
 
-            using (Image<Gray, byte> blue = img.InRange(LOW_BLUE_BGR, HIGH_BLUE_BGR))
+            // Image filtered to only show areas that are the colour of the patient details field
+            using (Image<Gray, byte> blue = img.InRange(LOW_BLUE_PATIENT_DETAILS_BGR, HIGH_BLUE_PATIENT_DETAILS_BGR))
             {
-
-                VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-                Mat m = new Mat();
-
-                CvInvoke.FindContours(blue, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
 
                 List<Rectangle> rects = GetBoundingRectangles(blue);
 
+                // Filter out rectangles that clearly aren't the right size
+                List<Rectangle> filteredRects = rects.Where(x => x.Width > PATIENT_DETAILS_MIN_WIDTH)
+                    .Where(x => x.Height > PATIENT_DETAILS_MIN_HEIGHT)
+                    .Where(x => (x.Width / x.Height) > PATIENT_DETAILS_MIN_RATIO)
+                    .ToList();
+
+                if (filteredRects.Count != 1)
+                {
+                    return Rectangle.Empty;
+                }
+
+                // Show results if debugging setting is on
                 if (SHOW_PATIENT_DETAILS_RECTS)
                 {
                     using (Image<Bgr, byte> showImage = blue.Convert<Bgr, byte>())
@@ -194,7 +253,7 @@ namespace PharmApp
                     }
                 }
 
-                return rects;
+                return filteredRects.First();
             }
         }
 
