@@ -29,17 +29,18 @@ namespace PharmApp
             SOBEL_GRAY_MAX = 255,
             STRUCTURING_RECT_WIDTH = 10,
             STRUCTURING_RECT_HEIGHT = 2,
-            TEXT_MIN_WIDTH = 20,
+            TEXT_MIN_WIDTH = 5,
             TEXT_MIN_HEIGHT = 5,
             TEXT_MAX_HEIGHT = 100,
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
-        private Bgr LOW_BLUE_PATIENT_DETAILS_BGR = new Bgr(245, 234, 208),
-            HIGH_BLUE_PATIENT_DETAILS_BGR = new Bgr(255, 239, 213);
+        private Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211);
 
         private const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
             PATIENT_DETAILS_MIN_RATIO = 2;
+
+        private const double BGR_BUFFER = 2;
 
 
         public void Test()
@@ -52,7 +53,7 @@ namespace PharmApp
                 Stopwatch stopwatch = new Stopwatch();
 
                 // function to isolate section of screen
-                Rectangle patientRect = DetectPatientDetails(originalImage);
+                Rectangle patientRect = GetPatientDetailsRect(originalImage);
                 if (!patientRect.IsEmpty)
                 {
                     originalImage.ROI = patientRect;
@@ -61,69 +62,73 @@ namespace PharmApp
                     Image<Bgr, byte> patientDetColour = originalImage.Copy();
                     Image<Gray, byte> patientDetGray = img.Copy();
 
-                    List<Rectangle> patRects = GetBoundingRectangles(patientDetGray);
+                    List<Rectangle> patRects = GetBoundingRectangles(patientDetGray, true);
 
                     List<string> allPatText = new List<string>();
                     foreach (Rectangle rect in patRects)
                     {
-                        patientDetColour.ROI = rect;
+                        patientDetGray.ROI = rect;
+                        using (Image<Gray, byte> textImg = patientDetGray.Copy())
                         {
-                            ocrProvider.SetImage(patientDetColour);
+                            ocrProvider.SetImage(textImg.Not());
                             allPatText.Add(ocrProvider.GetUTF8Text());
                         }
+
+                        originalImage.Draw(rect, new Bgr(Color.Red));
                     }
                     foreach (string text in allPatText)
                     {
                         Console.WriteLine(text);
                     }
+                    ImageViewer.Show(img.Not());
                 }
 
                 
 
-                List<Rectangle> rects = GetBoundingRectangles(img);
-                img.ROI = Rectangle.Empty;
+                //List<Rectangle> rects = GetBoundingRectangles(img);
+                //img.ROI = Rectangle.Empty;
 
-                List<string> allText = new List<string>();
+                //List<string> allText = new List<string>();
 
-                stopwatch.Start();
-                foreach (Rectangle rect in rects)
-                {
-                    originalImage.ROI = rect;
-                    using (Image<Bgr, byte> textImg = originalImage.Copy())
-                    {
-                        ocrProvider.SetImage(textImg);
-                        allText.Add(ocrProvider.GetUTF8Text());
-                    }
-                }
-                originalImage.ROI = Rectangle.Empty;
-                Console.WriteLine("OCR took " + stopwatch.ElapsedMilliseconds + "ms");
-                stopwatch.Reset();
-                stopwatch.Stop();
+                //stopwatch.Start();
+                //foreach (Rectangle rect in rects)
+                //{
+                //    originalImage.ROI = rect;
+                //    using (Image<Bgr, byte> textImg = originalImage.Copy())
+                //    {
+                //        ocrProvider.SetImage(textImg);
+                //        allText.Add(ocrProvider.GetUTF8Text());
+                //    }
+                //}
+                //originalImage.ROI = Rectangle.Empty;
+                //Console.WriteLine("OCR took " + stopwatch.ElapsedMilliseconds + "ms");
+                //stopwatch.Reset();
+                //stopwatch.Stop();
 
-                foreach (string text in allText)
-                {
-                    Console.WriteLine(text);
-                }
+                //foreach (string text in allText)
+                //{
+                //    Console.WriteLine(text);
+                //}
 
-                for (int i = 0; i < rects.Count; i++)
-                {
-                    Rectangle rect = rects[i];
-                    string text = allText[i];
+                //for (int i = 0; i < rects.Count; i++)
+                //{
+                //    Rectangle rect = rects[i];
+                //    string text = allText[i];
 
-                    img.Draw(rect, new Gray(255));
-                    img.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Gray(255));
+                //    img.Draw(rect, new Gray(255));
+                //    img.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Gray(255));
 
-                    originalImage.Draw(rect, new Bgr(Color.Red));
-                    originalImage.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Bgr(Color.Red));
-                }
+                //    originalImage.Draw(rect, new Bgr(Color.Red));
+                //    originalImage.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Bgr(Color.Red));
+                //}
 
-                using (Image<Bgr, byte> smallOrigImage = originalImage.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
-                using (Image<Gray, byte> smallImg = img.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
-                {
-                    Image<Bgr, byte> bothImages = smallOrigImage.ConcateHorizontal(smallImg.Convert<Bgr, byte>());
+                //using (Image<Bgr, byte> smallOrigImage = originalImage.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
+                //using (Image<Gray, byte> smallImg = img.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
+                //{
+                //    Image<Bgr, byte> bothImages = smallOrigImage.ConcateHorizontal(smallImg.Convert<Bgr, byte>());
 
-                    ImageViewer.Show(bothImages, "test");
-                }
+                //    ImageViewer.Show(bothImages, "test");
+                //}
 
                 //List<Image<Bgr, byte>> images = getText(img);
 
@@ -219,14 +224,9 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
         /// <returns>a rectangle of the patient details area. Empty if the method has failed</returns>
-        private Rectangle DetectPatientDetails(Image<Bgr, byte> img)
+        private Rectangle GetPatientDetailsRect(Image<Bgr, byte> img)
         {
-
-            // Image filtered to only show areas that are the colour of the patient details field
-            using (Image<Gray, byte> blue = img.InRange(LOW_BLUE_PATIENT_DETAILS_BGR, HIGH_BLUE_PATIENT_DETAILS_BGR))
-            {
-
-                List<Rectangle> rects = GetBoundingRectangles(blue);
+                List<Rectangle> rects = GetRectsOfColour(img, BLUE_PATIENT_DETAILS_BGR);
 
                 // Filter out rectangles that clearly aren't the right size
                 List<Rectangle> filteredRects = rects.Where(x => x.Width > PATIENT_DETAILS_MIN_WIDTH)
@@ -238,6 +238,23 @@ namespace PharmApp
                 {
                     return Rectangle.Empty;
                 }
+
+                return filteredRects.First();
+        }
+
+        /// <summary>
+        /// Returns a List of Rectangles that contain contours of regions of the specified colour.
+        /// </summary>
+        /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
+        /// <param name="colour">the colour to be found - the method adds a small buffer</param>
+        /// <returns>a List of Rectangles of the coloured areas</returns>
+        private List<Rectangle> GetRectsOfColour(Image<Bgr, byte> img, Bgr colour)
+        {
+            // Image filtered to only show areas that are the specified colour
+            using (Image<Gray, byte> blue = img.InRange(new Bgr(colour.Blue - BGR_BUFFER, colour.Green - BGR_BUFFER, colour.Red - BGR_BUFFER), new Bgr(colour.Blue + BGR_BUFFER, colour.Green + BGR_BUFFER, colour.Red + BGR_BUFFER)))
+            {
+
+                List<Rectangle> rects = GetBoundingRectangles(blue);
 
                 // Show results if debugging setting is on
                 if (SHOW_PATIENT_DETAILS_RECTS)
@@ -253,7 +270,7 @@ namespace PharmApp
                     }
                 }
 
-                return filteredRects.First();
+                return rects;
             }
         }
 
