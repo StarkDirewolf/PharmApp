@@ -20,9 +20,10 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
 
         private const string FILTER = " WHERE ";
 
-        private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = ";
+        private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = '";
+        private const string FILTER_DATE_END = "'";
 
-        private const string DATE_FORMAT = "'yyyy/MM/dd'";
+        private const string DATE_FORMAT = "yyyy/MM/dd";
 
         private const string FILTER_AND = " AND ";
 
@@ -96,7 +97,7 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
                 switch (condition.Key)
                 {
                     case Condition.DATE:
-                        str = DATE_FORMAT + condition.Value;
+                        str = FILTER_DATE + condition.Value + FILTER_DATE_END;
                         break;
                 }
                 conditionList.RemoveAt(0);
