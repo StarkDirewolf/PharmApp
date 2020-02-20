@@ -248,6 +248,7 @@
     <Content Include="Resources\Test images\reorder.jpg" />
     <Content Include="Resources\Test images\robert_pryde.jpg" />
     <Content Include="Resources\Test images\robert_pryde_request.jpg" />
+    <Content Include="sql examples.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\EMGU.CV.4.1.1.3497\build\EMGU.CV.targets" Condition="Exists('..\packages\EMGU.CV.4.1.1.3497\build\EMGU.CV.targets')" />
