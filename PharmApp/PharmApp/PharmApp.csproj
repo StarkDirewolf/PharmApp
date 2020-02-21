@@ -59,6 +59,12 @@
     <Compile Include="Ocrtest.cs" />
     <Compile Include="LicensePlateDetector.cs" />
     <Compile Include="CV.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="StockQueryer.cs" />
     <Compile Include="QueryConstructor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -67,6 +73,10 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Resources\tessdata\afr.traineddata" />
     <None Include="Resources\tessdata\amh.traineddata" />
     <None Include="Resources\tessdata\ara.traineddata" />
