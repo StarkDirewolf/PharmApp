@@ -19,11 +19,12 @@ namespace PharmApp
     class Ocrtest
     {
         // Settings for testing purposes
-        private const bool SHOW_PATIENT_DETAILS_RECTS = true;
+        private const bool SHOW_PATIENT_DETAILS_RECTS = false,
+            USE_EXAMPLE_PMR = true;
 
 
         // CV settings
-        private const int GRAY_THRESHOLD = 50,
+        private const int GRAY_THRESHOLD = 200,
             GRAY_MAX = 255,
             SOBEL_GRAY_THRESHOLD = 50,
             SOBEL_GRAY_MAX = 255,
@@ -47,7 +48,7 @@ namespace PharmApp
         {
             //using (Image<Bgr, byte> originalImage = GetScreen())
             using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
-            using (Image<Gray, byte> img = GetOptImage(originalImage))
+            
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
                 Stopwatch stopwatch = new Stopwatch();
@@ -57,32 +58,35 @@ namespace PharmApp
                 if (!patientRect.IsEmpty)
                 {
                     originalImage.ROI = patientRect;
-                    img.ROI = patientRect;
 
-                    Image<Bgr, byte> patientDetColour = originalImage.Copy();
-                    Image<Gray, byte> patientDetGray = img.Copy();
-
-                    List<Rectangle> patRects = GetBoundingRectangles(patientDetGray, true);
-
-                    List<string> allPatText = new List<string>();
-                    foreach (Rectangle rect in patRects)
+                    using (Image<Gray, byte> img = GetOptImage(originalImage))
                     {
-                        patientDetGray.ROI = rect;
-                        using (Image<Gray, byte> textImg = patientDetGray.Copy())
+                        ImageViewer.Show(img);
+
+                        Image<Bgr, byte> patientDetColour = originalImage.Copy();
+                        Image<Gray, byte> patientDetGray = img.Copy();
+
+                        List<Rectangle> patRects = GetBoundingRectangles(patientDetGray, true);
+
+                        List<string> allPatText = new List<string>();
+                        foreach (Rectangle rect in patRects)
                         {
-                            ocrProvider.SetImage(textImg.Not());
-                            allPatText.Add(ocrProvider.GetUTF8Text());
+                            patientDetColour.ROI = rect;
+                            using (Image<Bgr, byte> textImg = patientDetColour.Copy())
+                            {
+                                ocrProvider.SetImage(textImg);
+                                allPatText.Add(ocrProvider.GetUTF8Text());
+                            }
+
+                            originalImage.Draw(rect, new Bgr(Color.Red));
                         }
-
-                        originalImage.Draw(rect, new Bgr(Color.Red));
+                        foreach (string text in allPatText)
+                        {
+                            Console.WriteLine(text);
+                        }
+                        ImageViewer.Show(originalImage);
                     }
-                    foreach (string text in allPatText)
-                    {
-                        Console.WriteLine(text);
-                    }
-                    ImageViewer.Show(img.Not());
                 }
-
                 
 
                 //List<Rectangle> rects = GetBoundingRectangles(img);
@@ -150,6 +154,20 @@ namespace PharmApp
             }
         }
 
+        public string getNhsNo()
+        {
+            Image<Bgr, byte> screen;
+            if (USE_EXAMPLE_PMR)
+            {
+                screen = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR);
+            }
+            else
+            {
+                screen = GetScreen();
+            }
+            screen.Dispose();
+        }
+
         /// <summary>
         /// Take an image and returns a filtered version of the image optimised for text contour detection
         /// </summary>
@@ -162,7 +180,7 @@ namespace PharmApp
 
             // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
-
+            ImageViewer.Show(imgGray);
             // Manipulates image to highlight text areas
             Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(SOBEL_GRAY_THRESHOLD), new Gray(SOBEL_GRAY_MAX));
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));

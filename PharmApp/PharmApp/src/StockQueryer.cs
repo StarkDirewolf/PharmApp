@@ -8,6 +8,6 @@ namespace PharmApp
 {
     class StockQueryer
     {
-        public Get
+        //public Get
     }
 }
