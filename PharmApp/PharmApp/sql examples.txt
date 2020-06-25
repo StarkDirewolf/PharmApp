@@ -10,3 +10,12 @@ ABIDEC MULTI-VIT DROPS [BABY & CHILD] (2 25ML	Pyridoxine	drops		0
 Abidec drops (25ml) OMEGA	Pyridoxine	drops		0
 Carbidopa+Levodopa CR 50mg/200mg tabs [Lecado] (60) SANDOZ	Carbidopa, Levodopa	tabs	50mg/200mg	1
 Carbidopa+levodopa CR 50/200 tabs [Lecado] (60) SANDOZ	Carbidopa, Levodopa	tabs	50mg/200mg	1
+
+
+SQL
+SELECT p.DrugDescription, d.ActualProductName FROM ProScriptConnect.ETP.EtpSummaryItemView p
+JOIN PKBRuntime.Dmd.ActualProduct d ON p.DrugIdentifier = d.ActualProductId OR p.DrugIdentifier = d.VirtualProductId
+WHERE p.PrescriptionItemStatusId = 3
+ORDER BY p.PrescriptionId DESC
+
+VirtualProduct has generic, ActualProduct has branded

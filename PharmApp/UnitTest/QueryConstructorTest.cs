@@ -36,5 +36,21 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId WHERE CONVERT(VARCHAR(10)
             query.specificDay(DateTime.Parse("20/02/2020"));
             Assert.AreEqual(dispensedDate, query.ToString());
         }
+
+        [TestMethod]
+        public void NewETPForPatient()
+        {
+            string desiredQuery = @"
+SELECT i.DrugDescription, s.PatientSurname, s.TokenPrinted, s.RepeatNumber FROM ETP.EtpSummaryView s
+JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId WHERE PatientNHSNumber = '9999999999' AND s.PrescriptionStatusId = 3 AND i.PrescriptionItemStatusId = 1";
+
+
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ETPSCRIPTS);
+
+            query.nhsNumber("9999999999");
+            query.newETP();
+            query.toBeDispensed();
+            Assert.AreEqual(desiredQuery, query.ToString());
+        }
     }
 }

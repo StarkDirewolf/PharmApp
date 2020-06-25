@@ -15,7 +15,8 @@ namespace PharmApp
         {
 
             Ocrtest t = new Ocrtest();
-            t.Test();
+            t.GetNhsNoFromScreen();
+
         }
     }
 }

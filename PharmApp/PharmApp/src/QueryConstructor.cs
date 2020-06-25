@@ -18,10 +18,20 @@ FROM PMR.PrescriptionCollectionSummaryView V
 JOIN PMR.PrescriptionItemDispensed P ON P.PrescriptionItemId = V.PrescriptionItemId
 JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
 
+        private const string ETPSCRIPTS = @"
+SELECT i.DrugDescription, s.PatientSurname, s.TokenPrinted, s.RepeatNumber FROM ETP.EtpSummaryView s
+JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
+
         private const string FILTER = " WHERE ";
 
         private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = '";
         private const string FILTER_DATE_END = "'";
+
+        private const string FILTER_NHSNO = "PatientNHSNumber = '";
+        private const string FILTER_NHSNO_END = "'";
+
+        private const string FILTER_NEW_ETP = "s.PrescriptionStatusId = 3";
+        private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
 
         private const string DATE_FORMAT = "yyyy/MM/dd";
 
@@ -36,7 +46,8 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
             /// <summary>
             /// Grabs all items dispensed, selecting DrugDescription, Quantity, Prescription, Description, and UnitsPerPack
             /// </summary>
-            DISPENSED
+            DISPENSED,
+            ETPSCRIPTS
         }
 
         private enum Condition
@@ -44,7 +55,10 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
             /// <summary>
             /// Filters results by a specific day
             /// </summary>
-            DATE
+            DATE,
+            NHSNO,
+            NEWETP,
+            TOBEDISPENSED
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -63,6 +77,24 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
             string dateString = day.ToString(DATE_FORMAT);
             removeCondition(Condition.DATE);
             addCondition(Condition.DATE, dateString);
+        }
+
+        public void newETP()
+        {
+            removeCondition(Condition.NEWETP);
+            addCondition(Condition.NEWETP, null);
+        }
+
+        public void toBeDispensed()
+        {
+            removeCondition(Condition.TOBEDISPENSED);
+            addCondition(Condition.TOBEDISPENSED, null);
+        }
+
+        public void nhsNumber(string nhsNumber)
+        {
+            removeCondition(Condition.NHSNO);
+            addCondition(Condition.NHSNO, nhsNumber);
         }
 
         /// <summary>
@@ -99,6 +131,18 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
                     case Condition.DATE:
                         str = FILTER_DATE + condition.Value + FILTER_DATE_END;
                         break;
+
+                    case Condition.NEWETP:
+                        str = FILTER_NEW_ETP;
+                        break;
+
+                    case Condition.TOBEDISPENSED:
+                        str = FILTER_TO_BE_DISPENSED;
+                        break;
+
+                    case Condition.NHSNO:
+                        str = FILTER_NHSNO + condition.Value + FILTER_NHSNO_END;
+                        break;
                 }
                 conditionList.RemoveAt(0);
                 if (conditionList.Count > 0)
@@ -123,6 +167,9 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
                     str = DISPENSED;
                     break;
 
+                case QueryType.ETPSCRIPTS:
+                    str = ETPSCRIPTS;
+                    break;
             }
 
             if (conditions.Count > 0)

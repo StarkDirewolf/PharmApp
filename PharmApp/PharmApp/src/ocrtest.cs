@@ -13,6 +13,7 @@ using Emgu.CV.Util;
 using Emgu.CV.Text;
 using static Emgu.CV.OCR.Tesseract;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace PharmApp
 {
@@ -154,18 +155,63 @@ namespace PharmApp
             }
         }
 
-        public string getNhsNo()
+        public string GetNhsNoFromScreen()
         {
-            Image<Bgr, byte> screen;
-            if (USE_EXAMPLE_PMR)
+
+            using (Image<Bgr, byte> screen = GetScreen())
             {
-                screen = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR);
+                List<String> patientDetails = GetPatientDetails(screen);
+                Regex mask = new Regex("[0-9]{3} [0-9]{3} [0-9]{4}");
+                foreach (String detail in patientDetails)
+                {
+                    if (mask.IsMatch(detail))
+                    {
+                        string nhsNumber = detail.Trim();
+                        nhsNumber = nhsNumber.Substring(0, 12);
+                        nhsNumber = nhsNumber.Replace(" ", "");
+                        return nhsNumber;
+                    }
+                }
             }
-            else
+
+            return null;
+        }
+
+        private List<String> GetPatientDetails(Image<Bgr, byte> image)
+        {
+            List<String> patientDetails = new List<String>();
+            Rectangle patientRect = GetPatientDetailsRect(image);
+            if (!patientRect.IsEmpty)
             {
-                screen = GetScreen();
+                image.ROI = patientRect;
+                Image<Bgr, byte> patientDetailsImage = image.Copy();
+
+                patientDetails.AddRange(GetText(patientDetailsImage));
             }
-            screen.Dispose();
+            return patientDetails;
+        }
+
+        private List<String> GetText(Image<Bgr, byte> image)
+        {
+            using (Image<Gray, byte> optImg = GetOptImage(image))
+            using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
+            {
+                List<Rectangle> patRects = GetBoundingRectangles(optImg, true);
+                List<String> textList = new List<String>();
+
+                foreach (Rectangle rect in patRects)
+                {
+                    image.ROI = rect;
+                    using (Image<Bgr, byte> textImg = image.Copy())
+                    {
+                        ocrProvider.SetImage(textImg);
+                        textList.Add(ocrProvider.GetUTF8Text());
+                    }
+
+                }
+
+                return textList;
+            }
         }
 
         /// <summary>
@@ -180,7 +226,7 @@ namespace PharmApp
 
             // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
-            ImageViewer.Show(imgGray);
+            //ImageViewer.Show(imgGray);
             // Manipulates image to highlight text areas
             Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(SOBEL_GRAY_THRESHOLD), new Gray(SOBEL_GRAY_MAX));
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));
@@ -277,7 +323,9 @@ namespace PharmApp
                 // Show results if debugging setting is on
                 if (SHOW_PATIENT_DETAILS_RECTS)
                 {
+#pragma warning disable CS0162 // Unreachable code detected
                     using (Image<Bgr, byte> showImage = blue.Convert<Bgr, byte>())
+#pragma warning restore CS0162 // Unreachable code detected
                     {
                         foreach (Rectangle rect in rects)
                         {
@@ -331,7 +379,13 @@ namespace PharmApp
 
         private Image<Bgr, byte> GetScreen()
         {
+            if (USE_EXAMPLE_PMR)
+            {
+                 return new Image<Bgr, byte>(ResourceManager.robertPrydePMR);
+            }
+#pragma warning disable CS0162 // Unreachable code detected
             Stopwatch stopwatch = new Stopwatch();
+#pragma warning restore CS0162 // Unreachable code detected
             stopwatch.Start();
 
             Rectangle bounds = Screen.GetBounds(Point.Empty);
