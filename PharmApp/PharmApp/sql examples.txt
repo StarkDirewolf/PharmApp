@@ -19,3 +19,16 @@ WHERE p.PrescriptionItemStatusId = 3
 ORDER BY p.PrescriptionId DESC
 
 VirtualProduct has generic, ActualProduct has branded
+
+
+This finds reprints and displays exactly as shown in proscript (OR NOT)
+
+SELECT i.DispensedDate, ISNULL(c.Term, x.Description) FROM ProScriptConnect.PMR.PrescriptionItemDispensed i
+LEFT JOIN PKBRuntime.Pharmacy.Pack p ON i.PackCodeId = p.PackCodeId
+LEFT JOIN Coding.Code c ON c.CodeId = p.PreparationCodeId
+LEFT JOIN ProScriptConnect.dbo.OwnDrug x ON i.PackCodeId = x.OwnDrugId
+WHERE c.Term IS NULL
+ORDER BY i.DispensedDate DESC
+
+
+PMR.PrescriptionItem PmrItemStatusId seems to show items that have Rs next to them but will show even when a script is then done which removes the R
