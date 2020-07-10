@@ -32,3 +32,11 @@ ORDER BY i.DispensedDate DESC
 
 
 PMR.PrescriptionItem PmrItemStatusId seems to show items that have Rs next to them but will show even when a script is then done which removes the R
+
+
+Finds string as appears on proscript based on new ETP scripts
+SELECT s.PatientGivenName, s.PatientSurname, q.DrugDescription, v.ApprovedName, v.Strength, v.DrugForm FROM ProScriptConnect.ETP.EtpSummaryItemView q
+JOIN ProScriptConnect.ETP.EtpSummaryView s ON q.PrescriptionId = s.PrescriptionId
+JOIN PKBRuntime.Mapping.DmdPreparation p ON q.DrugIdentifier = p.DmdProductCodeId
+JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.PreparationCodeId
+WHERE s.PrescriptionStatusId = 3
