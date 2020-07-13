@@ -17,11 +17,11 @@ using System.Text.RegularExpressions;
 
 namespace PharmApp
 {
-    class Ocrtest
+    class OCR
     {
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
-            USE_EXAMPLE_PMR = true;
+            USE_EXAMPLE_PMR = false;
 
 
         // CV settings
@@ -47,8 +47,8 @@ namespace PharmApp
 
         public void Test()
         {
-            //using (Image<Bgr, byte> originalImage = GetScreen())
-            using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
+            using (Image<Bgr, byte> originalImage = GetScreen())
+            //using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
             
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
@@ -169,6 +169,7 @@ namespace PharmApp
                         string nhsNumber = detail.Trim();
                         nhsNumber = nhsNumber.Substring(0, 12);
                         nhsNumber = nhsNumber.Replace(" ", "");
+                        Console.WriteLine(nhsNumber);
                         return nhsNumber;
                     }
                 }
@@ -176,6 +177,7 @@ namespace PharmApp
 
             return null;
         }
+
 
         private List<String> GetPatientDetails(Image<Bgr, byte> image)
         {

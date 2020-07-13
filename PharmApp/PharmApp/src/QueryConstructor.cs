@@ -18,14 +18,28 @@ FROM PMR.PrescriptionCollectionSummaryView V
 JOIN PMR.PrescriptionItemDispensed P ON P.PrescriptionItemId = V.PrescriptionItemId
 JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId";
 
+        // NHS number first
+        // Patient first name second
+        // Patient second name third
+        // Patient notes fourth
+        private const string PATIENTS_WITH_NOTES_DISPENSED_TO = @"
+SELECT P.NhsNumber, P.GivenName, P.Surname, N.Note, X.PatientPropertyId 
+FROM PMR.PrescriptionCollectionSummaryView V 
+JOIN dbo.PatientLiteView P ON V.PatientId = P.PatientId 
+JOIN dbo.PatientNote N ON V.PatientId = N.PatientId
+LEFT JOIN dbo.PatientPatientProperty X ON X.PatientId = V.PatientId ";
+
         private const string ETPSCRIPTS = @"
-SELECT i.DrugDescription, s.PatientSurname, s.TokenPrinted, s.RepeatNumber FROM ETP.EtpSummaryView s
-JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
+SELECT i.DrugDescription, s.PatientGivenName, s.PatientSurname, s.TokenPrinted, s.RepeatNumber, v.ApprovedName, v.Strength, v.DrugForm FROM ETP.EtpSummaryView s
+LEFT JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId
+LEFT JOIN PKBRuntime.Mapping.DmdPreparation p ON i.DrugIdentifier = p.DmdProductCodeId
+LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.PreparationCodeId";
 
         private const string FILTER = " WHERE ";
 
-        private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = '";
-        private const string FILTER_DATE_END = "'";
+        private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = ";
+
+        private const string DATE_FORMAT = "yyyy/MM/dd";
 
         private const string FILTER_NHSNO = "PatientNHSNumber = '";
         private const string FILTER_NHSNO_END = "'";
@@ -33,13 +47,13 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
         private const string FILTER_NEW_ETP = "s.PrescriptionStatusId = 3";
         private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
 
-        private const string DATE_FORMAT = "yyyy/MM/dd";
-
         private const string FILTER_AND = " AND ";
 
-        private QueryType type;
+        private readonly QueryType type;
 
-        private List<KeyValuePair<Condition, string>> conditions = new List<KeyValuePair<Condition, string>>();
+        private readonly List<KeyValuePair<Condition, string>> conditions = new List<KeyValuePair<Condition, string>>();
+
+        private string sort;
 
         public enum QueryType
         {
@@ -47,6 +61,7 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
             /// Grabs all items dispensed, selecting DrugDescription, Quantity, Prescription, Description, and UnitsPerPack
             /// </summary>
             DISPENSED,
+            PATIENTS_WITH_NOTES_DISPENSED_TO,
             ETPSCRIPTS
         }
 
@@ -56,6 +71,7 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
             /// Filters results by a specific day
             /// </summary>
             DATE,
+            BETWEEN_DATES,
             NHSNO,
             NEWETP,
             TOBEDISPENSED
@@ -72,36 +88,37 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
         /// Filters the query to the specified day
         /// </summary>
         /// <param name="day"> the day to filter by</param>
-        public void specificDay(DateTime day)
+        public void SpecificDay(DateTime day)
         {
             string dateString = day.ToString(DATE_FORMAT);
-            removeCondition(Condition.DATE);
-            addCondition(Condition.DATE, dateString);
+            RemoveCondition(Condition.DATE);
+            RemoveCondition(Condition.BETWEEN_DATES);
+            AddCondition(Condition.DATE, dateString);
         }
 
-        public void newETP()
+        public void NewETP()
         {
-            removeCondition(Condition.NEWETP);
-            addCondition(Condition.NEWETP, null);
+            RemoveCondition(Condition.NEWETP);
+            AddCondition(Condition.NEWETP, null);
         }
 
-        public void toBeDispensed()
+        public void ToBeDispensed()
         {
-            removeCondition(Condition.TOBEDISPENSED);
-            addCondition(Condition.TOBEDISPENSED, null);
+            RemoveCondition(Condition.TOBEDISPENSED);
+            AddCondition(Condition.TOBEDISPENSED, null);
         }
 
-        public void nhsNumber(string nhsNumber)
+        public void NhsNumber(string nhsNumber)
         {
-            removeCondition(Condition.NHSNO);
-            addCondition(Condition.NHSNO, nhsNumber);
+            RemoveCondition(Condition.NHSNO);
+            AddCondition(Condition.NHSNO, nhsNumber);
         }
 
         /// <summary>
         /// Removes a condition from the query if there is one, otherwise does nothing
         /// </summary>
         /// <param name="cond">the type of condition to remove</param>
-        private void removeCondition(Condition cond)
+        private void RemoveCondition(Condition cond)
         {
             if (conditions.Exists(x => x.Key == cond))
             {
@@ -110,17 +127,37 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
             }
         }
 
+        // Temporary hardcode
+        public void SortBy()
+        {
+            sort = "ORDER BY P.Surname";
+        }
+
+        public void BetweenDays(DateTime fromDay, DateTime toDay)
+        {
+            string str = "";
+            for (DateTime day = fromDay; (toDay.Date - day.Date).Days >= 0; day = day.AddDays(1))
+            {
+                str = str + FILTER_DATE + "'" + day.ToString(DATE_FORMAT) + "' ";
+                if (toDay.Date != day.Date) str += "OR ";
+            }
+
+            RemoveCondition(Condition.DATE);
+            RemoveCondition(Condition.BETWEEN_DATES);
+            AddCondition(Condition.BETWEEN_DATES, str);
+        }
+
         /// <summary>
         /// Adds a condition to the list of conditions
         /// </summary>
         /// <param name="cond">the type of condition to add</param>
         /// <param name="data">how the condition is filtered</param>
-        private void addCondition(Condition cond, string data)
+        private void AddCondition(Condition cond, string data)
         {
             conditions.Add(new KeyValuePair<Condition, string>(cond, data));
         }
 
-        private string conditionsStringBuilder(List<KeyValuePair<Condition, string>> conditionList)
+        private string ConditionsStringBuilder(List<KeyValuePair<Condition, string>> conditionList)
         {
             string str = "";
             if (conditionList.Count > 0)
@@ -129,7 +166,11 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
                 switch (condition.Key)
                 {
                     case Condition.DATE:
-                        str = FILTER_DATE + condition.Value + FILTER_DATE_END;
+                        str = FILTER_DATE + "'" + condition.Value + "'";
+                        break;
+
+                    case Condition.BETWEEN_DATES:
+                        str = condition.Value;
                         break;
 
                     case Condition.NEWETP:
@@ -147,7 +188,7 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
                 conditionList.RemoveAt(0);
                 if (conditionList.Count > 0)
                 {
-                    str = str + FILTER_AND + conditionsStringBuilder(conditionList);
+                    str = str + FILTER_AND + ConditionsStringBuilder(conditionList);
                 }
             }
 
@@ -167,6 +208,10 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
                     str = DISPENSED;
                     break;
 
+                case QueryType.PATIENTS_WITH_NOTES_DISPENSED_TO:
+                    str = PATIENTS_WITH_NOTES_DISPENSED_TO;
+                    break;
+
                 case QueryType.ETPSCRIPTS:
                     str = ETPSCRIPTS;
                     break;
@@ -174,7 +219,12 @@ JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId";
 
             if (conditions.Count > 0)
             {
-                str = str + FILTER + conditionsStringBuilder(conditions);
+                str = str + FILTER + ConditionsStringBuilder(conditions);
+            }
+
+            if(sort != null)
+            {
+                str += sort;
             }
 
             return str;

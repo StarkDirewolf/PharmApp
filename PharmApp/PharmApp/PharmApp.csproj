@@ -71,15 +71,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Ocrtest.cs" />
+    <Compile Include="src\Patient.cs" />
+    <Compile Include="src\OCR.cs" />
     <Compile Include="LicensePlateDetector.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="src\StockQueryer.cs" />
     <Compile Include="src\QueryConstructor.cs" />
+    <Compile Include="src\ScreenDrawing.cs" />
+    <Compile Include="src\SQLQueryer.cs" />
+    <Compile Include="src\StockQueryer.cs" />
+    <Compile Include="src\QueryConstructorOld.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\ResourceManager.cs" />

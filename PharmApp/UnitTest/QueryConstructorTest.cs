@@ -41,8 +41,10 @@ JOIN PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId WHERE CONVERT(VARCHAR(10)
         public void NewETPForPatient()
         {
             string desiredQuery = @"
-SELECT i.DrugDescription, s.PatientSurname, s.TokenPrinted, s.RepeatNumber FROM ETP.EtpSummaryView s
-JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId WHERE PatientNHSNumber = '9999999999' AND s.PrescriptionStatusId = 3 AND i.PrescriptionItemStatusId = 1";
+SELECT i.DrugDescription, s.PatientGivenName, s.PatientSurname, s.TokenPrinted, s.RepeatNumber, v.ApprovedName, v.Strength, v.DrugForm FROM ETP.EtpSummaryView s
+JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId
+JOIN PKBRuntime.Mapping.DmdPreparation p ON i.DrugIdentifier = p.DmdProductCodeId
+JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.PreparationCodeId WHERE PatientNHSNumber = '9999999999' AND s.PrescriptionStatusId = 3 AND i.PrescriptionItemStatusId = 1";
 
 
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ETPSCRIPTS);
