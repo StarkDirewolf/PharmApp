@@ -34,7 +34,8 @@ namespace PharmApp
 
             if (nhsNumber != null)
             {
-                ScreenDrawing.NewETP();
+
+                ScreenDrawing drawing = new ScreenDrawing();
             }
         }
     }

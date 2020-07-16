@@ -6,22 +6,29 @@ using System.Threading.Tasks;
 
 using System.Drawing;
 using System.Windows.Forms;
+using System.Windows.Interop;
 
 namespace PharmApp.src
 {
-    class ScreenDrawing
+    class ScreenDrawing : Form
     {
 
-        public static void NewETP()
+        public ScreenDrawing()
         {
-            Form f = new Form();
-            f.BackColor = Color.White;
-            f.FormBorderStyle = FormBorderStyle.None;
-            f.Bounds = Screen.PrimaryScreen.Bounds;
-            f.TopMost = true;
+            BackColor = Color.White;
+            FormBorderStyle = FormBorderStyle.None;
+            Bounds = new Rectangle(100, 100, 100, 100);
+            ShowInTaskbar = false;
+            Text = "New Scripts";
 
             Application.EnableVisualStyles();
-            Application.Run(f);
+            Application.Run(this);
+
+        }
+
+        protected override bool ShowWithoutActivation
+        {
+            get { return true; }
         }
     }
 }

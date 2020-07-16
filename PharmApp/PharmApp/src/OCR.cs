@@ -161,16 +161,15 @@ namespace PharmApp
             using (Image<Bgr, byte> screen = GetScreen())
             {
                 List<String> patientDetails = GetPatientDetails(screen);
-                Regex mask = new Regex("[0-9]{3} [0-9]{3} [0-9]{4}");
-                foreach (String detail in patientDetails)
+                Regex mask = new Regex("[0-9]{10}");
+                
+                foreach (string detail in patientDetails)
                 {
-                    if (mask.IsMatch(detail))
+                    string trimmedDetail = Regex.Replace(detail, @"\s+", "");
+                    if (mask.IsMatch(trimmedDetail))
                     {
-                        string nhsNumber = detail.Trim();
-                        nhsNumber = nhsNumber.Substring(0, 12);
-                        nhsNumber = nhsNumber.Replace(" ", "");
-                        Console.WriteLine(nhsNumber);
-                        return nhsNumber;
+                        Console.WriteLine(trimmedDetail);
+                        return trimmedDetail;
                     }
                 }
             }
