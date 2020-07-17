@@ -74,6 +74,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\OCRResult.cs" />
     <Compile Include="src\Patient.cs" />
     <Compile Include="src\OCR.cs" />
     <Compile Include="LicensePlateDetector.cs" />
@@ -86,6 +87,8 @@
     <Compile Include="src\ScreenDrawing.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="src\ScreenDrawingManager.cs" />
+    <Compile Include="src\ScreenProcessor.cs" />
     <Compile Include="src\SQLQueryer.cs" />
     <Compile Include="src\StockQueryer.cs" />
     <Compile Include="src\QueryConstructorOld.cs" />

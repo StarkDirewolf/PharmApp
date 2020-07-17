@@ -14,6 +14,7 @@ using Emgu.CV.Text;
 using static Emgu.CV.OCR.Tesseract;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using PharmApp.src;
 
 namespace PharmApp
 {
@@ -155,21 +156,21 @@ namespace PharmApp
             }
         }
 
-        public string GetNhsNoFromScreen()
+        public OCRResult GetNhsNoFromScreen()
         {
 
             using (Image<Bgr, byte> screen = GetScreen())
             {
-                List<String> patientDetails = GetPatientDetails(screen);
+                List<OCRResult> patientDetails = GetPatientDetails(screen);
                 Regex mask = new Regex("[0-9]{10}");
                 
-                foreach (string detail in patientDetails)
+                foreach (OCRResult detail in patientDetails)
                 {
-                    string trimmedDetail = Regex.Replace(detail, @"\s+", "");
+                    string trimmedDetail = Regex.Replace(detail.GetText(), @"\s+", "");
                     if (mask.IsMatch(trimmedDetail))
                     {
                         Console.WriteLine(trimmedDetail);
-                        return trimmedDetail;
+                        return new OCRResult(trimmedDetail, detail.GetRectangle());
                     }
                 }
             }
@@ -178,9 +179,9 @@ namespace PharmApp
         }
 
 
-        private List<String> GetPatientDetails(Image<Bgr, byte> image)
+        private List<OCRResult> GetPatientDetails(Image<Bgr, byte> image)
         {
-            List<String> patientDetails = new List<String>();
+            List<OCRResult> patientDetails = new List<OCRResult>();
             Rectangle patientRect = GetPatientDetailsRect(image);
             if (!patientRect.IsEmpty)
             {
@@ -192,13 +193,13 @@ namespace PharmApp
             return patientDetails;
         }
 
-        private List<String> GetText(Image<Bgr, byte> image)
+        private List<OCRResult> GetText(Image<Bgr, byte> image)
         {
             using (Image<Gray, byte> optImg = GetOptImage(image))
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
                 List<Rectangle> patRects = GetBoundingRectangles(optImg, true);
-                List<String> textList = new List<String>();
+                List<OCRResult> textList = new List<OCRResult>();
 
                 foreach (Rectangle rect in patRects)
                 {
@@ -206,7 +207,7 @@ namespace PharmApp
                     using (Image<Bgr, byte> textImg = image.Copy())
                     {
                         ocrProvider.SetImage(textImg);
-                        textList.Add(ocrProvider.GetUTF8Text());
+                        textList.Add(new OCRResult(ocrProvider.GetUTF8Text(), rect));
                     }
 
                 }

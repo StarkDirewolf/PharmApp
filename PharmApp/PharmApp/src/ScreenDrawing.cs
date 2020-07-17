@@ -13,16 +13,18 @@ namespace PharmApp.src
     class ScreenDrawing : Form
     {
 
-        public ScreenDrawing()
+        public ScreenDrawing(Rectangle rect, String text)
         {
             BackColor = Color.White;
             FormBorderStyle = FormBorderStyle.None;
-            Bounds = new Rectangle(100, 100, 100, 100);
+            Bounds = rect;
             ShowInTaskbar = false;
-            Text = "New Scripts";
+            
+            Label label = new Label();
+            label.BackColor = Color.Red;
 
-            Application.EnableVisualStyles();
-            Application.Run(this);
+            label.Text = text;
+            Controls.Add(label);
 
         }
 

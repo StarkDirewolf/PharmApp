@@ -8,21 +8,26 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using LicensePlateRecognition;
 using PharmApp.src;
+using System.Windows.Forms;
 
 namespace PharmApp
 {
     class Program
     {
-        private static OCR ocr;
+
+        private static ScreenProcessor processor;
 
         static void Main(string[] args)
         {
-            ocr = new OCR();
-            Timer timer = new Timer(3000);
+            processor = new ScreenProcessor();
+
+            Application.EnableVisualStyles();
+            System.Timers.Timer timer = new System.Timers.Timer(500);
             timer.Elapsed += Event;
             timer.AutoReset = true;
             timer.Enabled = true;
 
+            // Only for testing
             Console.ReadLine();
             timer.Stop();
             timer.Dispose();
@@ -30,12 +35,26 @@ namespace PharmApp
 
         private static void Event(Object source, ElapsedEventArgs e)
         {
+            processor.Process();
+
+
+
             String nhsNumber = ocr.GetNhsNoFromScreen();
 
             if (nhsNumber != null)
             {
-
-                ScreenDrawing drawing = new ScreenDrawing();
+                if (drawing != null)
+                {
+                    if (drawing.InvokeRequired)
+                    {
+                        drawing.Invoke(new MethodInvoker(delegate { drawing.Close(); }));
+                    }
+                    drawing.CloseTimerEvent(null, null);
+                }
+                
+                drawing = new ScreenDrawing(new System.Drawing.Rectangle(100, 100, 100, 100), "test");
+                Application.Run(drawing);
+                
             }
         }
     }
