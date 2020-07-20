@@ -34,6 +34,11 @@ namespace PharmApp.src
             return nhsNumber.GetOffsetPoint();
         }
 
+        public OCRResult GetNHSNumberResult()
+        {
+            return nhsNumber;
+        }
+
         //public PopulateNewEtpItems()
         //{
 

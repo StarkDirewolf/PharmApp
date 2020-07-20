@@ -24,6 +24,7 @@ namespace PharmApp
             Application.EnableVisualStyles();
             System.Timers.Timer timer = new System.Timers.Timer(500);
             timer.Elapsed += Event;
+            //timer.AutoReset = false;
             timer.AutoReset = true;
             timer.Enabled = true;
 

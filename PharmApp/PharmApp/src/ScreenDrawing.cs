@@ -19,6 +19,7 @@ namespace PharmApp.src
             FormBorderStyle = FormBorderStyle.None;
             Bounds = rect;
             ShowInTaskbar = false;
+            StartPosition = FormStartPosition.Manual;
             
             Label label = new Label();
             label.BackColor = Color.Red;

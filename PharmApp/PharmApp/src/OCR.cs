@@ -170,7 +170,7 @@ namespace PharmApp
                     if (mask.IsMatch(trimmedDetail))
                     {
                         Console.WriteLine(trimmedDetail);
-                        return new OCRResult(trimmedDetail, detail.GetRectangle());
+                        return new OCRResult(trimmedDetail, detail.GetRectangle(), detail.GetImage());
                     }
                 }
             }
@@ -185,10 +185,18 @@ namespace PharmApp
             Rectangle patientRect = GetPatientDetailsRect(image);
             if (!patientRect.IsEmpty)
             {
+
                 image.ROI = patientRect;
                 Image<Bgr, byte> patientDetailsImage = image.Copy();
 
-                patientDetails.AddRange(GetText(patientDetailsImage));
+                image.ROI = Rectangle.Empty;
+                image.SetValue(new Bgr(0, 0, 0));
+                image.ROI = patientRect;
+
+                patientDetailsImage.CopyTo(image);
+                image.ROI = Rectangle.Empty;
+
+                patientDetails.AddRange(GetText(image));
             }
             return patientDetails;
         }
@@ -203,12 +211,18 @@ namespace PharmApp
 
                 foreach (Rectangle rect in patRects)
                 {
-                    image.ROI = rect;
-                    using (Image<Bgr, byte> textImg = image.Copy())
-                    {
-                        ocrProvider.SetImage(textImg);
-                        textList.Add(new OCRResult(ocrProvider.GetUTF8Text(), rect));
-                    }
+                    Rectangle newRect = rect; 
+                    newRect.X = rect.X - 1;
+                    newRect.Y = rect.Y - 1;
+                    newRect.Height = rect.Height + 2;
+                    newRect.Width = rect.Width + 2;
+                    image.ROI = newRect;
+
+                    Image<Bgr, byte> textImg = image.Copy();
+
+                    ocrProvider.SetImage(textImg);
+                    textList.Add(new OCRResult(ocrProvider.GetUTF8Text(), newRect, textImg));
+
 
                 }
 
@@ -379,7 +393,7 @@ namespace PharmApp
         //    return textImages;
         //}
 
-        private Image<Bgr, byte> GetScreen()
+        private Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
             if (USE_EXAMPLE_PMR)
             {
@@ -391,17 +405,35 @@ namespace PharmApp
             stopwatch.Start();
 
             Rectangle bounds = Screen.GetBounds(Point.Empty);
+            if (screenArea != Rectangle.Empty)
+            {
+                bounds = screenArea;
+
+            }
+
             Image<Bgr, byte> img;
 
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics g = Graphics.FromImage(bitmap))
             {
-                g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
+                g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
                 img = new Image<Bgr, byte>(bitmap);
             }
 
             Console.WriteLine("Screen capture took " + stopwatch.ElapsedMilliseconds + "ms");
             return img;
+        }
+
+        private Image<Bgr, byte> GetScreen()
+        {
+            return GetScreen(Rectangle.Empty);
+        }
+
+        public bool IsResultStillVisible(OCRResult toCompare)
+        {
+            Image<Bgr, byte> screen = GetScreen(toCompare.GetRectangle());
+            //ImageViewer.Show(screen.ConcateHorizontal(toCompare.GetImage()));
+            return toCompare.GetImage().Equals(screen);
         }
     }
 }

@@ -13,8 +13,8 @@ namespace PharmApp.src
 
         public ScreenProcessor()
         {
-            screenDrawingManager = new ScreenDrawingManager();
             ocr = new OCR();
+            screenDrawingManager = new ScreenDrawingManager(ocr);
         }
 
         public void Process()
@@ -38,5 +38,6 @@ namespace PharmApp.src
                 screenDrawingManager.ShowPMRExtras(false);
             }
         }
+
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -10,11 +12,18 @@ namespace PharmApp.src
 {
     class ScreenDrawingManager
     {
-        private readonly Size NEW_SCRIPT_RECT_SIZE = new Size(100, 50);
+        private readonly Size NEW_SCRIPT_RECT_SIZE = new Size(100, 30);
 
         private bool pmrExtrasAreShown = false;
-        private List<ScreenDrawing> pmrExtras = new List<ScreenDrawing>();
+        private ConcurrentBag<ScreenDrawing> pmrExtras = new ConcurrentBag<ScreenDrawing>();
         private Patient patient;
+        private OCR ocr;
+
+
+        public ScreenDrawingManager (OCR ocr)
+        {
+            this.ocr = ocr;
+        }
 
         public void SetPatient(Patient patient)
         {
@@ -34,26 +43,41 @@ namespace PharmApp.src
         {
             if (v != pmrExtrasAreShown)
             {
-                pmrExtrasAreShown = v;
 
                 if (v)
                 {    
                     if (patient.HasNewETP())
                     {
-                        ScreenDrawing newScript = new ScreenDrawing(new System.Drawing.Rectangle(patient.GetNewETPSpace(), NEW_SCRIPT_RECT_SIZE), "test");
-                        Application.Run(newScript);
-                        pmrExtras.Add(newScript);
+                        Point newETPSpace = patient.GetNewETPSpace();
+                        ScreenDrawing newScript = new ScreenDrawing(new Rectangle(newETPSpace, NEW_SCRIPT_RECT_SIZE), "test");
+                        if (ocr.IsResultStillVisible(patient.GetNHSNumberResult())) {
+                            pmrExtrasAreShown = v;
+                            pmrExtras.Add(newScript);
+                            Application.Run(newScript);
+                        }
+                        
                     }
                 } 
                 
                 else
                 {
+                    pmrExtrasAreShown = v;
                     foreach (ScreenDrawing drawing in pmrExtras)
                     {
                         if (drawing.InvokeRequired)
                         {
                             drawing.Invoke(new MethodInvoker(delegate { drawing.Close(); }));
                         }
+                    }
+                    pmrExtras = new ConcurrentBag<ScreenDrawing>();
+                }
+            } else
+            {
+                if (v)
+                {
+                    foreach (ScreenDrawing drawing in pmrExtras)
+                    {
+                        
                     }
                 }
             }
