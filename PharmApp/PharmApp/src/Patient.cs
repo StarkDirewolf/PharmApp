@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,11 +9,29 @@ namespace PharmApp.src
 {
     class Patient
     {
-        string nhsNumber;
+        private readonly OCRResult nhsNumber;
+        private bool hasNewETP;
 
-        public Patient(string nhsNumber)
+        public Patient(OCRResult nhsNumber)
         {
             this.nhsNumber = nhsNumber;
+
+            hasNewETP = SQLQueryer.HasNewETP(nhsNumber.GetText());
+        }
+
+        public string GetNHSNumber()
+        {
+            return nhsNumber.GetText();
+        }
+
+        public bool HasNewETP()
+        {
+            return hasNewETP;
+        }
+
+        public Point GetNewETPSpace()
+        {
+            return nhsNumber.GetOffsetPoint();
         }
 
         //public PopulateNewEtpItems()

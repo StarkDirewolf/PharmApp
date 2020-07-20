@@ -37,25 +37,6 @@ namespace PharmApp
         {
             processor.Process();
 
-
-
-            String nhsNumber = ocr.GetNhsNoFromScreen();
-
-            if (nhsNumber != null)
-            {
-                if (drawing != null)
-                {
-                    if (drawing.InvokeRequired)
-                    {
-                        drawing.Invoke(new MethodInvoker(delegate { drawing.Close(); }));
-                    }
-                    drawing.CloseTimerEvent(null, null);
-                }
-                
-                drawing = new ScreenDrawing(new System.Drawing.Rectangle(100, 100, 100, 100), "test");
-                Application.Run(drawing);
-                
-            }
         }
     }
 }

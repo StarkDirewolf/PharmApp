@@ -25,11 +25,17 @@ namespace PharmApp.src
 
             if (nhsNumber != null)
             {
-                screenDrawingManager.SetNHSNumberResult(nhsNumber);
-                screenDrawingManager.ShowPMRExtras();
+                if (!nhsNumber.GetText().Equals(screenDrawingManager.GetCurrentNHSNumber()))
+                {
+                    Patient patient = new Patient(nhsNumber);
+                    screenDrawingManager.SetPatient(patient);
+                }
+
+                screenDrawingManager.ShowPMRExtras(true);
+
             } else
             {
-                screenDrawingManager.HidePMRExtras();
+                screenDrawingManager.ShowPMRExtras(false);
             }
         }
     }
