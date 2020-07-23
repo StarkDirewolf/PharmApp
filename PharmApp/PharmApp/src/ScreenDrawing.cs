@@ -15,8 +15,9 @@ namespace PharmApp.src
 
         public ScreenDrawing(Rectangle rect, String text)
         {
-            BackColor = Color.White;
-            FormBorderStyle = FormBorderStyle.None;
+            BackColor = Color.Red;
+            FormBorderStyle = FormBorderStyle.FixedToolWindow;
+            ControlBox = false;
             Bounds = rect;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;

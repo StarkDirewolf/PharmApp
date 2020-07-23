@@ -22,7 +22,8 @@ namespace PharmApp
     {
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
-            USE_EXAMPLE_PMR = false;
+            USE_EXAMPLE_PMR = false,
+            SHOW_OCR_IMAGE = false;
 
 
         // CV settings
@@ -45,123 +46,125 @@ namespace PharmApp
 
         private const double BGR_BUFFER = 2;
 
+        private const int NHS_X = 340, NHS_Y = 100, NHS_WIDTH = 990, NHS_HEIGHT = 25;
 
-        public void Test()
-        {
-            using (Image<Bgr, byte> originalImage = GetScreen())
-            //using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
+
+        //public void Test()
+        //{
+        //    using (Image<Bgr, byte> originalImage = GetScreen())
+        //    //using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
             
-            using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
-            {
-                Stopwatch stopwatch = new Stopwatch();
+        //    using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
+        //    {
+        //        Stopwatch stopwatch = new Stopwatch();
 
-                // function to isolate section of screen
-                Rectangle patientRect = GetPatientDetailsRect(originalImage);
-                if (!patientRect.IsEmpty)
-                {
-                    originalImage.ROI = patientRect;
+        //        // function to isolate section of screen
+        //        Rectangle patientRect = GetPatientDetailsRect(originalImage);
+        //        if (!patientRect.IsEmpty)
+        //        {
+        //            originalImage.ROI = patientRect;
 
-                    using (Image<Gray, byte> img = GetOptImage(originalImage))
-                    {
-                        ImageViewer.Show(img);
+        //            using (Image<Gray, byte> img = GetOptImage(originalImage))
+        //            {
+        //                ImageViewer.Show(img);
 
-                        Image<Bgr, byte> patientDetColour = originalImage.Copy();
-                        Image<Gray, byte> patientDetGray = img.Copy();
+        //                Image<Bgr, byte> patientDetColour = originalImage.Copy();
+        //                Image<Gray, byte> patientDetGray = img.Copy();
 
-                        List<Rectangle> patRects = GetBoundingRectangles(patientDetGray, true);
+        //                List<Rectangle> patRects = GetBoundingRectangles(patientDetGray, true);
 
-                        List<string> allPatText = new List<string>();
-                        foreach (Rectangle rect in patRects)
-                        {
-                            patientDetColour.ROI = rect;
-                            using (Image<Bgr, byte> textImg = patientDetColour.Copy())
-                            {
-                                ocrProvider.SetImage(textImg);
-                                allPatText.Add(ocrProvider.GetUTF8Text());
-                            }
+        //                List<string> allPatText = new List<string>();
+        //                foreach (Rectangle rect in patRects)
+        //                {
+        //                    patientDetColour.ROI = rect;
+        //                    using (Image<Bgr, byte> textImg = patientDetColour.Copy())
+        //                    {
+        //                        ocrProvider.SetImage(textImg);
+        //                        allPatText.Add(ocrProvider.GetUTF8Text());
+        //                    }
 
-                            originalImage.Draw(rect, new Bgr(Color.Red));
-                        }
-                        foreach (string text in allPatText)
-                        {
-                            Console.WriteLine(text);
-                        }
-                        ImageViewer.Show(originalImage);
-                    }
-                }
+        //                    originalImage.Draw(rect, new Bgr(Color.Red));
+        //                }
+        //                foreach (string text in allPatText)
+        //                {
+        //                    Console.WriteLine(text);
+        //                }
+        //                ImageViewer.Show(originalImage);
+        //            }
+        //        }
                 
 
-                //List<Rectangle> rects = GetBoundingRectangles(img);
-                //img.ROI = Rectangle.Empty;
+        //        //List<Rectangle> rects = GetBoundingRectangles(img);
+        //        //img.ROI = Rectangle.Empty;
 
-                //List<string> allText = new List<string>();
+        //        //List<string> allText = new List<string>();
 
-                //stopwatch.Start();
-                //foreach (Rectangle rect in rects)
-                //{
-                //    originalImage.ROI = rect;
-                //    using (Image<Bgr, byte> textImg = originalImage.Copy())
-                //    {
-                //        ocrProvider.SetImage(textImg);
-                //        allText.Add(ocrProvider.GetUTF8Text());
-                //    }
-                //}
-                //originalImage.ROI = Rectangle.Empty;
-                //Console.WriteLine("OCR took " + stopwatch.ElapsedMilliseconds + "ms");
-                //stopwatch.Reset();
-                //stopwatch.Stop();
+        //        //stopwatch.Start();
+        //        //foreach (Rectangle rect in rects)
+        //        //{
+        //        //    originalImage.ROI = rect;
+        //        //    using (Image<Bgr, byte> textImg = originalImage.Copy())
+        //        //    {
+        //        //        ocrProvider.SetImage(textImg);
+        //        //        allText.Add(ocrProvider.GetUTF8Text());
+        //        //    }
+        //        //}
+        //        //originalImage.ROI = Rectangle.Empty;
+        //        //Console.WriteLine("OCR took " + stopwatch.ElapsedMilliseconds + "ms");
+        //        //stopwatch.Reset();
+        //        //stopwatch.Stop();
 
-                //foreach (string text in allText)
-                //{
-                //    Console.WriteLine(text);
-                //}
+        //        //foreach (string text in allText)
+        //        //{
+        //        //    Console.WriteLine(text);
+        //        //}
 
-                //for (int i = 0; i < rects.Count; i++)
-                //{
-                //    Rectangle rect = rects[i];
-                //    string text = allText[i];
+        //        //for (int i = 0; i < rects.Count; i++)
+        //        //{
+        //        //    Rectangle rect = rects[i];
+        //        //    string text = allText[i];
 
-                //    img.Draw(rect, new Gray(255));
-                //    img.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Gray(255));
+        //        //    img.Draw(rect, new Gray(255));
+        //        //    img.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Gray(255));
 
-                //    originalImage.Draw(rect, new Bgr(Color.Red));
-                //    originalImage.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Bgr(Color.Red));
-                //}
+        //        //    originalImage.Draw(rect, new Bgr(Color.Red));
+        //        //    originalImage.Draw(text, new Point(rect.Left, rect.Top), Emgu.CV.CvEnum.FontFace.HersheyPlain, 1.0, new Bgr(Color.Red));
+        //        //}
 
-                //using (Image<Bgr, byte> smallOrigImage = originalImage.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
-                //using (Image<Gray, byte> smallImg = img.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
-                //{
-                //    Image<Bgr, byte> bothImages = smallOrigImage.ConcateHorizontal(smallImg.Convert<Bgr, byte>());
+        //        //using (Image<Bgr, byte> smallOrigImage = originalImage.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
+        //        //using (Image<Gray, byte> smallImg = img.Resize(img.Width / 2, img.Height / 2, Emgu.CV.CvEnum.Inter.Linear))
+        //        //{
+        //        //    Image<Bgr, byte> bothImages = smallOrigImage.ConcateHorizontal(smallImg.Convert<Bgr, byte>());
 
-                //    ImageViewer.Show(bothImages, "test");
-                //}
+        //        //    ImageViewer.Show(bothImages, "test");
+        //        //}
 
-                //List<Image<Bgr, byte>> images = getText(img);
+        //        //List<Image<Bgr, byte>> images = getText(img);
 
-                //foreach (var image in images)
-                //{
+        //        //foreach (var image in images)
+        //        //{
 
-                //    ocrProvider.SetImage(image);
-                //    Console.WriteLine(ocrProvider.GetUTF8Text());
-                //    ImageViewer.Show(image, "test");
-                //}
+        //        //    ocrProvider.SetImage(image);
+        //        //    Console.WriteLine(ocrProvider.GetUTF8Text());
+        //        //    ImageViewer.Show(image, "test");
+        //        //}
 
-                //ocrProvider.SetImage(img);
-                //String text = ocrProvider.GetUTF8Text();
+        //        //ocrProvider.SetImage(img);
+        //        //String text = ocrProvider.GetUTF8Text();
 
-                //Console.WriteLine(text);
-                ////Show the image using ImageViewer from Emgu.CV.UI
-                //ImageViewer.Show(img, "Test Window");
+        //        //Console.WriteLine(text);
+        //        ////Show the image using ImageViewer from Emgu.CV.UI
+        //        //ImageViewer.Show(img, "Test Window");
 
-            }
-        }
+        //    }
+        //}
 
         public OCRResult GetNhsNoFromScreen()
         {
 
             using (Image<Bgr, byte> screen = GetScreen())
             {
-                List<OCRResult> patientDetails = GetPatientDetails(screen);
+                List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
                 Regex mask = new Regex("[0-9]{10}");
                 
                 foreach (OCRResult detail in patientDetails)
@@ -179,22 +182,23 @@ namespace PharmApp
         }
 
 
-        private List<OCRResult> GetPatientDetails(Image<Bgr, byte> image)
+        private List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
         {
             List<OCRResult> patientDetails = new List<OCRResult>();
-            Rectangle patientRect = GetPatientDetailsRect(image);
-            if (!patientRect.IsEmpty)
+            if (!area.IsEmpty)
             {
 
-                image.ROI = patientRect;
+                image.ROI = area;
                 Image<Bgr, byte> patientDetailsImage = image.Copy();
 
                 image.ROI = Rectangle.Empty;
                 image.SetValue(new Bgr(0, 0, 0));
-                image.ROI = patientRect;
+                image.ROI = area;
 
                 patientDetailsImage.CopyTo(image);
                 image.ROI = Rectangle.Empty;
+
+                if (SHOW_OCR_IMAGE) ImageViewer.Show(patientDetailsImage);
 
                 patientDetails.AddRange(GetText(image));
             }
@@ -320,6 +324,16 @@ namespace PharmApp
                 }
 
                 return filteredRects.First();
+        }
+
+        /// <summary>
+        /// New method for getting NHS number based on normal position
+        /// </summary>
+        /// <param name="img">image of the PMR</param>
+        /// <returns>a rectangle of the NHS number</returns>
+        private Rectangle GetNHSNumberRect()
+        {
+            return new Rectangle(NHS_X, NHS_Y, NHS_WIDTH, NHS_HEIGHT);
         }
 
         /// <summary>
