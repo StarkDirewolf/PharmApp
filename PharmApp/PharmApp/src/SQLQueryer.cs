@@ -77,7 +77,7 @@ namespace PharmApp
             return nhsNumNameLookup;
         }
 
-        public static bool HasNewETP(string nhsNum)
+        public static bool NewETPs(string nhsNum, out bool unprinted)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ETPSCRIPTS);
 
@@ -89,11 +89,24 @@ namespace PharmApp
                 connection.Open();
 
                 SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                bool anyResults = false;
+                unprinted = false;
+
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
-
-                    return reader.Read();
+                    while (reader.Read())
+                    {
+                        anyResults = true;
+                        if (reader.GetInt32(3) > 0)
+                        {
+                            unprinted = true;
+                            return true;
+                        }
+                    }
                 }
+
+                return anyResults;
             }
         }
     }

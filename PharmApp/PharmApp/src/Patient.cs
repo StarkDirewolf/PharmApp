@@ -11,12 +11,13 @@ namespace PharmApp.src
     {
         private readonly OCRResult nhsNumber;
         private bool hasNewETP;
+        private bool hasUnprintedETPs;
 
         public Patient(OCRResult nhsNumber)
         {
             this.nhsNumber = nhsNumber;
 
-            hasNewETP = SQLQueryer.HasNewETP(nhsNumber.GetText());
+            hasNewETP = SQLQueryer.NewETPs(nhsNumber.GetText(), out hasUnprintedETPs);
         }
 
         public string GetNHSNumber()

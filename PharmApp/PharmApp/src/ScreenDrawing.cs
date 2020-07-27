@@ -13,7 +13,7 @@ namespace PharmApp.src
     class ScreenDrawing : Form
     {
 
-        public ScreenDrawing(Rectangle rect, String text)
+        public ScreenDrawing(Rectangle rect, String text, Color color, bool parent = false)
         {
             BackColor = Color.Red;
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
@@ -23,10 +23,19 @@ namespace PharmApp.src
             StartPosition = FormStartPosition.Manual;
             
             Label label = new Label();
-            label.BackColor = Color.Red;
+            label.BackColor = color;
 
             label.Text = text;
             Controls.Add(label);
+
+            if (parent)
+            {
+                TopLevel = true;
+            }
+            else
+            {
+                TopLevel = false;
+            }
 
         }
 
