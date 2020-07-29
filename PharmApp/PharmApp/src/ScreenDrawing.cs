@@ -13,6 +13,8 @@ namespace PharmApp.src
     class ScreenDrawing : Form
     {
 
+        List<ScreenDrawing> childDrawings = new List<ScreenDrawing>();
+
         public ScreenDrawing(Rectangle rect, String text, Color color, bool parent = false)
         {
             BackColor = Color.Red;
@@ -37,6 +39,21 @@ namespace PharmApp.src
                 TopLevel = false;
             }
 
+        }
+
+        public void CreateChildForm(Rectangle rect, String text, Color color)
+        {
+            ScreenDrawing drawing = new ScreenDrawing(rect, text, color);
+            childDrawings.Add(drawing);
+            drawing.Show();
+        }
+
+        public void CloseChildren()
+        {
+            foreach (ScreenDrawing drawing in childDrawings)
+            {
+                drawing.Close();
+            }
         }
 
         protected override bool ShowWithoutActivation

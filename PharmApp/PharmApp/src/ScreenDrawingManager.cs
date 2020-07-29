@@ -16,7 +16,6 @@ namespace PharmApp.src
         private readonly Rectangle PARENT_FORM = new Rectangle(Screen.PrimaryScreen.Bounds.Width - 45, 0, 45, 15);
 
         private bool pmrExtrasAreShown = false;
-        private ConcurrentBag<ScreenDrawing> pmrExtras = new ConcurrentBag<ScreenDrawing>();
         private Patient patient;
         private readonly OCR ocr;
         private readonly IntPtr proscriptHandle;
@@ -67,17 +66,16 @@ namespace PharmApp.src
                     if (patient.HasNewETP())
                     {
                         Point newETPSpace = patient.GetNewETPSpace();
-                        ScreenDrawing newScript = new ScreenDrawing(new Rectangle(newETPSpace, NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
+                        //ScreenDrawing newScript = new ScreenDrawing(new Rectangle(newETPSpace, NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
                         //ScreenDrawing newScript = new ScreenDrawing(new Rectangle(new Point(0,0), NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
                         if (ocr.IsResultStillVisible(patient.GetNHSNumberResult())) {
                             Console.WriteLine("FORMS - Creating for PMR");
                             pmrExtrasAreShown = v;
-                            pmrExtras.Add(newScript);
+                            
                             if (parentForm.InvokeRequired)
                             {
                                 parentForm.Invoke(new MethodInvoker(delegate {
-                                    newScript.Parent = parentForm;
-                                    newScript.Show();
+                                    parentForm.CreateChildForm(new Rectangle(newETPSpace, NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
                                 }));
                             }
                             
@@ -92,14 +90,10 @@ namespace PharmApp.src
                 {
                     pmrExtrasAreShown = v;
                     Console.WriteLine("FORMS - Deleting all forms");
-                    foreach (ScreenDrawing drawing in pmrExtras)
+                    if (parentForm.InvokeRequired)
                     {
-                        if (drawing.InvokeRequired)
-                        {
-                            drawing.Invoke(new MethodInvoker(delegate { drawing.Close(); }));
-                        }
+                        parentForm.Invoke(new MethodInvoker(delegate { parentForm.CloseChildren(); }));
                     }
-                    pmrExtras = new ConcurrentBag<ScreenDrawing>();
                 }
             }
         }
