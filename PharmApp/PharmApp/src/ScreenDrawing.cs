@@ -12,10 +12,10 @@ namespace PharmApp.src
 {
     class ScreenDrawing : Form
     {
+        private List<ScreenDrawing> childForms = new List<ScreenDrawing>();
 
-        public ScreenDrawing(Rectangle rect, String text, Color color, bool parent = false)
+        public ScreenDrawing(Rectangle rect, String text, Color color)
         {
-            BackColor = Color.Red;
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             ControlBox = false;
             Bounds = rect;
@@ -28,20 +28,12 @@ namespace PharmApp.src
             label.Text = text;
             Controls.Add(label);
 
-            if (parent)
-            {
-                TopLevel = true;
-            }
-            else
-            {
-                TopLevel = false;
-            }
-
         }
 
         protected override bool ShowWithoutActivation
         {
             get { return true; }
         }
+
     }
 }
