@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace PharmApp.src
 {
@@ -16,10 +17,12 @@ namespace PharmApp.src
         private readonly Rectangle PARENT_FORM = new Rectangle(Screen.PrimaryScreen.Bounds.Width - 45, 0, 45, 15);
 
         private bool pmrExtrasAreShown = false;
+        
         private Patient patient;
         private readonly OCR ocr;
         private readonly IntPtr proscriptHandle;
-        private ScreenDrawing parentForm;
+        private ScreenDrawing newETPForm;
+        private List<ScreenDrawing> drawings = new List<ScreenDrawing>();
 
 
         [DllImport("user32.dll", EntryPoint = "SetWindowLong", CharSet = CharSet.Auto)]
@@ -31,13 +34,13 @@ namespace PharmApp.src
         {
             this.ocr = ocr;
             this.proscriptHandle = proscriptHandle;
-        }
 
-        public void ShowParentForm()
-        {
-            parentForm = new ScreenDrawing(PARENT_FORM, "Running", Color.Green, true);
-            SetWindowLong(parentForm.Handle, -8, proscriptHandle);
-            Application.Run(parentForm);
+            //newETPForm = new ScreenDrawing(new Rectangle(new Point(0,0), NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
+            //SetWindowLong(newETPForm.Handle, -8, proscriptHandle);
+            //drawings.Add(newETPForm);
+             newETPForm = new ScreenDrawing(new Rectangle(new Point(0, 0), NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
+             SetWindowLong(newETPForm.Handle, -8, proscriptHandle);
+             Application.Run(newETPForm);
         }
 
         public void SetPatient(Patient patient)
@@ -66,21 +69,16 @@ namespace PharmApp.src
                     if (patient.HasNewETP())
                     {
                         Point newETPSpace = patient.GetNewETPSpace();
-                        //ScreenDrawing newScript = new ScreenDrawing(new Rectangle(newETPSpace, NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
-                        //ScreenDrawing newScript = new ScreenDrawing(new Rectangle(new Point(0,0), NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
                         if (ocr.IsResultStillVisible(patient.GetNHSNumberResult())) {
-                            Console.WriteLine("FORMS - Creating for PMR");
+                            Console.WriteLine("FORMS - Showing for PMR");
                             pmrExtrasAreShown = v;
-                            
-                            if (parentForm.InvokeRequired)
+
+                            if (newETPForm.InvokeRequired)
                             {
-                                parentForm.Invoke(new MethodInvoker(delegate {
-                                    parentForm.CreateChildForm(new Rectangle(newETPSpace, NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);
-                                }));
+                                newETPForm.Location = newETPSpace;
+                                newETPForm.Show();
                             }
-                            
-                            //Application.Run(newScript);
-                            
+
                         }
                         
                     }
@@ -89,10 +87,13 @@ namespace PharmApp.src
                 else
                 {
                     pmrExtrasAreShown = v;
-                    Console.WriteLine("FORMS - Deleting all forms");
-                    if (parentForm.InvokeRequired)
+                    Console.WriteLine("FORMS - Hiding all forms");
+                    foreach (ScreenDrawing drawing in drawings)
                     {
-                        parentForm.Invoke(new MethodInvoker(delegate { parentForm.CloseChildren(); }));
+                        if (drawing.InvokeRequired)
+                        {
+                            drawing.Hide();
+                        }
                     }
                 }
             }

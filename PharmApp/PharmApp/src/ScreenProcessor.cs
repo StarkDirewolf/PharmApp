@@ -40,8 +40,8 @@ namespace PharmApp.src
             {
                 proscriptHandle = proscriptProcesses.First().MainWindowHandle;
                 Console.WriteLine("Proscript found and handle obtained");
+
                 screenDrawingManager = new ScreenDrawingManager(ocr, proscriptHandle);
-                new Thread(() => screenDrawingManager.ShowParentForm()).Start();
             } else
             {
                 Console.WriteLine("Proscript process not found");
