@@ -18,7 +18,7 @@ using PharmApp.src;
 
 namespace PharmApp
 {
-    class OCR
+    static class OCR
     {
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
@@ -38,7 +38,7 @@ namespace PharmApp
             TEXT_MAX_HEIGHT = 100,
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
-        private Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211);
+        private static readonly Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211);
 
         private const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
@@ -159,7 +159,7 @@ namespace PharmApp
         //    }
         //}
 
-        public OCRResult GetNhsNoFromScreen()
+        public static OCRResult GetNhsNoFromScreen()
         {
 
             using (Image<Bgr, byte> screen = GetScreen())
@@ -182,7 +182,7 @@ namespace PharmApp
         }
 
 
-        private List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
+        private static List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
         {
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
@@ -205,7 +205,7 @@ namespace PharmApp
             return patientDetails;
         }
 
-        private List<OCRResult> GetText(Image<Bgr, byte> image)
+        private static List<OCRResult> GetText(Image<Bgr, byte> image)
         {
             using (Image<Gray, byte> optImg = GetOptImage(image))
             using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
@@ -239,7 +239,7 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">captured image for processing</param>
         /// <returns>optimised image for contour detection</returns>
-        private Image<Gray, byte> GetOptImage(Image<Bgr, byte> img)
+        private static Image<Gray, byte> GetOptImage(Image<Bgr, byte> img)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -266,7 +266,7 @@ namespace PharmApp
         /// <param name="img">optimised image for contour detection</param>
         /// <param name="textRects">if true then it filters out rectangles that are inappropriately sized for containing standard text</param>
         /// <returns>a list of rectangles that contain the contours of the image</returns>
-        private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, bool textRects = false)
+        private static List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, bool textRects = false)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -308,7 +308,7 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
         /// <returns>a rectangle of the patient details area. Empty if the method has failed</returns>
-        private Rectangle GetPatientDetailsRect(Image<Bgr, byte> img)
+        private static Rectangle GetPatientDetailsRect(Image<Bgr, byte> img)
         {
                 List<Rectangle> rects = GetRectsOfColour(img, BLUE_PATIENT_DETAILS_BGR);
 
@@ -331,7 +331,7 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">image of the PMR</param>
         /// <returns>a rectangle of the NHS number</returns>
-        private Rectangle GetNHSNumberRect()
+        private static Rectangle GetNHSNumberRect()
         {
             return new Rectangle(NHS_X, NHS_Y, NHS_WIDTH, NHS_HEIGHT);
         }
@@ -342,7 +342,7 @@ namespace PharmApp
         /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
         /// <param name="colour">the colour to be found - the method adds a small buffer</param>
         /// <returns>a List of Rectangles of the coloured areas</returns>
-        private List<Rectangle> GetRectsOfColour(Image<Bgr, byte> img, Bgr colour)
+        private static List<Rectangle> GetRectsOfColour(Image<Bgr, byte> img, Bgr colour)
         {
             // Image filtered to only show areas that are the specified colour
             using (Image<Gray, byte> blue = img.InRange(new Bgr(colour.Blue - BGR_BUFFER, colour.Green - BGR_BUFFER, colour.Red - BGR_BUFFER), new Bgr(colour.Blue + BGR_BUFFER, colour.Green + BGR_BUFFER, colour.Red + BGR_BUFFER)))
@@ -407,7 +407,7 @@ namespace PharmApp
         //    return textImages;
         //}
 
-        private Image<Bgr, byte> GetScreen(Rectangle screenArea)
+        private static Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
             if (USE_EXAMPLE_PMR)
             {
@@ -438,12 +438,12 @@ namespace PharmApp
             return img;
         }
 
-        private Image<Bgr, byte> GetScreen()
+        private static Image<Bgr, byte> GetScreen()
         {
             return GetScreen(Rectangle.Empty);
         }
 
-        public bool IsResultStillVisible(OCRResult toCompare)
+        public static bool IsResultStillVisible(OCRResult toCompare)
         {
             Image<Bgr, byte> screen = GetScreen(toCompare.GetRectangle());
             //ImageViewer.Show(screen.ConcateHorizontal(toCompare.GetImage()));

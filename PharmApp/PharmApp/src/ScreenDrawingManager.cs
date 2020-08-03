@@ -19,7 +19,6 @@ namespace PharmApp.src
         private bool pmrExtrasAreShown = false;
         
         private Patient patient;
-        private readonly OCR ocr;
         private readonly IntPtr proscriptHandle;
         private ScreenDrawing newETPForm;
         private List<ScreenDrawing> drawings = new List<ScreenDrawing>();
@@ -30,9 +29,8 @@ namespace PharmApp.src
 
 
 
-        public ScreenDrawingManager (OCR ocr, IntPtr proscriptHandle)
+        public ScreenDrawingManager (IntPtr proscriptHandle)
         {
-            this.ocr = ocr;
             this.proscriptHandle = proscriptHandle;
 
             //newETPForm = new ScreenDrawing(new Rectangle(new Point(0,0), NEW_SCRIPT_RECT_SIZE), "New ETP", Color.Red);

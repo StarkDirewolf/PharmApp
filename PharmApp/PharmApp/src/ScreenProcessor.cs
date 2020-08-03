@@ -14,7 +14,6 @@ namespace PharmApp.src
         private const string PROSCRIPT_PROCESS_NAME = "ProScriptConnect.Client";
 
         private ScreenDrawingManager screenDrawingManager;
-        private readonly OCR ocr;
         private IntPtr proscriptHandle;
 
         [DllImport("user32.dll")]
@@ -26,8 +25,6 @@ namespace PharmApp.src
 
         public ScreenProcessor()
         {
-
-            ocr = new OCR();
 
             PopulateProscriptHandle();
         }
@@ -41,7 +38,7 @@ namespace PharmApp.src
                 proscriptHandle = proscriptProcesses.First().MainWindowHandle;
                 Console.WriteLine("Proscript found and handle obtained");
 
-                screenDrawingManager = new ScreenDrawingManager(ocr, proscriptHandle);
+                screenDrawingManager = new ScreenDrawingManager(proscriptHandle);
             } else
             {
                 Console.WriteLine("Proscript process not found");
