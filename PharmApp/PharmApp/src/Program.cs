@@ -19,25 +19,15 @@ namespace PharmApp
 
         static void Main(string[] args)
         {
+            
+            Application.EnableVisualStyles();
+
             processor = new ScreenProcessor();
 
-            Application.EnableVisualStyles();
-            System.Timers.Timer timer = new System.Timers.Timer(500);
-            timer.Elapsed += Event;
-            //timer.AutoReset = false;
-            timer.AutoReset = true;
-            timer.Enabled = true;
-
+            
             // Only for testing
             Console.ReadLine();
-            timer.Stop();
-            timer.Dispose();
-        }
-
-        private static void Event(Object source, ElapsedEventArgs e)
-        {
-            processor.Process();
-
+            
         }
     }
 }

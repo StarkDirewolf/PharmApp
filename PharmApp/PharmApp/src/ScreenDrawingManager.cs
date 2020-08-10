@@ -67,7 +67,7 @@ namespace PharmApp.src
                     if (patient.HasNewETP())
                     {
                         Point newETPSpace = patient.GetNewETPSpace();
-                        if (ocr.IsResultStillVisible(patient.GetNHSNumberResult())) {
+                        if (OCR.IsResultStillVisible(patient.GetNHSNumberResult())) {
                             Console.WriteLine("FORMS - Showing for PMR");
                             pmrExtrasAreShown = v;
 

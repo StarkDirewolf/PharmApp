@@ -16,6 +16,10 @@ namespace PharmApp.src
 
         public ScreenDrawing(Rectangle rect, String text, Color color)
         {
+            ScreenProcessor.OnProgramFocus += OnProgramFocus;
+            ScreenProcessor.OnProgramUnfocus += OnProgramUnfocus;
+
+
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             ControlBox = false;
             Bounds = rect;
@@ -33,6 +37,16 @@ namespace PharmApp.src
         protected override bool ShowWithoutActivation
         {
             get { return true; }
+        }
+
+        private void OnProgramUnfocus(object source, EventArgs args)
+        {
+            Hide();
+        }
+
+        private void OnProgramFocus(object source, EventArgs args)
+        {
+            Show();
         }
 
     }

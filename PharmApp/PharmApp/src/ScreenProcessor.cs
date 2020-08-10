@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace PharmApp.src
 {
@@ -16,6 +17,11 @@ namespace PharmApp.src
         private ScreenDrawingManager screenDrawingManager;
         private IntPtr proscriptHandle;
 
+        // Scanner Thread
+        static private ThreadStart scanScreenRef;
+        static private Thread scanScreen;
+
+
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
 
@@ -23,31 +29,72 @@ namespace PharmApp.src
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
 
 
+        private static bool _isProgramFocused = false;
+        private static bool IsProgramFocused
+        {
+            get => _isProgramFocused;
+            set
+            {
+                if (value != _isProgramFocused)
+                {
+                    // Wait until there's a subscriber to dispatch the event
+                    if (OnProgramFocus == null || OnProgramUnfocus == null) return;
+
+                    _isProgramFocused = value;
+
+                    if (_isProgramFocused) { _onProgramFocus(); }
+                    else { _onProgramUnfocus(); }
+                }
+            }
+        }
+
+
         public ScreenProcessor()
         {
 
-            PopulateProscriptHandle();
+            scanScreenRef = new ThreadStart(Process);
+            scanScreen = new Thread(scanScreenRef);
+            scanScreen.Start();
         }
 
-        private void PopulateProscriptHandle()
-        {
+        //private void PopulateProscriptHandle()
+        //{
 
-            System.Diagnostics.Process[] proscriptProcesses = System.Diagnostics.Process.GetProcessesByName(PROSCRIPT_PROCESS_NAME);
-            if (proscriptProcesses.Length > 0)
-            {
-                proscriptHandle = proscriptProcesses.First().MainWindowHandle;
-                Console.WriteLine("Proscript found and handle obtained");
+        //    System.Diagnostics.Process[] proscriptProcesses = System.Diagnostics.Process.GetProcessesByName(PROSCRIPT_PROCESS_NAME);
+        //    if (proscriptProcesses.Length > 0)
+        //    {
+        //        proscriptHandle = proscriptProcesses.First().MainWindowHandle;
+        //        Console.WriteLine("Proscript found and handle obtained");
 
-                screenDrawingManager = new ScreenDrawingManager(proscriptHandle);
-            } else
-            {
-                Console.WriteLine("Proscript process not found");
-            }
+        //        screenDrawingManager = new ScreenDrawingManager(proscriptHandle);
+        //    } else
+        //    {
+        //        Console.WriteLine("Proscript process not found");
+        //    }
             
-        }
+        //}
 
         public void Process()
         {
+            Thread.Sleep(500);
+
+            //// Grab the pointer to the Proscript process
+            //if (proscriptHandle == IntPtr.Zero)
+            //{
+            //    PopulateProscriptHandle();
+            //}
+
+            // Checks if the PMR is currently being viewed
+            CheckProgramIsInFocus();
+            if (IsProgramFocused)
+            {
+                // TODO
+            }
+
+            
+
+            // DELETE
+
             if (proscriptHandle == IntPtr.Zero)
             {
                 PopulateProscriptHandle();
@@ -63,7 +110,7 @@ namespace PharmApp.src
                 else
                 {
                     // If the patient's records are open, an NHS number will be returned
-                    OCRResult nhsNumber = ocr.GetNhsNoFromScreen();
+                    OCRResult nhsNumber = OCR.GetNhsNoFromScreen();
 
                     if (nhsNumber != null)
                     {
@@ -84,10 +131,10 @@ namespace PharmApp.src
             }
         }
 
-        private bool IsPMRInFocus()
+        private void CheckProgramIsInFocus()
         {
             string title = GetActiveWindowTitle();
-            return (title != null && title.Equals("ProScript Connect"));
+            IsProgramFocused = title.Equals("ProScript Connect") ? true : false;
         }
 
         private string GetActiveWindowTitle()
@@ -102,6 +149,13 @@ namespace PharmApp.src
             }
             return null;
         }
+
+        public delegate void ProcessHandler(object source, EventArgs args);
+        public static event ProcessHandler OnProgramFocus;
+        public static event ProcessHandler OnProgramUnfocus;
+
+        protected static void _onProgramFocus() => OnProgramFocus?.Invoke(typeof(ScreenProcessor), EventArgs.Empty);
+        protected static void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(typeof(ScreenProcessor), EventArgs.Empty);
 
     }
 }
