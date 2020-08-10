@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using System.Windows.Threading;
+using System.Windows;
 
 namespace PharmApp.src
 {
@@ -25,7 +27,7 @@ namespace PharmApp.src
             Bounds = rect;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
-            
+
             Label label = new Label();
             label.BackColor = color;
 
@@ -47,6 +49,7 @@ namespace PharmApp.src
         private void OnProgramFocus(object source, EventArgs args)
         {
             Show();
+            
         }
 
     }

@@ -74,6 +74,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\GUI\MultiFormContext.cs" />
     <Compile Include="src\OCRResult.cs" />
     <Compile Include="src\Patient.cs" />
     <Compile Include="src\OCR.cs" />
@@ -84,11 +85,13 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="src\QueryConstructor.cs" />
-    <Compile Include="src\ScreenDrawing.cs">
+    <Compile Include="src\GUI\ScreenDrawing.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="src\ScreenDrawingManager.cs" />
-    <Compile Include="src\ScreenProcessor.cs" />
+    <Compile Include="src\GUI\ScreenDrawingManager.cs" />
+    <Compile Include="src\ScreenProcessor.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\SQLQueryer.cs" />
     <Compile Include="src\StockQueryer.cs" />
     <Compile Include="src\QueryConstructorOld.cs" />

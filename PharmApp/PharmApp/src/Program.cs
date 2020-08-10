@@ -9,24 +9,20 @@ using Emgu.CV.Structure;
 using LicensePlateRecognition;
 using PharmApp.src;
 using System.Windows.Forms;
+using PharmApp.src.GUI;
+using System.Drawing;
 
 namespace PharmApp
 {
     class Program
     {
 
-        private static ScreenProcessor processor;
-
-        static void Main(string[] args)
+        [STAThread]
+        public static void Main(string[] args)
         {
             
             Application.EnableVisualStyles();
-
-            processor = new ScreenProcessor();
-
-            
-            // Only for testing
-            Console.ReadLine();
+            Application.Run(new MultiFormContext(new ScreenDrawing(new Rectangle(200, 200, 100, 100), "test", Color.Red), new ScreenDrawing(new Rectangle(100, 100, 100, 100), "test2", Color.Red)));
             
         }
     }
