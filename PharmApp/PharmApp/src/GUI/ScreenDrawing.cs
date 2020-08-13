@@ -9,17 +9,28 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using System.Windows;
+using System.Runtime.InteropServices;
+using PharmApp.src.GUI;
 
 namespace PharmApp.src
 {
-    class ScreenDrawing : Form
+    abstract class ScreenDrawing : Form
     {
-        private List<ScreenDrawing> childForms = new List<ScreenDrawing>();
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLong", CharSet = CharSet.Auto)]
+        public static extern IntPtr SetWindowLong(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
+
+        protected readonly ScreenProcessor processor = ScreenProcessor.GetScreenProcessor();
+
+        private bool visible = false;
 
         public ScreenDrawing(Rectangle rect, String text, Color color)
         {
-            ScreenProcessor.OnProgramFocus += OnProgramFocus;
-            ScreenProcessor.OnProgramUnfocus += OnProgramUnfocus;
+
+            SetWindowLong(this.Handle, -8, processor.GetProScriptHandle());
+
+            //processor.OnProgramFocus += OnProgramFocus;
+            //processor.OnProgramUnfocus += OnProgramUnfocus;
 
 
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
@@ -34,6 +45,8 @@ namespace PharmApp.src
             label.Text = text;
             Controls.Add(label);
 
+            TopMost = true;
+
         }
 
         protected override bool ShowWithoutActivation
@@ -41,16 +54,22 @@ namespace PharmApp.src
             get { return true; }
         }
 
-        private void OnProgramUnfocus(object source, EventArgs args)
+        public void OnProgramUnfocus(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
+
             Hide();
-        }
-
-        private void OnProgramFocus(object source, EventArgs args)
-        {
-            Show();
             
-        }
+        }));
 
+        public void OnProgramFocus(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        {
+            if (visible) Show();
+            
+        }));
+
+        public virtual void OnPMRView(object source, EventArgs args)
+        {
+            how to do this??? maybe change bool in superclass or event Handle in subclass
+        }
     }
 }
