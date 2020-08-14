@@ -54,6 +54,32 @@ namespace PharmApp.src
             }
         }
 
+        private OCRResult _nhsNumber;
+        private OCRResult nhsNumber
+        {
+            get => _nhsNumber;
+            set
+            {
+                if (value != _nhsNumber)
+                {
+                    // Wait until there's a subscriber to dispatch the event
+                    if (OnNHSNumberChanged == null) return;
+
+                    _nhsNumber = value;
+                    
+                    if (value == null)
+                    {
+                        OnNHSNumberChanged(this, OCRResultEventArgs.Empty);
+                    }
+                    else
+                    {
+                        OnNHSNumberChanged(this, new OCRResultEventArgs(value));
+                    }
+                    
+                }
+            }
+        }
+
         public IntPtr GetProScriptHandle()
         {
             return proscriptHandle;
@@ -109,10 +135,10 @@ namespace PharmApp.src
                     PopulateProscriptHandle();
                 }
 
-                
+
                 if (IsProgramFocused)
                 {
-                    // TODO
+                    nhsNumber = OCR.GetNhsNoFromScreen();
                 }
             }
             
@@ -214,8 +240,13 @@ namespace PharmApp.src
         public event ProcessHandler OnProgramFocus;
         public event ProcessHandler OnProgramUnfocus;
 
-        protected void _onProgramFocus() => OnProgramFocus?.Invoke(typeof(ScreenProcessor), EventArgs.Empty);
-        protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(typeof(ScreenProcessor), EventArgs.Empty);
+        public delegate void NHSNumberHandler(object source, OCRResultEventArgs args);
+        public event NHSNumberHandler OnNHSNumberChanged;
+
+        protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
+        protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);
+
+        protected void _onNHSNumberFound(OCRResult result) => OnNHSNumberChanged?.Invoke(this, new OCRResultEventArgs(result));
 
     }
 }

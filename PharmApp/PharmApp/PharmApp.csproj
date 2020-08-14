@@ -79,6 +79,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="src\OCRResult.cs" />
+    <Compile Include="src\OCRResultEventArgs.cs" />
     <Compile Include="src\Patient.cs" />
     <Compile Include="src\OCR.cs" />
     <Compile Include="LicensePlateDetector.cs" />

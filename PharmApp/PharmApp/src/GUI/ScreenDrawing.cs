@@ -22,7 +22,36 @@ namespace PharmApp.src
 
         protected readonly ScreenProcessor processor = ScreenProcessor.GetScreenProcessor();
 
-        private bool visible = false;
+        private bool _shouldBeVisible = false, _proscriptHasFocus = false;
+
+
+        protected bool ProscriptHasFocus
+        {
+            get => _proscriptHasFocus;
+            set
+            {
+                if (value != _proscriptHasFocus)
+                {
+                    _proscriptHasFocus = value;
+
+                    ChangeVisibility();
+                }
+            }
+        }
+
+        protected bool ShouldBeVisible
+        {
+            get => _shouldBeVisible;
+            set
+            {
+                if (value != _shouldBeVisible)
+                {
+                    _shouldBeVisible = value;
+
+                    ChangeVisibility();
+                }
+            }
+        }
 
         public ScreenDrawing(Rectangle rect, String text, Color color)
         {
@@ -54,22 +83,33 @@ namespace PharmApp.src
             get { return true; }
         }
 
-        public void OnProgramUnfocus(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        public void ChangeLocation(int x, int y) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
-
-            Hide();
-            
+            Location = new System.Drawing.Point(x, y);
         }));
 
-        public void OnProgramFocus(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        public void ChangeVisibility() => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
-            if (visible) Show();
-            
+            if (ShouldBeVisible && ProscriptHasFocus) Show();
+            else Hide();
+
         }));
 
-        public virtual void OnPMRView(object source, EventArgs args)
+        public void OnProgramUnfocus(object source, EventArgs args)
         {
-            how to do this??? maybe change bool in superclass or event Handle in subclass
+
+            ProscriptHasFocus = false;
+            
+        }
+
+        public void OnProgramFocus(object source, EventArgs args)
+        {
+            ProscriptHasFocus = true;
+            
+        }
+
+        public virtual void OnNHSNumberFound(object source, OCRResultEventArgs args)
+        {
         }
     }
 }

@@ -22,7 +22,7 @@ namespace PharmApp
         {
             
             Application.EnableVisualStyles();
-            Application.Run(new MultiFormContext);
+            Application.Run(new MultiFormContext());
             
         }
     }

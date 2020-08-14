@@ -17,12 +17,10 @@ namespace PharmApp.src.GUI
         public static Dispatcher disp = Dispatcher.CurrentDispatcher;
         private static ScreenDrawing[] forms;
 
-        private readonly Rectangle ETP_RECT = new Rectangle();
-
         public MultiFormContext()
         {
             ScreenDrawing[] forms = {
-            new NewETPDrawing(new Rectangle(25, 25, 55, 17))
+            new NewETPDrawing()
             };
 
             openForms = forms.Length;
@@ -41,7 +39,7 @@ namespace PharmApp.src.GUI
 
                 processor.OnProgramFocus += form.OnProgramFocus;
                 processor.OnProgramUnfocus += form.OnProgramUnfocus;
-                processor.OnPMRView += form.OnPMRView;
+                processor.OnNHSNumberChanged += form.OnNHSNumberFound;
                 //form.Show();
             }
         }
