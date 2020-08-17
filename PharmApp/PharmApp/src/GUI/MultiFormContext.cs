@@ -19,13 +19,19 @@ namespace PharmApp.src.GUI
 
         public MultiFormContext()
         {
+            ScreenProcessor processor = ScreenProcessor.GetScreenProcessor();
+
+            while (processor.GetProScriptHandle() == IntPtr.Zero)
+            {
+                Thread.Sleep(500);
+            }
+
             ScreenDrawing[] forms = {
             new NewETPDrawing()
             };
 
             openForms = forms.Length;
             MultiFormContext.forms = forms;
-            ScreenProcessor processor = ScreenProcessor.GetScreenProcessor();
 
             foreach (var form in forms)
             {
@@ -39,7 +45,10 @@ namespace PharmApp.src.GUI
 
                 processor.OnProgramFocus += form.OnProgramFocus;
                 processor.OnProgramUnfocus += form.OnProgramUnfocus;
-                processor.OnNHSNumberChanged += form.OnNHSNumberFound;
+                processor.OnNHSNumberChanged += form.OnNHSNumberChanged;
+                processor.OnNewPrintedETPFound += form.OnNewPrintedETPFound;
+                processor.OnNewUnprintedETPFound += form.OnNewUnprintedETPFound;
+                processor.OnNoNewETPFound += form.OnNoNewETPFound;
                 //form.Show();
             }
         }

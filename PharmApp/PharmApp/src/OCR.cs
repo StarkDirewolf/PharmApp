@@ -430,6 +430,7 @@ namespace PharmApp
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics g = Graphics.FromImage(bitmap))
             {
+                // EXCEPTION: Handle is invalid
                 g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
                 img = new Image<Bgr, byte>(bitmap);
             }

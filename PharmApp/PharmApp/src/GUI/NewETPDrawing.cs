@@ -9,14 +9,18 @@ namespace PharmApp.src.GUI
 {
     class NewETPDrawing : ScreenDrawing
     {
-        private const int WIDTH = 55, HEIGHT = 17, X_OFFSET = 10, Y_OFFSET = 0;
+        private const int WIDTH = 100, HEIGHT = 17, X_OFFSET = 10, Y_OFFSET = 0;
 
-        public NewETPDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "New ETP", Color.Red)
+        private string nhsNumber;
+        private bool hasPrintedETP;
+        private bool hasUnprintedETP;
+
+        public NewETPDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "New ETP - Printed", Color.Red)
         {
 
         }
 
-        public override void OnNHSNumberFound(object source, OCRResultEventArgs args)
+        public override void OnNHSNumberChanged(object source, OCRResultEventArgs args)
         {
             if (args == OCRResultEventArgs.Empty)
             {
@@ -27,9 +31,32 @@ namespace PharmApp.src.GUI
                 Rectangle nhsRect = args.OCRResult.GetRectangle();
                 ChangeLocation(nhsRect.X + nhsRect.Width + X_OFFSET, nhsRect.Y + Y_OFFSET);
 
-                ShouldBeVisible = true;
+                nhsNumber = args.OCRResult.GetText();
+                if (hasUnprintedETP || hasPrintedETP)
+                {
+                    ShouldBeVisible = true;
+                }
             }
-            
+
         }
+
+        public override void OnNewPrintedETPFound(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        {
+            textLabel.Text = "New ETP - Printed";
+            hasPrintedETP = true;
+        }));
+
+        public override void OnNewUnprintedETPFound(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        {
+            textLabel.Text = "New ETP - Not Printed";
+            hasUnprintedETP = true;
+        }));
+
+        public override void OnNoNewETPFound(object source, EventArgs args)
+        {
+            hasPrintedETP = false;
+            hasUnprintedETP = false;
+        }
+
     }
 }

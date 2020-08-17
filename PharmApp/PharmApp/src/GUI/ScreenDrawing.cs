@@ -23,7 +23,7 @@ namespace PharmApp.src
         protected readonly ScreenProcessor processor = ScreenProcessor.GetScreenProcessor();
 
         private bool _shouldBeVisible = false, _proscriptHasFocus = false;
-
+        protected Label textLabel;
 
         protected bool ProscriptHasFocus
         {
@@ -55,8 +55,8 @@ namespace PharmApp.src
 
         public ScreenDrawing(Rectangle rect, String text, Color color)
         {
-
-            SetWindowLong(this.Handle, -8, processor.GetProScriptHandle());
+            IntPtr handle = processor.GetProScriptHandle();
+            SetWindowLong(this.Handle, -8, handle);
 
             //processor.OnProgramFocus += OnProgramFocus;
             //processor.OnProgramUnfocus += OnProgramUnfocus;
@@ -68,11 +68,11 @@ namespace PharmApp.src
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
 
-            Label label = new Label();
-            label.BackColor = color;
+            textLabel = new Label();
+            textLabel.BackColor = color;
 
-            label.Text = text;
-            Controls.Add(label);
+            textLabel.Text = text;
+            Controls.Add(textLabel);
 
             TopMost = true;
 
@@ -108,7 +108,19 @@ namespace PharmApp.src
             
         }
 
-        public virtual void OnNHSNumberFound(object source, OCRResultEventArgs args)
+        public virtual void OnNHSNumberChanged(object source, OCRResultEventArgs args)
+        {
+        }
+
+        public virtual void OnNewPrintedETPFound(object source, EventArgs args)
+        {
+        }
+
+        public virtual void OnNewUnprintedETPFound(object source, EventArgs args)
+        {
+        }
+
+        public virtual void OnNoNewETPFound(object source, EventArgs args)
         {
         }
     }

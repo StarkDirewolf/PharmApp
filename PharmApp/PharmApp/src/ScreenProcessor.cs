@@ -70,12 +70,51 @@ namespace PharmApp.src
                     if (value == null)
                     {
                         OnNHSNumberChanged(this, OCRResultEventArgs.Empty);
+                        hasNewETP = false;
                     }
                     else
                     {
                         OnNHSNumberChanged(this, new OCRResultEventArgs(value));
+
+                        hasNewETP = SQLQueryer.NewETPs(value.GetText(), out hasUnprintedETPs);
                     }
                     
+                }
+            }
+        }
+
+        private bool hasUnprintedETPs;
+
+        private bool _hasNewETP = false;
+
+        private bool hasNewETP
+        {
+            get => _hasNewETP;
+            set
+            {
+                if (value != _hasNewETP)
+                {
+                    // Wait until there's a subscriber to dispatch the event
+                    if (OnNoNewETPFound == null || OnNewPrintedETPFound == null || OnNewUnprintedETPFound == null) return;
+
+                    _hasNewETP = value;
+
+                    if (!value)
+                    {
+                        _onNoNewETPFound();
+                    }
+                    else
+                    {
+                        if (hasUnprintedETPs)
+                        {
+                            _onNewUnprintedETPFound();
+                        }
+                        else
+                        {
+                            _onNewPrintedETPFound();
+                        }
+                    }
+
                 }
             }
         }
@@ -239,14 +278,21 @@ namespace PharmApp.src
         public delegate void ProcessHandler(object source, EventArgs args);
         public event ProcessHandler OnProgramFocus;
         public event ProcessHandler OnProgramUnfocus;
+        public event ProcessHandler OnNoNewETPFound;
+        public event ProcessHandler OnNewPrintedETPFound;
+        public event ProcessHandler OnNewUnprintedETPFound;
 
         public delegate void NHSNumberHandler(object source, OCRResultEventArgs args);
         public event NHSNumberHandler OnNHSNumberChanged;
+
 
         protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
         protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);
 
         protected void _onNHSNumberFound(OCRResult result) => OnNHSNumberChanged?.Invoke(this, new OCRResultEventArgs(result));
+        protected void _onNewPrintedETPFound() => OnNewPrintedETPFound?.Invoke(this, EventArgs.Empty);
+        protected void _onNewUnprintedETPFound() => OnNewUnprintedETPFound?.Invoke(this, EventArgs.Empty);
+        protected void _onNoNewETPFound() => OnNoNewETPFound?.Invoke(this, EventArgs.Empty);
 
     }
 }

@@ -98,11 +98,32 @@ namespace PharmApp
                     while (reader.Read())
                     {
                         anyResults = true;
-                        if (reader.GetInt32(3) > 0)
+
+                        if (reader.IsDBNull(3))
                         {
                             unprinted = true;
                             return true;
                         }
+                        else
+                        {
+                            if (reader.GetInt32(3) == 0)
+                            {
+                                unprinted = true;
+                                return true;
+                            }
+                            else
+                            {
+                                unprinted = false;
+                                return true;
+                            }
+                        }
+
+                        //int tokensPrinted = reader.GetInt32(3);
+                        //if (tokensPrinted > 0)
+                        //{
+                        //    unprinted = true;
+                        //    return true;
+                        //}
                     }
                 }
 
