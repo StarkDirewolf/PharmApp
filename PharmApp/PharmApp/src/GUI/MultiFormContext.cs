@@ -27,7 +27,8 @@ namespace PharmApp.src.GUI
             }
 
             ScreenDrawing[] forms = {
-            new NewETPDrawing()
+            new NewETPDrawing(),
+            new NewETPBatch()
             };
 
             openForms = forms.Length;
@@ -49,6 +50,8 @@ namespace PharmApp.src.GUI
                 processor.OnNewPrintedETPFound += form.OnNewPrintedETPFound;
                 processor.OnNewUnprintedETPFound += form.OnNewUnprintedETPFound;
                 processor.OnNoNewETPFound += form.OnNoNewETPFound;
+                processor.OnNoETPBatchFound += form.OnNoETPBatchFound;
+                processor.OnETPBatchFound += form.OnETPBatchFound;
                 //form.Show();
             }
         }

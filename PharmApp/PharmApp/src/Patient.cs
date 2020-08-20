@@ -17,7 +17,7 @@ namespace PharmApp.src
         {
             this.nhsNumber = nhsNumber;
 
-            hasNewETP = SQLQueryer.NewETPs(nhsNumber.GetText(), out hasUnprintedETPs);
+            //hasNewETP = SQLQueryer.NewETPs(nhsNumber.GetText(), out hasUnprintedETPs);
         }
 
         public string GetNHSNumber()

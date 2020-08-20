@@ -123,5 +123,11 @@ namespace PharmApp.src
         public virtual void OnNoNewETPFound(object source, EventArgs args)
         {
         }
+        public virtual void OnNoETPBatchFound(object source, EventArgs args)
+        {
+        }
+        public virtual void OnETPBatchFound(object source, EventArgs args)
+        {
+        }
     }
 }

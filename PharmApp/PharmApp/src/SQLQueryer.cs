@@ -77,7 +77,7 @@ namespace PharmApp
             return nhsNumNameLookup;
         }
 
-        public static bool NewETPs(string nhsNum, out bool unprinted)
+        public static bool NewETPs(string nhsNum, out bool unprinted, out bool batch)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ETPSCRIPTS);
 
@@ -90,32 +90,32 @@ namespace PharmApp
 
                 SqlCommand command = new SqlCommand(query.ToString(), connection);
 
-                bool anyResults = false;
                 unprinted = false;
+                batch = false;
+                bool anyResults = false;
 
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         anyResults = true;
+                        if (!reader.IsDBNull(4))
+                        {
+                            batch = true;
+                            anyResults = false;
+                        }
 
                         if (reader.IsDBNull(3))
                         {
                             unprinted = true;
-                            return true;
                         }
                         else
                         {
                             if (reader.GetInt32(3) == 0)
                             {
                                 unprinted = true;
-                                return true;
                             }
-                            else
-                            {
-                                unprinted = false;
-                                return true;
-                            }
+
                         }
 
                         //int tokensPrinted = reader.GetInt32(3);

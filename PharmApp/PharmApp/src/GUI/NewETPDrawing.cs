@@ -9,9 +9,8 @@ namespace PharmApp.src.GUI
 {
     class NewETPDrawing : ScreenDrawing
     {
-        private const int WIDTH = 100, HEIGHT = 17, X_OFFSET = 10, Y_OFFSET = 0;
+        private const int WIDTH = 95, WIDTH_LONGER = 150, HEIGHT = 15, X_OFFSET = 10, Y_OFFSET = 0;
 
-        private string nhsNumber;
         private bool hasPrintedETP;
         private bool hasUnprintedETP;
 
@@ -31,7 +30,6 @@ namespace PharmApp.src.GUI
                 Rectangle nhsRect = args.OCRResult.GetRectangle();
                 ChangeLocation(nhsRect.X + nhsRect.Width + X_OFFSET, nhsRect.Y + Y_OFFSET);
 
-                nhsNumber = args.OCRResult.GetText();
                 if (hasUnprintedETP || hasPrintedETP)
                 {
                     ShouldBeVisible = true;
@@ -43,12 +41,14 @@ namespace PharmApp.src.GUI
         public override void OnNewPrintedETPFound(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
             textLabel.Text = "New ETP - Printed";
+            Width = WIDTH;
             hasPrintedETP = true;
         }));
 
         public override void OnNewUnprintedETPFound(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
             textLabel.Text = "New ETP - Not Printed";
+            Width = WIDTH_LONGER;
             hasUnprintedETP = true;
         }));
 

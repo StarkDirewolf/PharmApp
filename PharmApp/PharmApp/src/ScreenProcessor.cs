@@ -76,7 +76,8 @@ namespace PharmApp.src
                     {
                         OnNHSNumberChanged(this, new OCRResultEventArgs(value));
 
-                        hasNewETP = SQLQueryer.NewETPs(value.GetText(), out hasUnprintedETPs);
+                        hasNewETP = SQLQueryer.NewETPs(value.GetText(), out hasUnprintedETPs, out outETPBatch);
+                        hasETPBatch = outETPBatch;
                     }
                     
                 }
@@ -84,6 +85,33 @@ namespace PharmApp.src
         }
 
         private bool hasUnprintedETPs;
+
+
+        private bool outETPBatch;
+        private bool _hasETPBatch;
+
+        private bool hasETPBatch
+        {
+            get => _hasETPBatch;
+            set
+            {
+                if (value != _hasETPBatch)
+                {
+                    if (OnETPBatchFound == null || OnNoETPBatchFound == null) return;
+
+                    _hasETPBatch = value;
+
+                    if (!value)
+                    {
+                        _onNoETPBatchFound();
+                    }
+                    else
+                    {
+                        _onETPBatchFound();
+                    }
+                }
+            }
+        }
 
         private bool _hasNewETP = false;
 
@@ -281,6 +309,8 @@ namespace PharmApp.src
         public event ProcessHandler OnNoNewETPFound;
         public event ProcessHandler OnNewPrintedETPFound;
         public event ProcessHandler OnNewUnprintedETPFound;
+        public event ProcessHandler OnETPBatchFound;
+        public event ProcessHandler OnNoETPBatchFound;
 
         public delegate void NHSNumberHandler(object source, OCRResultEventArgs args);
         public event NHSNumberHandler OnNHSNumberChanged;
@@ -293,6 +323,8 @@ namespace PharmApp.src
         protected void _onNewPrintedETPFound() => OnNewPrintedETPFound?.Invoke(this, EventArgs.Empty);
         protected void _onNewUnprintedETPFound() => OnNewUnprintedETPFound?.Invoke(this, EventArgs.Empty);
         protected void _onNoNewETPFound() => OnNoNewETPFound?.Invoke(this, EventArgs.Empty);
+        protected void _onNoETPBatchFound() => OnNoETPBatchFound?.Invoke(this, EventArgs.Empty);
+        protected void _onETPBatchFound() => OnETPBatchFound?.Invoke(this, EventArgs.Empty);
 
     }
 }
