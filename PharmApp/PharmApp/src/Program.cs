@@ -11,6 +11,7 @@ using PharmApp.src;
 using System.Windows.Forms;
 using PharmApp.src.GUI;
 using System.Drawing;
+using PharmApp.src.Email;
 
 namespace PharmApp
 {
@@ -20,10 +21,12 @@ namespace PharmApp
         [STAThread]
         public static void Main(string[] args)
         {
-            
-            Application.EnableVisualStyles();
-            Application.Run(new MultiFormContext());
-            
+
+            //Application.EnableVisualStyles();
+            //Application.Run(new MultiFormContext());
+            NHSClient client = new NHSClient();
+            client.Connect();
+            Console.ReadLine();
         }
     }
 }
