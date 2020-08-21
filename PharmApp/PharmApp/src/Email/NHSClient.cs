@@ -20,8 +20,8 @@ namespace PharmApp.src.Email
 
             var messages = summaryFolder.Search("SINCE 15-Aug-2020 BODY Lisinopril");
 
-            string text = messages[0].BodyParts[0].;
-            System.IO.File.WriteAllText(@"C:\Users\Careway LINK\Documents\Robb\WriteText.txt", text);
+            //string text = messages[0].BodyParts[0].;
+            //System.IO.File.WriteAllText(@"C:\Users\Careway LINK\Documents\Robb\WriteText.txt", text);
 
             client.Logout();
             client.Disconnect();

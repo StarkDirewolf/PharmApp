@@ -22,11 +22,11 @@ namespace PharmApp
         public static void Main(string[] args)
         {
 
-            //Application.EnableVisualStyles();
-            //Application.Run(new MultiFormContext());
-            NHSClient client = new NHSClient();
-            client.Connect();
-            Console.ReadLine();
+            Application.EnableVisualStyles();
+            Application.Run(new MultiFormContext());
+            //NHSClient client = new NHSClient();
+            //client.Connect();
+            //Console.ReadLine();
         }
     }
 }

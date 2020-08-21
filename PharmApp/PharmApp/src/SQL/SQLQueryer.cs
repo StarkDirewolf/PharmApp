@@ -11,7 +11,7 @@ namespace PharmApp
 {
     class SQLQueryer
     {
-        private const string CONNECTION_STRING = @"Data Source=10.11.117.174\PHARMACYE14;Initial Catalog=ProScriptConnect;Integrated Security=true;";
+        private const string CONNECTION_STRING = @"Data Source=12212360VSVR\PHARMACYE14;Initial Catalog=ProScriptConnect;Integrated Security=true;";
 
         public static Dictionary<string, string> GetDeliveryNHSNumbers(DateTime fromDay, DateTime toDay, bool onlyNomads)
         {

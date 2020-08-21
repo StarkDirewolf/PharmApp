@@ -41,6 +41,7 @@ namespace PharmApp.src.GUI
         public override void OnNewPrintedETPFound(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
             textLabel.Text = "New ETP - Printed";
+            textLabel.Width = WIDTH + 10;
             Width = WIDTH;
             hasPrintedETP = true;
         }));
@@ -48,6 +49,7 @@ namespace PharmApp.src.GUI
         public override void OnNewUnprintedETPFound(object source, EventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
             textLabel.Text = "New ETP - Not Printed";
+            textLabel.Width = WIDTH_LONGER + 10;
             Width = WIDTH_LONGER;
             hasUnprintedETP = true;
         }));
