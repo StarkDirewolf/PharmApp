@@ -38,11 +38,16 @@ namespace PharmApp
             TEXT_MAX_HEIGHT = 100,
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
-        private static readonly Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211);
+        private static readonly Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211),
+            BLUE_PRODUCT_SELECTED_BGR = new Bgr(215, 120, 0);
 
         private const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
-            PATIENT_DETAILS_MIN_RATIO = 2;
+            PATIENT_DETAILS_MIN_RATIO = 2,
+            PRODUCT_MIN_WIDTH = 55,
+            PRODUCT_MAX_WIDTH = 810,
+            PRODUCT_MIN_HEIGHT = 15,
+            PRODUCT_MAX_HEIGHT = 25;
 
         private const double BGR_BUFFER = 2;
 
@@ -179,6 +184,15 @@ namespace PharmApp
             }
 
             return null;
+        }
+
+        public static OCRResult GetSelectedProduct()
+        {
+            using (Image<Bgr, byte> screen = GetScreen())
+            {
+                //List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
+                Regex mask = new Regex("[0-9]{7}");
+            }
         }
 
 
@@ -326,6 +340,19 @@ namespace PharmApp
                 return filteredRects.First();
         }
 
+        // Based on GetPatientDetailsRect method for using colour detection but used to find selected product
+        private static List<Rectangle> GetSelectedProductRects(Image<Bgr, byte> img)
+        {
+            List<Rectangle> rects = GetRectsOfColour(img, BLUE_PRODUCT_SELECTED_BGR);
+
+            // Filter out rectangles that clearly aren't the right size
+            List<Rectangle> filteredRects = rects.Where(x => PRODUCT_MAX_WIDTH > x.Width && x.Width > PRODUCT_MIN_WIDTH)
+                .Where(x => PRODUCT_MAX_HEIGHT > x.Height  && x.Height > PRODUCT_MIN_HEIGHT)
+                .ToList();
+
+            return filteredRects;
+        }
+
         /// <summary>
         /// New method for getting NHS number based on normal position
         /// </summary>
@@ -407,15 +434,24 @@ namespace PharmApp
         //    return textImages;
         //}
 
+        private static Image<Bgr, byte> screenCap;
+        private static Rectangle lastScreenArea = new Rectangle();
+        private static Stopwatch screenCapStopwatch = new Stopwatch();
+
+        // Cached image lasts for 450ms - process frequency is 500ms at time of writing
         private static Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
+            if (lastScreenArea == screenArea && screenCapStopwatch.IsRunning && screenCapStopwatch.ElapsedMilliseconds < 450)
+            {
+                return screenCap;
+            }
+
             if (USE_EXAMPLE_PMR)
             {
                  return new Image<Bgr, byte>(ResourceManager.robertPrydePMR);
             }
-#pragma warning disable CS0162 // Unreachable code detected
+
             Stopwatch stopwatch = new Stopwatch();
-#pragma warning restore CS0162 // Unreachable code detected
             stopwatch.Start();
 
             Rectangle bounds = Screen.GetBounds(Point.Empty);
@@ -425,18 +461,17 @@ namespace PharmApp
 
             }
 
-            Image<Bgr, byte> img;
-
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics g = Graphics.FromImage(bitmap))
             {
                 // EXCEPTION: Handle is invalid
                 g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
-                img = new Image<Bgr, byte>(bitmap);
+                screenCap = new Image<Bgr, byte>(bitmap);
             }
 
             Console.WriteLine("Screen capture took " + stopwatch.ElapsedMilliseconds + "ms");
-            return img;
+            screenCapStopwatch.Restart();
+            return screenCap;
         }
 
         private static Image<Bgr, byte> GetScreen()
