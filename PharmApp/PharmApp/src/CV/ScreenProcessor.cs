@@ -84,6 +84,34 @@ namespace PharmApp.src
             }
         }
 
+        private List<OCRResult> _selectedProducts;
+        private List<OCRResult> selectedProducts
+        {
+            get => _selectedProducts;
+            set
+            {
+                if (value != _selectedProducts)
+                {
+                    if (OnSelectedProductChanged == null) return;
+
+                    _selectedProducts = value;
+
+                    if (value == null)
+                    {
+                        OnSelectedProductChanged(this, OCRResultEventArgs.Empty);
+                    }
+                    else
+                    {
+                        foreach (OCRResult result in value)
+                        {
+                            OnSelectedProductChanged(this, new OCRResultEventArgs(result));
+
+                        }
+                    }
+                }
+            }
+        }
+
         private bool hasUnprintedETPs;
 
 
@@ -206,6 +234,7 @@ namespace PharmApp.src
                 if (IsProgramFocused)
                 {
                     nhsNumber = OCR.GetNhsNoFromScreen();
+                    selectedProducts = OCR.GetSelectedProducts();
                 }
             }
             
@@ -312,14 +341,16 @@ namespace PharmApp.src
         public event ProcessHandler OnETPBatchFound;
         public event ProcessHandler OnNoETPBatchFound;
 
-        public delegate void NHSNumberHandler(object source, OCRResultEventArgs args);
-        public event NHSNumberHandler OnNHSNumberChanged;
+        public delegate void OCRProcessHandler(object source, OCRResultEventArgs args);
+        public event OCRProcessHandler OnNHSNumberChanged;
+        public event OCRProcessHandler OnSelectedProductChanged;
 
 
         protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
         protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);
 
-        protected void _onNHSNumberFound(OCRResult result) => OnNHSNumberChanged?.Invoke(this, new OCRResultEventArgs(result));
+        //protected void _onNHSNumberFound(OCRResult result) => OnNHSNumberChanged?.Invoke(this, new OCRResultEventArgs(result));
+        //protected void _onSelectedProductChanged(OCRResult result) => OnSelectedProductChanged?.Invoke(this, new OCRResultEventArgs(result));
         protected void _onNewPrintedETPFound() => OnNewPrintedETPFound?.Invoke(this, EventArgs.Empty);
         protected void _onNewUnprintedETPFound() => OnNewUnprintedETPFound?.Invoke(this, EventArgs.Empty);
         protected void _onNoNewETPFound() => OnNoNewETPFound?.Invoke(this, EventArgs.Empty);

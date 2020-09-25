@@ -20,6 +20,9 @@ namespace PharmApp
 {
     static class OCR
     {
+
+        private static readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined);
+
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
             USE_EXAMPLE_PMR = false,
@@ -39,7 +42,8 @@ namespace PharmApp
             TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
         private static readonly Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211),
-            BLUE_PRODUCT_SELECTED_BGR = new Bgr(215, 120, 0);
+            BLUE_PRODUCT_SELECTED_BGR = new Bgr(215, 120, 0),
+            GREY_PRODUCT_SELECTED_BGR = new Bgr(240, 240, 240);
 
         private const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
@@ -53,12 +57,15 @@ namespace PharmApp
 
         private const int NHS_X = 340, NHS_Y = 100, NHS_WIDTH = 990, NHS_HEIGHT = 25;
 
+        private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
+            PIP_MASK = new Regex("[0-9]{7}");
+
 
         //public void Test()
         //{
         //    using (Image<Bgr, byte> originalImage = GetScreen())
         //    //using (Image<Bgr, byte> originalImage = new Image<Bgr, byte>(ResourceManager.mickeyMousePMR))
-            
+
         //    using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
         //    {
         //        Stopwatch stopwatch = new Stopwatch();
@@ -97,7 +104,7 @@ namespace PharmApp
         //                ImageViewer.Show(originalImage);
         //            }
         //        }
-                
+
 
         //        //List<Rectangle> rects = GetBoundingRectangles(img);
         //        //img.ROI = Rectangle.Empty;
@@ -170,12 +177,11 @@ namespace PharmApp
             using (Image<Bgr, byte> screen = GetScreen())
             {
                 List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
-                Regex mask = new Regex("[0-9]{10}");
                 
                 foreach (OCRResult detail in patientDetails)
                 {
                     string trimmedDetail = Regex.Replace(detail.GetText(), @"\s+", "");
-                    if (mask.IsMatch(trimmedDetail))
+                    if (NHS_NUM_MASK.IsMatch(trimmedDetail))
                     {
                         Console.WriteLine(trimmedDetail);
                         return new OCRResult(trimmedDetail, detail.GetRectangle(), detail.GetImage());
@@ -186,12 +192,30 @@ namespace PharmApp
             return null;
         }
 
-        public static OCRResult GetSelectedProduct()
+        public static List<OCRResult> GetSelectedProducts()
         {
             using (Image<Bgr, byte> screen = GetScreen())
             {
-                //List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
-                Regex mask = new Regex("[0-9]{7}");
+                List<Rectangle> colouredRects = GetSelectedProductRects(screen);
+                List<OCRResult> results = new List<OCRResult>();
+                foreach (Rectangle rect in colouredRects)
+                {
+                    results.AddRange(OCRImage(screen, rect));
+                }
+
+                List<OCRResult> validResults = new List<OCRResult>();
+                foreach (OCRResult result in results)
+                {
+                    string text = result.GetText();
+                    if (PIP_MASK.IsMatch(text))
+                    {
+                        Console.WriteLine("Found PIP: " + text);
+                        validResults.Add(result);
+                    }
+                }
+
+                return validResults;
+                
             }
         }
 
@@ -222,7 +246,6 @@ namespace PharmApp
         private static List<OCRResult> GetText(Image<Bgr, byte> image)
         {
             using (Image<Gray, byte> optImg = GetOptImage(image))
-            using (var ocrProvider = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined))
             {
                 List<Rectangle> patRects = GetBoundingRectangles(optImg, true);
                 List<OCRResult> textList = new List<OCRResult>();
@@ -238,8 +261,8 @@ namespace PharmApp
 
                     Image<Bgr, byte> textImg = image.Copy();
 
-                    ocrProvider.SetImage(textImg);
-                    textList.Add(new OCRResult(ocrProvider.GetUTF8Text(), newRect, textImg));
+                    OCR_PROVIDER.SetImage(textImg);
+                    textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg));
 
 
                 }
@@ -344,6 +367,7 @@ namespace PharmApp
         private static List<Rectangle> GetSelectedProductRects(Image<Bgr, byte> img)
         {
             List<Rectangle> rects = GetRectsOfColour(img, BLUE_PRODUCT_SELECTED_BGR);
+            rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
 
             // Filter out rectangles that clearly aren't the right size
             List<Rectangle> filteredRects = rects.Where(x => PRODUCT_MAX_WIDTH > x.Width && x.Width > PRODUCT_MIN_WIDTH)
@@ -434,18 +458,9 @@ namespace PharmApp
         //    return textImages;
         //}
 
-        private static Image<Bgr, byte> screenCap;
-        private static Rectangle lastScreenArea = new Rectangle();
-        private static Stopwatch screenCapStopwatch = new Stopwatch();
-
         // Cached image lasts for 450ms - process frequency is 500ms at time of writing
         private static Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
-            if (lastScreenArea == screenArea && screenCapStopwatch.IsRunning && screenCapStopwatch.ElapsedMilliseconds < 450)
-            {
-                return screenCap;
-            }
-
             if (USE_EXAMPLE_PMR)
             {
                  return new Image<Bgr, byte>(ResourceManager.robertPrydePMR);
@@ -466,12 +481,12 @@ namespace PharmApp
             {
                 // EXCEPTION: Handle is invalid
                 g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
-                screenCap = new Image<Bgr, byte>(bitmap);
+                Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
+
+                Console.WriteLine("Screen capture took " + stopwatch.ElapsedMilliseconds + "ms");
+                return screenCap;
             }
 
-            Console.WriteLine("Screen capture took " + stopwatch.ElapsedMilliseconds + "ms");
-            screenCapStopwatch.Restart();
-            return screenCap;
         }
 
         private static Image<Bgr, byte> GetScreen()
