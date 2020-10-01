@@ -47,6 +47,7 @@ namespace PharmApp.src.GUI
                 processor.OnProgramFocus += form.OnProgramFocus;
                 processor.OnProgramUnfocus += form.OnProgramUnfocus;
                 processor.OnNHSNumberChanged += form.OnNHSNumberChanged;
+                processor.OnSelectedProductChanged += form.OnSelectedProductChanged;
                 processor.OnNewPrintedETPFound += form.OnNewPrintedETPFound;
                 processor.OnNewUnprintedETPFound += form.OnNewUnprintedETPFound;
                 processor.OnNoNewETPFound += form.OnNoNewETPFound;

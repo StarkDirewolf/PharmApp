@@ -148,30 +148,27 @@ namespace PharmApp.src
             get => _hasNewETP;
             set
             {
-                if (value != _hasNewETP)
+                // Wait until there's a subscriber to dispatch the event
+                if (OnNoNewETPFound == null || OnNewPrintedETPFound == null || OnNewUnprintedETPFound == null) return;
+
+                _hasNewETP = value;
+
+                if (!value)
                 {
-                    // Wait until there's a subscriber to dispatch the event
-                    if (OnNoNewETPFound == null || OnNewPrintedETPFound == null || OnNewUnprintedETPFound == null) return;
-
-                    _hasNewETP = value;
-
-                    if (!value)
+                    _onNoNewETPFound();
+                }
+                else
+                {
+                    if (hasUnprintedETPs)
                     {
-                        _onNoNewETPFound();
+                        _onNewUnprintedETPFound();
                     }
                     else
                     {
-                        if (hasUnprintedETPs)
-                        {
-                            _onNewUnprintedETPFound();
-                        }
-                        else
-                        {
-                            _onNewPrintedETPFound();
-                        }
+                        _onNewPrintedETPFound();
                     }
-
                 }
+
             }
         }
 

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src
 {
+
+    // Current not used
     class Patient
     {
         private readonly OCRResult nhsNumber;

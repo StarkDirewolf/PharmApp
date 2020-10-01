@@ -58,6 +58,7 @@ namespace PharmApp.src.GUI
         {
             hasPrintedETP = false;
             hasUnprintedETP = false;
+            ShouldBeVisible = false;
         }
 
     }

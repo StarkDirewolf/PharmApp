@@ -129,5 +129,9 @@ namespace PharmApp.src
         public virtual void OnETPBatchFound(object source, EventArgs args)
         {
         }
+
+        public virtual void OnSelectedProductChanged(object source, OCRResultEventArgs args)
+        {
+        }
     }
 }

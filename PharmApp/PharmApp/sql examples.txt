@@ -1,4 +1,13 @@
-﻿SELECT O.Description, P2.Component, P2.DrugForm, P2.Strength, P2.IsGeneric FROM Ordering.OrderPad O
+﻿This finds all products on the order pad but doesn't quite manage to get all of the pack descriptions
+SELECT O.Description, V.PackDescription, O.Deleted, O.PageNo, O.WholeSalerId FROM Ordering.OrderPad O
+LEFT JOIN PKBRuntime.Mapping.DmdPack D ON O.PackCodeId = D.PackCodeId
+LEFT JOIN PKBRuntime.Dmd.ActualProductPack V ON D.DmdProductPackCodeId = V.ActualProductPackId
+WHERE O.Deleted = 0
+ORDER BY O.Description
+
+
+
+SELECT O.Description, P2.Component, P2.DrugForm, P2.Strength, P2.IsGeneric FROM Ordering.OrderPad O
 JOIN PKBRuntime.Pharmacy.Pack P ON O.PackCodeId=P.PackCodeId
 JOIN PKBRuntime.Pharmacy.Preparation P2 ON P.PreparationCodeId=P2.PreparationCodeId
 
