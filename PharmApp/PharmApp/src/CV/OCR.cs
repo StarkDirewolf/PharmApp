@@ -369,10 +369,17 @@ namespace PharmApp
             List<Rectangle> rects = GetRectsOfColour(img, BLUE_PRODUCT_SELECTED_BGR);
             rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
 
+            
             // Filter out rectangles that clearly aren't the right size
             List<Rectangle> filteredRects = rects.Where(x => PRODUCT_MAX_WIDTH > x.Width && x.Width > PRODUCT_MIN_WIDTH)
                 .Where(x => PRODUCT_MAX_HEIGHT > x.Height  && x.Height > PRODUCT_MIN_HEIGHT)
                 .ToList();
+
+            //foreach (Rectangle rect in filteredRects)
+            //{
+            //    img.Draw(rect, new Bgr(0, 0, 0));
+            //}
+            //ImageViewer.Show(img);
 
             return filteredRects;
         }

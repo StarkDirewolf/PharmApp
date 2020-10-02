@@ -35,6 +35,16 @@ LEFT JOIN ETP.EtpSummaryItemView i ON s.PrescriptionId = i.PrescriptionId
 LEFT JOIN PKBRuntime.Mapping.DmdPreparation p ON i.DrugIdentifier = p.DmdProductCodeId
 LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.PreparationCodeId";
 
+        private const string VIRTUALPRODCODE = @"
+SELECT V.VirtualProductPackId FROM PKBRuntime.Pharmacy.PackOrderCode O
+LEFT JOIN PKBRuntime.Mapping.DmdPack D ON O.PackCodeId = D.PackCodeId
+LEFT JOIN PKBRuntime.Dmd.ActualProductPack V ON D.DmdProductPackCodeId = V.ActualProductPackId";
+
+        private const string ORDERPAD = @"
+SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM PKBRuntime.Dmd.ActualProductPack A
+JOIN PKBRuntime.Mapping.DmdPack D ON A.ActualProductPackId = D.DmdProductPackCodeId
+JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
+
         private const string FILTER = " WHERE ";
 
         private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = ";
@@ -42,10 +52,13 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
         private const string DATE_FORMAT = "yyyy/MM/dd";
 
         private const string FILTER_NHSNO = "PatientNHSNumber = '";
-        private const string FILTER_NHSNO_END = "'";
+        private const string FILTER_QUOTE_END = "'";
 
         private const string FILTER_NEW_ETP = "s.PrescriptionStatusId = 3";
         private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
+        private const string FILTER_PIP = "OrderCode = '";
+        private const string FILTER_NOT_DELETED = "Deleted = 0";
+        private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
 
         private const string FILTER_AND = " AND ";
 
@@ -62,7 +75,9 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
             /// </summary>
             DISPENSED,
             PATIENTS_WITH_NOTES_DISPENSED_TO,
-            ETPSCRIPTS
+            ETPSCRIPTS,
+            ORDERPAD,
+            VIRTUALPRODCODE
         }
 
         private enum Condition
@@ -74,7 +89,10 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
             BETWEEN_DATES,
             NHSNO,
             NEWETP,
-            TOBEDISPENSED
+            TOBEDISPENSED,
+            PIPCODE,
+            NOTDELETED,
+            VIRTUALID
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -112,6 +130,18 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
         {
             RemoveCondition(Condition.NHSNO);
             AddCondition(Condition.NHSNO, nhsNumber);
+        }
+
+        public void PipCode(string pipcode)
+        {
+            RemoveCondition(Condition.PIPCODE);
+            AddCondition(Condition.PIPCODE, pipcode);
+        }
+
+        public void VirtualID(string virtualID)
+        {
+            RemoveCondition(Condition.VIRTUALID);
+            AddCondition(Condition.VIRTUALID, virtualID);
         }
 
         /// <summary>
@@ -152,7 +182,7 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
         /// </summary>
         /// <param name="cond">the type of condition to add</param>
         /// <param name="data">how the condition is filtered</param>
-        private void AddCondition(Condition cond, string data)
+        private void AddCondition(Condition cond, string data = "")
         {
             conditions.Add(new KeyValuePair<Condition, string>(cond, data));
         }
@@ -182,7 +212,19 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
                         break;
 
                     case Condition.NHSNO:
-                        str = FILTER_NHSNO + condition.Value + FILTER_NHSNO_END;
+                        str = FILTER_NHSNO + condition.Value + FILTER_QUOTE_END;
+                        break;
+
+                    case Condition.PIPCODE:
+                        str = FILTER_PIP + condition.Value + FILTER_QUOTE_END;
+                        break;
+
+                    case Condition.NOTDELETED:
+                        str = FILTER_NOT_DELETED;
+                        break;
+
+                    case Condition.VIRTUALID:
+                        str = FILTER_VIRTUAL_ID + condition.Value + FILTER_QUOTE_END;
                         break;
                 }
                 conditionList.RemoveAt(0);
@@ -214,6 +256,14 @@ LEFT JOIN PKBRuntime.Pharmacy.Preparation v ON p.PreparationCodeId = v.Preparati
 
                 case QueryType.ETPSCRIPTS:
                     str = ETPSCRIPTS;
+                    break;
+
+                case QueryType.ORDERPAD:
+                    str = ORDERPAD;
+                    break;
+
+                case QueryType.VIRTUALPRODCODE:
+                    str = VIRTUALPRODCODE;
                     break;
             }
 

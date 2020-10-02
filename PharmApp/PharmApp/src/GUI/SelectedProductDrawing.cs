@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static PharmApp.QueryConstructor;
 
 namespace PharmApp.src.GUI
 {
@@ -26,6 +27,9 @@ namespace PharmApp.src.GUI
                 Rectangle prodRect = args.OCRResult.GetRectangle();
                 ChangeLocation(prodRect.X + prodRect.Width + X_OFFSET, prodRect.Y + Y_OFFSET);
                 ShouldBeVisible = true;
+
+                Product product = SQLQueryer.SearchOrderPad(args.OCRResult.GetText());
+                textLabel.Text = product.quantity.ToString();
             }
         }
     }

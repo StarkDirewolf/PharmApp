@@ -1,4 +1,5 @@
 ﻿using PharmApp;
+using PharmApp.src;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -129,6 +130,46 @@ namespace PharmApp
 
                 return anyResults;
             }
+        }
+
+        public static Product SearchOrderPad(string pipcode)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.VIRTUALPRODCODE);
+
+            query.PipCode(pipcode);
+
+            Product prod = new Product();
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        prod.genericID = reader.GetString(0);
+                    }
+                }
+
+                query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+                query.VirtualID(prod.genericID);
+
+                command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    prod.quantity = 0;
+                    while (reader.Read())
+                    {
+                        prod.quantity += reader.GetInt32(1);
+                    }
+                }
+            }
+
+            return prod;
         }
     }
 }
