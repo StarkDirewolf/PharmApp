@@ -9,7 +9,7 @@ namespace PharmApp.src
     class Product
     {
         public string genericDescription;
-        public string genericID;
-        public int quantity;
+        public Int64 genericID;
+        public decimal quantity;
     }
 }

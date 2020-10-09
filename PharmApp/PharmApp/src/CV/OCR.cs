@@ -15,6 +15,7 @@ using static Emgu.CV.OCR.Tesseract;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using PharmApp.src;
+using Emgu.CV.CvEnum;
 
 namespace PharmApp
 {
@@ -176,6 +177,10 @@ namespace PharmApp
 
             using (Image<Bgr, byte> screen = GetScreen())
             {
+
+                // If this pixel isn't blue, we're not looking at patient records
+                if (Math.Abs(screen[140, 100].Blue - 250.0) >= 2.0) return null;
+
                 List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
                 
                 foreach (OCRResult detail in patientDetails)
@@ -225,20 +230,30 @@ namespace PharmApp
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
             {
+                Image<Bgr, byte> imageForOcr = image.Copy();
+                imageForOcr.SetValue(new Bgr(0, 0, 0));
 
                 image.ROI = area;
                 Image<Bgr, byte> patientDetailsImage = image.Copy();
-
-                image.ROI = Rectangle.Empty;
-                image.SetValue(new Bgr(0, 0, 0));
-                image.ROI = area;
-
-                patientDetailsImage.CopyTo(image);
                 image.ROI = Rectangle.Empty;
 
-                if (SHOW_OCR_IMAGE) ImageViewer.Show(patientDetailsImage);
+                imageForOcr.ROI = area;
+                patientDetailsImage.CopyTo(imageForOcr);
+                imageForOcr.ROI = Rectangle.Empty;
 
-                patientDetails.AddRange(GetText(image));
+                List<OCRResult> results = GetText(imageForOcr);
+
+                if (SHOW_OCR_IMAGE)
+                {
+                    ImageViewer.Show(patientDetailsImage);
+                    foreach (OCRResult result in results)
+                    {
+                        Console.WriteLine(result.GetText());
+                    }
+                }
+
+                patientDetails.AddRange(results);
+                
             }
             return patientDetails;
         }
@@ -248,6 +263,7 @@ namespace PharmApp
             using (Image<Gray, byte> optImg = GetOptImage(image))
             {
                 List<Rectangle> patRects = GetBoundingRectangles(optImg, true);
+
                 List<OCRResult> textList = new List<OCRResult>();
 
                 foreach (Rectangle rect in patRects)
@@ -258,13 +274,25 @@ namespace PharmApp
                     newRect.Height = rect.Height + 2;
                     newRect.Width = rect.Width + 2;
                     image.ROI = newRect;
-
+                    
                     Image<Bgr, byte> textImg = image.Copy();
+                    Mat gray = new Mat();
+                    Mat colorBoost = new Mat();
+                    CvInvoke.CvtColor(textImg, gray, ColorConversion.Bgr2Gray);
+                    CvInvoke.Decolor(textImg, gray, colorBoost);
 
-                    OCR_PROVIDER.SetImage(textImg);
+                    Mat bigGray = new Mat();
+                    Size newSize = new Size(gray.Width * 2, gray.Height * 2);
+                    CvInvoke.Resize(gray, bigGray, newSize);
+
+                    image.ROI = Rectangle.Empty;
+
+                    OCR_PROVIDER.SetImage(bigGray);
+                    
                     textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg));
-
-
+                    
+                    Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
+                    ImageViewer.Show(bigGray);
                 }
 
                 return textList;
@@ -370,7 +398,7 @@ namespace PharmApp
             rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
 
             
-            // Filter out rectangles that clearly aren't the right size
+            // Filter out rectangles that clearly aren't the right size, or are too high
             List<Rectangle> filteredRects = rects.Where(x => PRODUCT_MAX_WIDTH > x.Width && x.Width > PRODUCT_MIN_WIDTH)
                 .Where(x => PRODUCT_MAX_HEIGHT > x.Height  && x.Height > PRODUCT_MIN_HEIGHT)
                 .ToList();

@@ -28,7 +28,8 @@ namespace PharmApp.src.GUI
 
             ScreenDrawing[] forms = {
             new NewETPDrawing(),
-            new NewETPBatch()
+            new NewETPBatch(),
+            new SelectedProductDrawing()
             };
 
             openForms = forms.Length;

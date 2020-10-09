@@ -150,12 +150,13 @@ namespace PharmApp
                 {
                     while (reader.Read())
                     {
-                        prod.genericID = reader.GetString(0);
+                        prod.genericID = reader.GetInt64(0);
                     }
                 }
 
                 query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
-                query.VirtualID(prod.genericID);
+                query.VirtualID(prod.genericID.ToString());
+                query.NotDeleted();
 
                 command = new SqlCommand(query.ToString(), connection);
 
@@ -164,7 +165,7 @@ namespace PharmApp
                     prod.quantity = 0;
                     while (reader.Read())
                     {
-                        prod.quantity += reader.GetInt32(1);
+                        prod.quantity += reader.GetDecimal(1);
                     }
                 }
             }

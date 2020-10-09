@@ -144,6 +144,12 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
             AddCondition(Condition.VIRTUALID, virtualID);
         }
 
+        public void NotDeleted()
+        {
+            RemoveCondition(Condition.NOTDELETED);
+            AddCondition(Condition.NOTDELETED);
+        }
+
         /// <summary>
         /// Removes a condition from the query if there is one, otherwise does nothing
         /// </summary>
