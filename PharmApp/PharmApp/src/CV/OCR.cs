@@ -292,7 +292,7 @@ namespace PharmApp
                     textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg));
                     
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
-                    ImageViewer.Show(bigGray);
+                    //ImageViewer.Show(bigGray);
                 }
 
                 return textList;
@@ -514,7 +514,7 @@ namespace PharmApp
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics g = Graphics.FromImage(bitmap))
             {
-                // EXCEPTION: Handle is invalid
+                // EXCEPTION: Handle is invalid - when ctrl alt del
                 g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
                 Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
 
