@@ -10,7 +10,7 @@ namespace PharmApp.src.GUI
 {
     class SelectedProductDrawing : ScreenDrawing
     {
-        private const int WIDTH = 20, HEIGHT = 15, X_OFFSET = 5, Y_OFFSET = -5;
+        private const int WIDTH = 100, HEIGHT = 15, X_OFFSET = 5, Y_OFFSET = -5;
 
         public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "Found", Color.Red)
         {
@@ -29,8 +29,10 @@ namespace PharmApp.src.GUI
                 ChangeLocation(prodRect.X + prodRect.Width + X_OFFSET, prodRect.Y + Y_OFFSET);
                 ShouldBeVisible = true;
 
-                Product product = SQLQueryer.SearchOrderPad(args.OCRResult.GetText().Trim());
-                textLabel.Text = product.quantity.ToString();
+                string pip = args.OCRResult.GetText().Trim();
+
+                Product product = SQLQueryer.SearchOrderPad(pip);
+                textLabel.Text = pip + " - " + product.quantity.ToString();
             }
         }));
     }

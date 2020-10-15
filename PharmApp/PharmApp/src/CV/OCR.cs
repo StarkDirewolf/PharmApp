@@ -212,6 +212,10 @@ namespace PharmApp
                 foreach (OCRResult result in results)
                 {
                     string text = result.GetText();
+
+                    //Console.WriteLine(text);
+                    //ImageViewer.Show(result.GetImage());
+
                     if (PIP_MASK.IsMatch(text))
                     {
                         Console.WriteLine("Found PIP: " + text);
@@ -269,30 +273,40 @@ namespace PharmApp
                 foreach (Rectangle rect in patRects)
                 {
                     Rectangle newRect = rect; 
-                    newRect.X = rect.X - 1;
-                    newRect.Y = rect.Y - 1;
-                    newRect.Height = rect.Height + 2;
-                    newRect.Width = rect.Width + 2;
+                    //newRect.X = rect.X - 1;
+                    //newRect.Y = rect.Y - 1;
+                    //newRect.Height = rect.Height + 2;
+                    //newRect.Width = rect.Width + 2;
                     image.ROI = newRect;
                     
                     Image<Bgr, byte> textImg = image.Copy();
-                    Mat gray = new Mat();
-                    Mat colorBoost = new Mat();
-                    CvInvoke.CvtColor(textImg, gray, ColorConversion.Bgr2Gray);
-                    CvInvoke.Decolor(textImg, gray, colorBoost);
+                    Mat bigImg = new Mat();
 
-                    Mat bigGray = new Mat();
-                    Size newSize = new Size(gray.Width * 2, gray.Height * 2);
-                    CvInvoke.Resize(gray, bigGray, newSize);
+                    Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
+                    CvInvoke.Resize(textImg, bigImg, newSize, 0, 0, Inter.Cubic);
+
+                    Mat gray = new Mat();
+                    //Mat colorBoost = new Mat();
+                    CvInvoke.CvtColor(bigImg, gray, ColorConversion.Bgr2Gray);
+
+                    
+                    
+                    //CvInvoke.Decolor(bigImg, gray, colorBoost);
+
+                    Mat reversedColor = new Mat();
+                    CvInvoke.BitwiseNot(gray, reversedColor);
+
+                    //Mat blackwhite = new Mat();
+                    //CvInvoke.Threshold(gray, blackwhite, 150, 255, ThresholdType.BinaryInv);
 
                     image.ROI = Rectangle.Empty;
 
-                    OCR_PROVIDER.SetImage(bigGray);
+                    OCR_PROVIDER.SetImage(reversedColor);
                     
                     textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg));
                     
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
-                    //ImageViewer.Show(bigGray);
+                    //ImageViewer.Show(blackwhite);
                 }
 
                 return textList;
@@ -395,7 +409,7 @@ namespace PharmApp
         private static List<Rectangle> GetSelectedProductRects(Image<Bgr, byte> img)
         {
             List<Rectangle> rects = GetRectsOfColour(img, BLUE_PRODUCT_SELECTED_BGR);
-            rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
+            //rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
 
             
             // Filter out rectangles that clearly aren't the right size, or are too high

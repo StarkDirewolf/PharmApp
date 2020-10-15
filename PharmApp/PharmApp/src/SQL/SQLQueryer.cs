@@ -150,6 +150,7 @@ namespace PharmApp
                 {
                     while (reader.Read())
                     {
+                        // Can be null and will break if product not found for whatever reason, e.g. 3748563, 1169341, 4066619
                         prod.genericID = reader.GetInt64(0);
                     }
                 }
