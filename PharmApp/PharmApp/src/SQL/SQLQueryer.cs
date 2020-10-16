@@ -134,7 +134,7 @@ namespace PharmApp
 
         public static Product SearchOrderPad(string pipcode)
         {
-            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.VIRTUALPRODCODE);
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);
 
             query.PipCode(pipcode);
 
@@ -150,13 +150,13 @@ namespace PharmApp
                 {
                     while (reader.Read())
                     {
-                        // Can be null and will break if product not found for whatever reason, e.g. 3748563, 1169341, 4066619
-                        prod.genericID = reader.GetInt64(0);
+                        // Could possibly be null if not found, e.g. own drugs?
+                        prod.preparationCode = reader.GetInt64(0).ToString();
                     }
                 }
 
                 query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
-                query.VirtualID(prod.genericID.ToString());
+                query.PrepCode(prod.preparationCode);
                 query.NotDeleted();
 
                 command = new SqlCommand(query.ToString(), connection);

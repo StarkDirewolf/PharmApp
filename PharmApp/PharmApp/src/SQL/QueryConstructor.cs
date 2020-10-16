@@ -40,10 +40,13 @@ SELECT V.VirtualProductPackId FROM PKBRuntime.Pharmacy.PackOrderCode O
 LEFT JOIN PKBRuntime.Mapping.DmdPack D ON O.PackCodeId = D.PackCodeId
 LEFT JOIN PKBRuntime.Dmd.ActualProductPack V ON D.DmdProductPackCodeId = V.ActualProductPackId";
 
+        private const string PREPARATIONCODE = @"
+SELECT TOP 1 P.PreparationCodeId FROM PKBRuntime.Pharmacy.PackOrderCode O
+JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
+
         private const string ORDERPAD = @"
-SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM PKBRuntime.Dmd.ActualProductPack A
-JOIN PKBRuntime.Mapping.DmdPack D ON A.ActualProductPackId = D.DmdProductPackCodeId
-JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
+SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM ProScriptConnect.Ordering.OrderPad O
+JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 
         private const string FILTER = " WHERE ";
 
@@ -59,6 +62,7 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
         private const string FILTER_PIP = "OrderCode = '";
         private const string FILTER_NOT_DELETED = "Deleted = 0";
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
+        private const string FILTER_PREP_CODE = "PreparationCodeId = '";
 
         private const string FILTER_AND = " AND ";
 
@@ -77,7 +81,8 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
             PATIENTS_WITH_NOTES_DISPENSED_TO,
             ETPSCRIPTS,
             ORDERPAD,
-            VIRTUALPRODCODE
+            VIRTUALPRODCODE,
+            PREPARATIONCODE
         }
 
         private enum Condition
@@ -92,7 +97,8 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
             TOBEDISPENSED,
             PIPCODE,
             NOTDELETED,
-            VIRTUALID
+            VIRTUALID,
+            PREPCODE
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -142,6 +148,12 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
         {
             RemoveCondition(Condition.VIRTUALID);
             AddCondition(Condition.VIRTUALID, virtualID);
+        }
+
+        public void PrepCode(string prepCode)
+        {
+            RemoveCondition(Condition.PREPCODE);
+            AddCondition(Condition.PREPCODE, prepCode);
         }
 
         public void NotDeleted()
@@ -232,6 +244,10 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
                     case Condition.VIRTUALID:
                         str = FILTER_VIRTUAL_ID + condition.Value + FILTER_QUOTE_END;
                         break;
+
+                    case Condition.PREPCODE:
+                        str = FILTER_PREP_CODE + condition.Value + FILTER_QUOTE_END;
+                        break;
                 }
                 conditionList.RemoveAt(0);
                 if (conditionList.Count > 0)
@@ -270,6 +286,10 @@ JOIN ProScriptConnect.Ordering.OrderPad O ON D.PackCodeId = O.PackCodeId";
 
                 case QueryType.VIRTUALPRODCODE:
                     str = VIRTUALPRODCODE;
+                    break;
+
+                case QueryType.PREPARATIONCODE:
+                    str = PREPARATIONCODE;
                     break;
             }
 

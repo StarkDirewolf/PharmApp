@@ -11,5 +11,6 @@ namespace PharmApp.src
         public string genericDescription;
         public Int64 genericID;
         public decimal quantity;
+        public string preparationCode;
     }
 }
