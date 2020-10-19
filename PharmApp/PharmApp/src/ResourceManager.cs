@@ -12,6 +12,8 @@ namespace PharmApp
         public const string tessData = @"../../Resources/tessdata/";
         public const string mickeyMousePMR = @"../../Resources/Test images/Mickey_Mouse_PMR.bmp";
         public const string robertPrydePMR = @"../../Resources/Test images/Robert_Pryde_PMR.bmp";
+        public const string redCircle = @"../../Resources/Red_circle.png";
+        public const string greenCircle = @"../../Resources/Green_circle.png";
 
     }
 }

@@ -313,6 +313,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <Content Include="Resources\Green_circle.png" />
+    <Content Include="Resources\Red_circle.png" />
     <Content Include="Resources\tessdata\.gitmodules" />
     <Content Include="Resources\Test images\mickey_mouse.jpg" />
     <Content Include="Resources\Test images\Mickey_Mouse_PMR.bmp" />

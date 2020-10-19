@@ -197,7 +197,7 @@ namespace PharmApp
             return null;
         }
 
-        public static List<OCRResult> GetSelectedProducts()
+        public static OCRResult GetSelectedProduct()
         {
             using (Image<Bgr, byte> screen = GetScreen())
             {
@@ -219,11 +219,11 @@ namespace PharmApp
                     if (PIP_MASK.IsMatch(text))
                     {
                         Console.WriteLine("Found PIP: " + text);
-                        validResults.Add(result);
+                        return result;
                     }
                 }
 
-                return validResults;
+                return null;
                 
             }
         }

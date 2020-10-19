@@ -150,7 +150,7 @@ namespace PharmApp
                 {
                     while (reader.Read())
                     {
-                        // Could possibly be null if not found, e.g. own drugs?
+                        // Could possibly be null if not found, e.g. own drugs? Dont think this is the case anymore
                         prod.preparationCode = reader.GetInt64(0).ToString();
                     }
                 }

@@ -84,17 +84,17 @@ namespace PharmApp.src
             }
         }
 
-        private List<OCRResult> _selectedProducts;
-        private List<OCRResult> selectedProducts
+        private OCRResult _selectedProduct;
+        private OCRResult selectedProduct
         {
-            get => _selectedProducts;
+            get => _selectedProduct;
             set
             {
-                if (value != _selectedProducts)
+                if (value != _selectedProduct)
                 {
                     if (OnSelectedProductChanged == null) return;
 
-                    _selectedProducts = value;
+                    _selectedProduct = value;
 
                     if (value == null)
                     {
@@ -102,11 +102,9 @@ namespace PharmApp.src
                     }
                     else
                     {
-                        foreach (OCRResult result in value)
-                        {
-                            OnSelectedProductChanged(this, new OCRResultEventArgs(result));
 
-                        }
+                        OnSelectedProductChanged(this, new OCRResultEventArgs(value));
+
                     }
                 }
             }
@@ -231,7 +229,7 @@ namespace PharmApp.src
                 if (IsProgramFocused)
                 {
                     nhsNumber = OCR.GetNhsNoFromScreen();
-                    selectedProducts = OCR.GetSelectedProducts();
+                    selectedProduct = OCR.GetSelectedProduct();
                 }
             }
             

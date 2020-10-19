@@ -61,18 +61,24 @@ namespace PharmApp.src
             //processor.OnProgramFocus += OnProgramFocus;
             //processor.OnProgramUnfocus += OnProgramUnfocus;
 
-
-            FormBorderStyle = FormBorderStyle.FixedToolWindow;
+            TransparencyKey = Color.White;
+            BackColor = Color.White;
+            FormBorderStyle = FormBorderStyle.None;
+            //FormBorderStyle = FormBorderStyle.FixedToolWindow;
             ControlBox = false;
             Bounds = rect;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
 
-            textLabel = new Label();
-            textLabel.BackColor = color;
+            if (text != "")
+            {
+                textLabel = new Label();
+                textLabel.BackColor = color;
 
-            textLabel.Text = text;
-            Controls.Add(textLabel);
+                textLabel.Text = text;
+                Controls.Add(textLabel);
+            }
+            
 
             TopMost = true;
 
