@@ -97,6 +97,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\CV\OCRResultListEventArgs.cs" />
     <Compile Include="src\Email\NHSClient.cs" />
     <Compile Include="src\GUI\MultiFormContext.cs" />
     <Compile Include="src\GUI\NewETPBatch.cs">
@@ -115,6 +116,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="src\GUI\SelectedProductManager.cs" />
     <Compile Include="src\GUI\SelectedProductDrawing.cs">
       <SubType>Form</SubType>
     </Compile>

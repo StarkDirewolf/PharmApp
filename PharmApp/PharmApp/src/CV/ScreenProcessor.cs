@@ -84,26 +84,26 @@ namespace PharmApp.src
             }
         }
 
-        private OCRResult _selectedProduct;
-        private OCRResult selectedProduct
+        private List<OCRResult> _selectedProducts;
+        private List<OCRResult> selectedProducts
         {
-            get => _selectedProduct;
+            get => _selectedProducts;
             set
             {
-                if (value != _selectedProduct)
+                if (value != _selectedProducts)
                 {
                     if (OnSelectedProductChanged == null) return;
 
-                    _selectedProduct = value;
+                    _selectedProducts = value;
 
                     if (value == null)
                     {
-                        OnSelectedProductChanged(this, OCRResultEventArgs.Empty);
+                        OnSelectedProductChanged(this, OCRResultListEventArgs.Empty);
                     }
                     else
                     {
 
-                        OnSelectedProductChanged(this, new OCRResultEventArgs(value));
+                        OnSelectedProductChanged(this, new OCRResultListEventArgs(value));
 
                     }
                 }
@@ -229,7 +229,7 @@ namespace PharmApp.src
                 if (IsProgramFocused)
                 {
                     nhsNumber = OCR.GetNhsNoFromScreen();
-                    selectedProduct = OCR.GetSelectedProduct();
+                    selectedProducts = OCR.GetSelectedProduct();
                 }
             }
             
@@ -284,7 +284,7 @@ namespace PharmApp.src
 
         private void CheckProgramIsInFocus()
         {
-            if (!MultiFormContext.HandleIsForm(GetForegroundWindow()))
+            if (!MultiFormContext.GetContext().HandleIsForm(GetForegroundWindow()))
             {
 
                 string title = GetActiveWindowTitle();
@@ -294,7 +294,7 @@ namespace PharmApp.src
                 }
                 else
                 {
-                    IsProgramFocused = title.Equals("ProScript Connect") ? true : false;
+                    IsProgramFocused = title.Equals("ProScript Connect") || title.Equals("Add item(s) to order") ? true : false;
                 }
             }
         }
@@ -338,8 +338,9 @@ namespace PharmApp.src
 
         public delegate void OCRProcessHandler(object source, OCRResultEventArgs args);
         public event OCRProcessHandler OnNHSNumberChanged;
-        public event OCRProcessHandler OnSelectedProductChanged;
 
+        public delegate void OCRListProcessHandler(object source, OCRResultListEventArgs args);
+        public event OCRListProcessHandler OnSelectedProductChanged;
 
         protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
         protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);

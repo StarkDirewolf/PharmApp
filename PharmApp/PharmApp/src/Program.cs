@@ -23,7 +23,7 @@ namespace PharmApp
         {
 
             Application.EnableVisualStyles();
-            Application.Run(new MultiFormContext());
+            Application.Run(MultiFormContext.GetContext());
             //NHSClient client = new NHSClient();
             //client.Connect();
             //Console.ReadLine();

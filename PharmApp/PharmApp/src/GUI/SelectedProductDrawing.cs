@@ -25,19 +25,20 @@ namespace PharmApp.src.GUI
             this.Controls.Add(img);
         }
 
-        public override void OnSelectedProductChanged(object source, OCRResultEventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        public override void OnSelectedProductChanged(object source, OCRResultListEventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
-            if (args == OCRResultEventArgs.Empty)
+            if (args == OCRResultListEventArgs.Empty)
             {
                 ShouldBeVisible = false;
             }
             else
             {
-                Rectangle prodRect = args.OCRResult.GetRectangle();
+                // TODO change first items in list when properly implemented
+                Rectangle prodRect = args.OCRResults.First().GetRectangle();
                 ChangeLocation(prodRect.X + prodRect.Width + X_OFFSET, prodRect.Y + Y_OFFSET);
                 ShouldBeVisible = true;
 
-                string pip = args.OCRResult.GetText().Trim();
+                string pip = args.OCRResults.First().GetText().Trim();
 
                 Product product = SQLQueryer.SearchOrderPad(pip);
                 //textLabel.Text = pip + " - " + product.quantity.ToString();
