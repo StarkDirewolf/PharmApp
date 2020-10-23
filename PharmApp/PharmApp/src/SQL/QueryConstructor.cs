@@ -68,7 +68,7 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 
         private readonly QueryType type;
 
-        private readonly List<KeyValuePair<Condition, string>> conditions = new List<KeyValuePair<Condition, string>>();
+        private List<KeyValuePair<Condition, string>> conditions = new List<KeyValuePair<Condition, string>>();
 
         private string sort;
 
@@ -123,13 +123,13 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
         public void NewETP()
         {
             RemoveCondition(Condition.NEWETP);
-            AddCondition(Condition.NEWETP, null);
+            AddCondition(Condition.NEWETP);
         }
 
         public void ToBeDispensed()
         {
             RemoveCondition(Condition.TOBEDISPENSED);
-            AddCondition(Condition.TOBEDISPENSED, null);
+            AddCondition(Condition.TOBEDISPENSED);
         }
 
         public void NhsNumber(string nhsNumber)
@@ -202,7 +202,8 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
         /// <param name="data">how the condition is filtered</param>
         private void AddCondition(Condition cond, string data = "")
         {
-            conditions.Add(new KeyValuePair<Condition, string>(cond, data));
+            KeyValuePair<Condition, string> kv = new KeyValuePair<Condition, string>(cond, data);
+            conditions.Add(kv);
         }
 
         private string ConditionsStringBuilder(List<KeyValuePair<Condition, string>> conditionList)

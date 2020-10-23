@@ -9,7 +9,7 @@ namespace PharmApp.src.GUI
 {
     class NewETPBatch : ScreenDrawing
     {
-        private const int WIDTH = 60, HEIGHT = 15, X_OFFSET = 10, Y_OFFSET = 20;
+        private const int WIDTH = 45, HEIGHT = 12, X_OFFSET = 10, Y_OFFSET = 20;
 
         private bool hasETPBatch;
 

@@ -74,6 +74,7 @@ namespace PharmApp.src
             {
                 textLabel = new Label();
                 textLabel.BackColor = color;
+                textLabel.AutoSize = true;
 
                 textLabel.Text = text;
                 Controls.Add(textLabel);

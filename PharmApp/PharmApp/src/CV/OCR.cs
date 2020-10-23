@@ -179,13 +179,14 @@ namespace PharmApp
             {
 
                 // If this pixel isn't blue, we're not looking at patient records
-                if (Math.Abs(screen[140, 100].Blue - 250.0) >= 2.0) return null;
+                if (Math.Abs(screen[100, 140].Blue - 250.0) >= 2.0) return null;
 
                 List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
                 
                 foreach (OCRResult detail in patientDetails)
                 {
                     string trimmedDetail = Regex.Replace(detail.GetText(), @"\s+", "");
+
                     if (NHS_NUM_MASK.IsMatch(trimmedDetail))
                     {
                         Console.WriteLine(trimmedDetail);
@@ -283,33 +284,42 @@ namespace PharmApp
                     image.ROI = newRect;
                     
                     Image<Bgr, byte> textImg = image.Copy();
-                    Mat bigImg = new Mat();
+                    //Mat bigImg = new Mat();
 
-                    Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
-                    CvInvoke.Resize(textImg, bigImg, newSize, 0, 0, Inter.Cubic);
+                    //Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
+                    //CvInvoke.Resize(textImg, bigImg, newSize, 0, 0, Inter.Cubic);
 
                     Mat gray = new Mat();
                     //Mat colorBoost = new Mat();
-                    CvInvoke.CvtColor(bigImg, gray, ColorConversion.Bgr2Gray);
+                    CvInvoke.CvtColor(textImg, gray, ColorConversion.Bgr2Gray);
 
-                    
-                    
+
+
                     //CvInvoke.Decolor(bigImg, gray, colorBoost);
 
-                    Mat reversedColor = new Mat();
-                    CvInvoke.BitwiseNot(gray, reversedColor);
+                    Mat correctedImage = gray;
+
+                    double mean = CvInvoke.Mean(gray).V0;
+
+                    if (mean < 150)
+                    {
+                        CvInvoke.BitwiseNot(gray, correctedImage);
+                    }
+
+                    //Mat finalImage = new Mat();
+                    //CvInvoke.EdgePreservingFilter(gray, finalImage);
 
                     //Mat blackwhite = new Mat();
                     //CvInvoke.Threshold(gray, blackwhite, 150, 255, ThresholdType.BinaryInv);
 
                     image.ROI = Rectangle.Empty;
 
-                    OCR_PROVIDER.SetImage(reversedColor);
+                    OCR_PROVIDER.SetImage(correctedImage);
                     
                     textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg));
                     
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
-                    //ImageViewer.Show(blackwhite);
+                    //ImageViewer.Show(correctedImage);
                 }
 
                 return textList;
