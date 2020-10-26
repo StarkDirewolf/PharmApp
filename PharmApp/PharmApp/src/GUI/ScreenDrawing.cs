@@ -137,8 +137,5 @@ namespace PharmApp.src
         {
         }
 
-        public virtual void OnSelectedProductChanged(object source, OCRResultListEventArgs args)
-        {
-        }
     }
 }

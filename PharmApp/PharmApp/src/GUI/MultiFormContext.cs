@@ -30,7 +30,9 @@ namespace PharmApp.src.GUI
 
             addForm(new NewETPDrawing());
             addForm(new NewETPBatch());
-            addForm(new SelectedProductDrawing());
+
+            SelectedProductManager productManager = new SelectedProductManager();
+            processor.OnSelectedProductChanged += productManager.OnSelectedProductChanged;
 
         }
 
@@ -68,7 +70,6 @@ namespace PharmApp.src.GUI
             processor.OnProgramFocus += form.OnProgramFocus;
             processor.OnProgramUnfocus += form.OnProgramUnfocus;
             processor.OnNHSNumberChanged += form.OnNHSNumberChanged;
-            processor.OnSelectedProductChanged += form.OnSelectedProductChanged;
             processor.OnNewPrintedETPFound += form.OnNewPrintedETPFound;
             processor.OnNewUnprintedETPFound += form.OnNewUnprintedETPFound;
             processor.OnNoNewETPFound += form.OnNoNewETPFound;

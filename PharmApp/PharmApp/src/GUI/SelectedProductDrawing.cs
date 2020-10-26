@@ -25,7 +25,7 @@ namespace PharmApp.src.GUI
             this.Controls.Add(img);
         }
 
-        public override void OnSelectedProductChanged(object source, OCRResultListEventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        public void OnSelectedProductChanged(object source, OCRResultListEventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
             if (args == OCRResultListEventArgs.Empty)
             {
