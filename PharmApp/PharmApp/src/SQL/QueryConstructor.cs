@@ -48,6 +48,13 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM ProScriptConnect.Ordering.OrderPad O
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 
+        private const string PRODUCTINFO = @"
+SELECT Description, Gncs, UnitsPerPack, K.IsGeneric, SupplierName FROM PKBRuntime.Pharmacy.PackOrderCode O
+JOIN PKBRuntime.Pharmacy.Pack K ON O.PackCodeId = K.PackCodeId
+JOIN PKBRuntime.Pharmacy.PreparationPack P ON K.PreparationCodeId = P.PreparationCodeId AND K.PackCodeId = P.PackCodeId
+JOIN (SELECT * FROM PKBRuntime.Pharmacy.PreparationSearchView WHERE RegionId = 0) V ON P.PreparationCodeId = V.PreparationCodeId
+JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
+
         private const string FILTER = " WHERE ";
 
         private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = ";
@@ -82,7 +89,8 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
             ETPSCRIPTS,
             ORDERPAD,
             VIRTUALPRODCODE,
-            PREPARATIONCODE
+            PREPARATIONCODE,
+            PRODUCTINFO
         }
 
         private enum Condition

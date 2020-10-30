@@ -13,6 +13,7 @@ namespace PharmApp.src.GUI
     {
 
         MultiFormContext forms;
+        
 
         public SelectedProductManager() 
         {

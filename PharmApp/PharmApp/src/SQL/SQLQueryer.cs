@@ -78,6 +78,48 @@ namespace PharmApp
             return nhsNumNameLookup;
         }
 
+        public static Product PopulateFromPIP(string pip)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);
+
+            query.PipCode(pipcode);
+
+            Product prod = new Product();
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        // Could possibly be null if not found, e.g. own drugs? Dont think this is the case anymore
+                        prod.preparationCode = reader.GetInt64(0).ToString();
+                    }
+                }
+
+                query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+                query.PrepCode(prod.preparationCode);
+                query.NotDeleted();
+
+                command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    prod.quantity = 0;
+                    while (reader.Read())
+                    {
+                        prod.quantity += reader.GetDecimal(1);
+                    }
+                }
+            }
+
+            return prod;
+        }
+
         public static bool NewETPs(string nhsNum, out bool unprinted, out bool batch)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ETPSCRIPTS);

@@ -121,6 +121,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="src\Product.cs" />
+    <Compile Include="src\SQL\ProductLookup.cs" />
     <Compile Include="src\SQL\QueryConstructor.cs" />
     <Compile Include="src\GUI\ScreenDrawing.cs">
       <SubType>Form</SubType>

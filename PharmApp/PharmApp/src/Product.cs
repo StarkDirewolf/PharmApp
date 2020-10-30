@@ -8,9 +8,12 @@ namespace PharmApp.src
 {
     class Product
     {
-        public string genericDescription;
-        public Int64 genericID;
-        public decimal quantity;
-        public string preparationCode;
+        public string pipcode;
+        public string description;
+        public string genericID;
+        public decimal unitsPerPack;
+        //public string preparationCode;
+        public bool isGeneric;
+        public string manufacturer;
     }
 }
