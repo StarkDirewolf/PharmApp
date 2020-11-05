@@ -8,10 +8,10 @@ namespace PharmApp.src.SQL
 {
     class ProductLookup
     {
-        private ProductLookup singleton;
-        private List<Product> cache;
+        private static ProductLookup singleton;
+        private List<Product> cache = new List<Product>();
 
-        public ProductLookup GetInstance()
+        public static ProductLookup GetInstance()
         {
             if (singleton == null)
             {

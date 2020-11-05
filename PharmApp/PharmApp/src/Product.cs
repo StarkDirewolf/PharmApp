@@ -14,6 +14,6 @@ namespace PharmApp.src
         public decimal unitsPerPack;
         //public string preparationCode;
         public bool isGeneric;
-        public string manufacturer;
+        public string supplier;
     }
 }

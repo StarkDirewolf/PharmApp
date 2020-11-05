@@ -80,11 +80,12 @@ namespace PharmApp
 
         public static Product PopulateFromPIP(string pip)
         {
-            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PRODUCTINFO);
 
-            query.PipCode(pipcode);
+            query.PipCode(pip);
 
             Product prod = new Product();
+            prod.pipcode = pip;
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -97,24 +98,28 @@ namespace PharmApp
                     while (reader.Read())
                     {
                         // Could possibly be null if not found, e.g. own drugs? Dont think this is the case anymore
-                        prod.preparationCode = reader.GetInt64(0).ToString();
+                        prod.description = reader.GetString(0);
+                        prod.genericID = reader.GetString(1);
+                        prod.unitsPerPack = reader.GetDecimal(2);
+                        prod.isGeneric = reader.GetBoolean(3);
+                        prod.supplier = reader.GetString(4);
                     }
                 }
 
-                query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
-                query.PrepCode(prod.preparationCode);
-                query.NotDeleted();
+                //query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+                //query.PrepCode(prod.preparationCode);
+                //query.NotDeleted();
 
-                command = new SqlCommand(query.ToString(), connection);
+                //command = new SqlCommand(query.ToString(), connection);
 
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    prod.quantity = 0;
-                    while (reader.Read())
-                    {
-                        prod.quantity += reader.GetDecimal(1);
-                    }
-                }
+                //using (SqlDataReader reader = command.ExecuteReader())
+                //{
+                //    prod.quantity = 0;
+                //    while (reader.Read())
+                //    {
+                //        prod.quantity += reader.GetDecimal(1);
+                //    }
+                //}
             }
 
             return prod;
@@ -174,46 +179,46 @@ namespace PharmApp
             }
         }
 
-        public static Product SearchOrderPad(string pipcode)
-        {
-            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);
+        //public static Product SearchOrderPad(string pipcode)
+        //{
+        //    QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);
 
-            query.PipCode(pipcode);
+        //    query.PipCode(pipcode);
 
-            Product prod = new Product();
+        //    Product prod = new Product();
 
-            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
-            {
-                connection.Open();
+        //    using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+        //    {
+        //        connection.Open();
 
-                SqlCommand command = new SqlCommand(query.ToString(), connection);
+        //        SqlCommand command = new SqlCommand(query.ToString(), connection);
 
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        // Could possibly be null if not found, e.g. own drugs? Dont think this is the case anymore
-                        prod.preparationCode = reader.GetInt64(0).ToString();
-                    }
-                }
+        //        using (SqlDataReader reader = command.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                // Could possibly be null if not found, e.g. own drugs? Dont think this is the case anymore
+        //                prod.preparationCode = reader.GetInt64(0).ToString();
+        //            }
+        //        }
 
-                query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
-                query.PrepCode(prod.preparationCode);
-                query.NotDeleted();
+        //        query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+        //        query.PrepCode(prod.preparationCode);
+        //        query.NotDeleted();
 
-                command = new SqlCommand(query.ToString(), connection);
+        //        command = new SqlCommand(query.ToString(), connection);
 
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    prod.quantity = 0;
-                    while (reader.Read())
-                    {
-                        prod.quantity += reader.GetDecimal(1);
-                    }
-                }
-            }
+        //        using (SqlDataReader reader = command.ExecuteReader())
+        //        {
+        //            prod.quantity = 0;
+        //            while (reader.Read())
+        //            {
+        //                prod.quantity += reader.GetDecimal(1);
+        //            }
+        //        }
+        //    }
 
-            return prod;
-        }
+        //    return prod;
+        //}
     }
 }

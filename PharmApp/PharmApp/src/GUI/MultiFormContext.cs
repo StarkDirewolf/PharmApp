@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -13,9 +14,8 @@ namespace PharmApp.src.GUI
     class MultiFormContext : ApplicationContext
     {
 
-        private int openForms;
+        private int openForms = 0;
         public static Dispatcher disp = Dispatcher.CurrentDispatcher;
-        private List<ScreenDrawing> forms = new List<ScreenDrawing>();
         private static MultiFormContext singletonContext;
         private ScreenProcessor processor;
 
@@ -28,11 +28,11 @@ namespace PharmApp.src.GUI
                 Thread.Sleep(500);
             }
 
-            addForm(new NewETPDrawing());
-            addForm(new NewETPBatch());
-
+            AddForm(new NewETPDrawing());
+            AddForm(new NewETPBatch());
+            
             SelectedProductManager productManager = new SelectedProductManager();
-            processor.OnSelectedProductChanged += productManager.OnSelectedProductChanged;
+            processor.OnProductsChanged += productManager.OnSelectedProductChanged;
 
         }
 
@@ -45,19 +45,19 @@ namespace PharmApp.src.GUI
             return singletonContext;
         }
 
-        public bool HandleIsForm(IntPtr handle)
-        {
-            foreach (var form in forms)
-            {
-                if (form.Handle == handle) return true;
-            }
-            return false;
-        }
+        //public bool HandleIsForm(IntPtr handle)
+        //{
+        //    foreach (var form in forms)
+        //    {
+        //        if (form.Handle == handle) return true;
+        //    }
+        //    return false;
+        //}
 
-        public void addForm(ScreenDrawing form)
+        public void AddForm(ScreenDrawing form)
         {
-            forms.Add(form);
-            openForms = forms.Count();
+            //forms.Add(form);
+            openForms++;
 
             form.FormClosed += (s, args) =>
             {

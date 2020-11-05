@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PharmApp.src.SQL;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -12,18 +13,43 @@ namespace PharmApp.src.GUI
     class SelectedProductManager
     {
 
-        MultiFormContext forms;
-        
-
-        public SelectedProductManager() 
-        {
-            forms = MultiFormContext.GetContext();
-        }
+        List<SelectedProductDrawing> currentForms = new List<SelectedProductDrawing>();
 
         public void OnSelectedProductChanged(object source, OCRResultListEventArgs args)
         {
-            // Think of a solution to figuring out what needs showign and what needs hiding, making new product objects and populating them,
-            // then caching them and searching them in future
+            List<OCRResult> ocrResults = args.OCRResults;
+            List<SelectedProductDrawing> newForms = new List<SelectedProductDrawing>();
+
+            foreach (OCRResult ocrResult in ocrResults)
+            {
+                string pip = ocrResult.GetText().Trim();
+                SelectedProductDrawing newForm = null;
+
+                foreach (SelectedProductDrawing form in currentForms)
+                {
+                    if (form.GetProduct().pipcode == pip)
+                    {
+                        newForm = form;
+                        newForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
+                        currentForms.Remove(form);
+                    }
+                }
+                SelectedProductDrawing form = currentForms.Find(f => f.GetProduct().pipcode == pip);
+                if form
+                    // check if there's a result and comment out above
+
+                if (newForm == null)
+                {
+                    newForm = new SelectedProductDrawing(ProductLookup.GetInstance().FindByPIP(pip));
+                    MultiFormContext.GetContext().AddForm(newForm);
+                }
+
+                newForms.Add(newForm);
+
+            }
+
+            currentForms.ForEach(f => f.Close());
+            currentForms = newForms;
         }
 
     }

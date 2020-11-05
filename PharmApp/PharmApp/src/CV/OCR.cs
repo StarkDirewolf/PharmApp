@@ -57,6 +57,7 @@ namespace PharmApp
         private const double BGR_BUFFER = 2;
 
         private const int NHS_X = 340, NHS_Y = 100, NHS_WIDTH = 990, NHS_HEIGHT = 25;
+        private const int ORDERPAD_X = 140, ORDERPAD_Y = 362, ORDERPAD_WIDTH = 1435, ORDERPAD_HEIGHT = 318;
 
         private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
             PIP_MASK = new Regex("[0-9]{7}");
@@ -202,14 +203,17 @@ namespace PharmApp
         {
             using (Image<Bgr, byte> screen = GetScreen())
             {
-                List<Rectangle> colouredRects = GetSelectedProductRects(screen);
-                List<OCRResult> results = new List<OCRResult>();
-                foreach (Rectangle rect in colouredRects)
-                {
-                    results.AddRange(OCRImage(screen, rect));
-                }
+                //List<Rectangle> colouredRects = GetSelectedProductRects(screen);
+                //List<OCRResult> results = new List<OCRResult>();
+                //foreach (Rectangle rect in colouredRects)
+                //{
+                //    results.AddRange(OCRImage(screen, rect));
+                //}
+
+                List<OCRResult> results = OCRImage(screen, GetProductRect());
 
                 List<OCRResult> validResults = new List<OCRResult>();
+
                 foreach (OCRResult result in results)
                 {
                     string text = result.GetText();
@@ -221,13 +225,11 @@ namespace PharmApp
                     {
                         Console.WriteLine("Found PIP: " + text);
 
-                        List<OCRResult> tempList = new List<OCRResult>();
-                        tempList.Add(result);
-                        return tempList;
+                        validResults.Add(result);
                     }
                 }
 
-                return null;
+                return validResults;
                 
             }
         }
@@ -447,6 +449,11 @@ namespace PharmApp
         private static Rectangle GetNHSNumberRect()
         {
             return new Rectangle(NHS_X, NHS_Y, NHS_WIDTH, NHS_HEIGHT);
+        }
+
+        private static Rectangle GetProductRect()
+        {
+            return new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
         }
 
         /// <summary>

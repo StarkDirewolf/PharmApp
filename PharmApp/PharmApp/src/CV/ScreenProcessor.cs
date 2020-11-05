@@ -92,18 +92,18 @@ namespace PharmApp.src
             {
                 if (value != _selectedProducts)
                 {
-                    if (OnSelectedProductChanged == null) return;
+                    if (OnProductsChanged == null) return;
 
                     _selectedProducts = value;
 
                     if (value == null)
                     {
-                        OnSelectedProductChanged(this, OCRResultListEventArgs.Empty);
+                        OnProductsChanged(this, OCRResultListEventArgs.Empty);
                     }
                     else
                     {
 
-                        OnSelectedProductChanged(this, new OCRResultListEventArgs(value));
+                        OnProductsChanged(this, new OCRResultListEventArgs(value));
 
                     }
                 }
@@ -284,8 +284,9 @@ namespace PharmApp.src
 
         private void CheckProgramIsInFocus()
         {
-            if (!MultiFormContext.GetContext().HandleIsForm(GetForegroundWindow()))
-            {
+            //IntPtr foregroundHandle = GetForegroundWindow();
+            //if (!MultiFormContext.GetContext().HandleIsForm(foregroundHandle))
+            //{
 
                 string title = GetActiveWindowTitle();
                 if (title == null)
@@ -296,7 +297,7 @@ namespace PharmApp.src
                 {
                     IsProgramFocused = title.Equals("ProScript Connect") || title.Equals("Add item(s) to order") ? true : false;
                 }
-            }
+            //}
         }
 
         private string GetActiveWindowTitle()
@@ -340,7 +341,7 @@ namespace PharmApp.src
         public event OCRProcessHandler OnNHSNumberChanged;
 
         public delegate void OCRListProcessHandler(object source, OCRResultListEventArgs args);
-        public event OCRListProcessHandler OnSelectedProductChanged;
+        public event OCRListProcessHandler OnProductsChanged;
 
         protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
         protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);

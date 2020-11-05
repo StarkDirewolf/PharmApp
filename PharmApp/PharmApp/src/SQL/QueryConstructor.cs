@@ -300,6 +300,10 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
                 case QueryType.PREPARATIONCODE:
                     str = PREPARATIONCODE;
                     break;
+
+                case QueryType.PRODUCTINFO:
+                    str = PRODUCTINFO;
+                    break;
             }
 
             if (conditions.Count > 0)
