@@ -39,7 +39,7 @@ namespace PharmApp.src
             }
         }
 
-        protected bool ShouldBeVisible
+        public bool ShouldBeVisible
         {
             get => _shouldBeVisible;
             set
@@ -92,11 +92,13 @@ namespace PharmApp.src
 
         public void ChangeLocation(int x, int y) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
+            if (IsDisposed) return;
             Location = new System.Drawing.Point(x, y);
         }));
 
         public void ChangeVisibility() => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
+            if (IsDisposed) return;
             if (ShouldBeVisible && ProscriptHasFocus) Show();
             else Hide();
 
