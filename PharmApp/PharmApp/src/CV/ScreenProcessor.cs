@@ -284,9 +284,9 @@ namespace PharmApp.src
 
         private void CheckProgramIsInFocus()
         {
-            //IntPtr foregroundHandle = GetForegroundWindow();
-            //if (!MultiFormContext.GetContext().HandleIsForm(foregroundHandle))
-            //{
+            IntPtr foregroundHandle = GetForegroundWindow();
+            if (!MultiFormContext.GetContext().HandleIsForm(foregroundHandle))
+            {
 
                 string title = GetActiveWindowTitle();
                 if (title == null)
@@ -297,7 +297,7 @@ namespace PharmApp.src
                 {
                     IsProgramFocused = title.Equals("ProScript Connect") || title.Equals("Add item(s) to order") ? true : false;
                 }
-            //}
+            }
         }
 
         private string GetActiveWindowTitle()

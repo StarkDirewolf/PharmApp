@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,10 +15,14 @@ namespace PharmApp.src.GUI
     class MultiFormContext : ApplicationContext
     {
 
-        private int openForms = 0;
+        //private int openForms = 0;
         public static Dispatcher disp = Dispatcher.CurrentDispatcher;
         private static MultiFormContext singletonContext;
         private ScreenProcessor processor;
+        private List<ScreenDrawing> forms = new List<ScreenDrawing>();
+
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
 
         private MultiFormContext()
         {
@@ -45,26 +50,25 @@ namespace PharmApp.src.GUI
             return singletonContext;
         }
 
-        //public bool HandleIsForm(IntPtr handle)
-        //{
-        //    foreach (var form in forms)
-        //    {
-        //        if (form.Handle == handle) return true;
-        //    }
-        //    return false;
-        //}
+        public bool HandleIsForm(IntPtr handle)
+        {
+            foreach (var form in forms)
+            {
+                if (form.Handle == handle) return true;
+            }
+            return false;
+        }
 
         public void AddForm(ScreenDrawing form)
         {
-            //forms.Add(form);
-            openForms++;
+            forms.Add(form);
+            //openForms++;
 
             form.FormClosed += (s, args) =>
             {
                 //When we have closed the last of the "starting" forms, 
                 //end the program.
-                if (Interlocked.Decrement(ref openForms) == 0)
-                    ExitThread();
+                MultiFormContext.GetContext().RemoveForm(form);
             };
 
             processor.OnProgramFocus += form.OnProgramFocus;
@@ -75,6 +79,19 @@ namespace PharmApp.src.GUI
             processor.OnNoNewETPFound += form.OnNoNewETPFound;
             processor.OnNoETPBatchFound += form.OnNoETPBatchFound;
             processor.OnETPBatchFound += form.OnETPBatchFound;
+
+            BringProscriptToFront();
+        }
+
+        public void RemoveForm(ScreenDrawing form)
+        {
+            forms.Remove(form);
+            BringProscriptToFront();
+        }
+
+        private void BringProscriptToFront()
+        {
+            SetForegroundWindow(ScreenProcessor.GetScreenProcessor().GetProScriptHandle());
         }
 
     }

@@ -49,10 +49,10 @@ namespace PharmApp
         private const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
             PATIENT_DETAILS_MIN_RATIO = 2,
-            PRODUCT_MIN_WIDTH = 55,
-            PRODUCT_MAX_WIDTH = 810,
-            PRODUCT_MIN_HEIGHT = 15,
-            PRODUCT_MAX_HEIGHT = 25;
+            PRODUCT_MIN_WIDTH = 60,
+            PRODUCT_MAX_WIDTH = 80,
+            PRODUCT_MIN_HEIGHT = 10,
+            PRODUCT_MAX_HEIGHT = 15;
 
         private const double BGR_BUFFER = 2;
 
@@ -210,7 +210,7 @@ namespace PharmApp
                 //    results.AddRange(OCRImage(screen, rect));
                 //}
 
-                List<OCRResult> results = OCRImage(screen, GetProductRect());
+                List<OCRResult> results = OCRImage(screen, GetProductRect(), new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
 
                 List<OCRResult> validResults = new List<OCRResult>();
 
@@ -234,8 +234,12 @@ namespace PharmApp
             }
         }
 
-
         private static List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
+        {
+            return OCRImage(image, area, Size.Empty, Size.Empty);
+        }
+
+        private static List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
         {
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
@@ -251,7 +255,7 @@ namespace PharmApp
                 patientDetailsImage.CopyTo(imageForOcr);
                 imageForOcr.ROI = Rectangle.Empty;
 
-                List<OCRResult> results = GetText(imageForOcr);
+                List<OCRResult> results = GetText(imageForOcr, minSize, maxSize);
 
                 if (SHOW_OCR_IMAGE)
                 {
@@ -268,11 +272,11 @@ namespace PharmApp
             return patientDetails;
         }
 
-        private static List<OCRResult> GetText(Image<Bgr, byte> image)
+        private static List<OCRResult> GetText(Image<Bgr, byte> image, Size minSize, Size maxSize)
         {
             using (Image<Gray, byte> optImg = GetOptImage(image))
             {
-                List<Rectangle> patRects = GetBoundingRectangles(optImg, true);
+                List<Rectangle> patRects = GetBoundingRectangles(optImg, minSize, maxSize);
 
                 List<OCRResult> textList = new List<OCRResult>();
 
@@ -360,7 +364,7 @@ namespace PharmApp
         /// <param name="img">optimised image for contour detection</param>
         /// <param name="textRects">if true then it filters out rectangles that are inappropriately sized for containing standard text</param>
         /// <returns>a list of rectangles that contain the contours of the image</returns>
-        private static List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, bool textRects = false)
+        private static List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, Size minSize, Size maxSize)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -375,11 +379,15 @@ namespace PharmApp
             {
                 Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
 
-                if (textRects)
+                if (minSize != Size.Empty && maxSize != Size.Empty)
                 {
                     // If text detection is desired, this filters out rectangles that are inappropriate dimensions
-                    double ar = rect.Width / rect.Height;
-                    if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
+                    //double ar = rect.Width / rect.Height;
+                    //if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
+                    //{
+                    //    list.Add(rect);
+                    //}
+                    if (rect.Width > minSize.Width && rect.Width < maxSize.Width && rect.Height > minSize.Height && rect.Height < maxSize.Height)
                     {
                         list.Add(rect);
                     }
@@ -456,6 +464,8 @@ namespace PharmApp
             return new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
         }
 
+        // -------DEFUNCT--------
+
         /// <summary>
         /// Returns a List of Rectangles that contain contours of regions of the specified colour.
         /// </summary>
@@ -468,7 +478,7 @@ namespace PharmApp
             using (Image<Gray, byte> blue = img.InRange(new Bgr(colour.Blue - BGR_BUFFER, colour.Green - BGR_BUFFER, colour.Red - BGR_BUFFER), new Bgr(colour.Blue + BGR_BUFFER, colour.Green + BGR_BUFFER, colour.Red + BGR_BUFFER)))
             {
 
-                List<Rectangle> rects = GetBoundingRectangles(blue);
+                List<Rectangle> rects = GetBoundingRectangles(blue, Size.Empty, Size.Empty);
 
                 // Show results if debugging setting is on
                 if (SHOW_PATIENT_DETAILS_RECTS)
