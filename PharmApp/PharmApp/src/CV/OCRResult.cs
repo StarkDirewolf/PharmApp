@@ -19,7 +19,7 @@ namespace PharmApp.src
 
         public OCRResult(string text, Rectangle rect, Image<Bgr, byte> image)
         {
-            this.text = text;
+            this.text = text.Trim();
             this.rect = rect;
             this.image = image;
         }

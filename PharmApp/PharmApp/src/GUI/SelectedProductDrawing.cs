@@ -13,10 +13,12 @@ namespace PharmApp.src.GUI
     {
         private const int WIDTH = 25, HEIGHT = 25, X_OFFSET = 5, Y_OFFSET = -5;
         private PictureBox img;
-        private Product product;
+        private Product product = new Product();
+        protected ToolTip tooltip = new ToolTip();
 
-        public SelectedProductDrawing(Product product) : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
+        public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
         {
+            ShouldBeVisible = false;
             img = new PictureBox {
                 Name = "Indicator",
                 Size = new Size(25, 25),
@@ -24,13 +26,34 @@ namespace PharmApp.src.GUI
                 Image = Image.FromFile(ResourceManager.redCircle)
             };
             this.Controls.Add(img);
-            this.product = product;
+            
+            tooltip.ShowAlways = true;
         }
 
         public Product GetProduct()
         {
             return product;
         }
+
+        public void SetProduct(Product product)
+        {
+            this.product = product;
+            SetTooltip(product.description);
+            if (product.genericID == "0")
+            {
+                img.Image = Image.FromFile(ResourceManager.redCircle);
+            }
+            else
+            {
+                img.Image = Image.FromFile(ResourceManager.greenCircle);
+            }
+        }
+
+        public void SetTooltip(string text) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
+        {
+            tooltip.SetToolTip(img, text);
+        }));
+
 
         //public void OnSelectedProductChanged(object source, OCRResultListEventArgs args) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         //{

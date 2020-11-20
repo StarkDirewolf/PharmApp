@@ -24,6 +24,7 @@ namespace PharmApp.src
 
         private bool _shouldBeVisible = false, _proscriptHasFocus = false;
         protected Label textLabel;
+        
 
         protected bool ProscriptHasFocus
         {

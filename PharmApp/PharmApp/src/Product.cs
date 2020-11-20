@@ -8,12 +8,12 @@ namespace PharmApp.src
 {
     class Product
     {
-        public string pipcode;
-        public string description;
-        public string genericID;
-        public decimal unitsPerPack;
+        public string pipcode = "0";
+        public string description = "NO DESCRIPTION";
+        public string genericID = "0";
+        public decimal unitsPerPack = 1.0M;
         //public string preparationCode;
-        public bool isGeneric;
-        public string supplier;
+        public bool isGeneric = false;
+        public string supplier = "NO SUPPLIER";
     }
 }

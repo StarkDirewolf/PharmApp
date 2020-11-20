@@ -13,16 +13,73 @@ namespace PharmApp.src.GUI
     class SelectedProductManager
     {
 
-        List<SelectedProductDrawing> currentForms = new List<SelectedProductDrawing>();
+        List<SelectedProductDrawing> availableForms = new List<SelectedProductDrawing>();
 
         public void OnSelectedProductChanged(object source, OCRResultListEventArgs args)
         {
+
+            if (availableForms.Count == 0)
+            {
+                for (int i = 0; i < 14; i++)
+                {
+                    MultiFormContext.disp.Invoke(new Action(() => {
+                        SelectedProductDrawing form = new SelectedProductDrawing();
+                        MultiFormContext.GetContext().AddForm(form);
+                        availableForms.Add(form);
+                    }));
+
+                }
+            }
+
+            if (args.OCRResults.Count == 0)
+            {
+                foreach (SelectedProductDrawing form in availableForms)
+                {
+                    form.ShouldBeVisible = false;
+                }
+                return;
+            }
+
             List<OCRResult> ocrResults = args.OCRResults;
-            List<SelectedProductDrawing> newForms = new List<SelectedProductDrawing>();
+            List<SelectedProductDrawing> keepForms = new List<SelectedProductDrawing>();
+            List<SelectedProductDrawing> lostForms = new List<SelectedProductDrawing>();
 
             foreach (OCRResult ocrResult in ocrResults)
             {
-                string pip = ocrResult.GetText().Trim();
+                string pip = ocrResult.GetText();
+                SelectedProductDrawing foundForm = availableForms.Find(f => f.GetProduct().pipcode == pip);
+                if (foundForm != null) keepForms.Add(foundForm);
+            }
+
+            foreach (SelectedProductDrawing iform in availableForms)
+            {
+                if (!keepForms.Contains(iform)) lostForms.Add(iform);
+            }
+
+            foreach (OCRResult ocrResult in ocrResults)
+            {
+                string pip = ocrResult.GetText();
+                SelectedProductDrawing foundForm = keepForms.Find(f => f.GetProduct().pipcode == pip);
+                //foundForm = keepForms.Count > 1 ? keepForms.Find(f => f.GetProduct().pipcode == pip) : null;
+
+                if (foundForm != null)
+                {
+                    foundForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
+                    foundForm.ShouldBeVisible = true;
+                }
+                else
+                {
+                    SelectedProductDrawing unusedForm = lostForms.First();
+                    lostForms.Remove(unusedForm);
+                    unusedForm.SetProduct(ProductLookup.GetInstance().FindByPIP(pip));
+                    unusedForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
+                    unusedForm.ShouldBeVisible = true;
+                }
+            }
+
+            foreach (SelectedProductDrawing form in lostForms) {
+                form.ShouldBeVisible = false;
+            }
 
                 //foreach (SelectedProductDrawing form in currentForms)
                 //{
@@ -34,35 +91,6 @@ namespace PharmApp.src.GUI
                 //    }
                 //}
 
-                SelectedProductDrawing form = currentForms.Find(f => f.GetProduct().pipcode == pip);
-                if (form != null)
-                {
-                    
-                    currentForms.Remove(form);
-                }
-                else
-                {
-
-                    MultiFormContext.disp.Invoke(new Action( () => form = new SelectedProductDrawing(ProductLookup.GetInstance().FindByPIP(pip))));
-                    MultiFormContext.GetContext().AddForm(form);
-                }
-
-                form.ChangeLocationByOCRRect(ocrResult.GetRectangle());
-                form.ShouldBeVisible = true;
-
-
-                //if (newForm == null)
-                //{
-                //    newForm = new SelectedProductDrawing(ProductLookup.GetInstance().FindByPIP(pip));
-                //    MultiFormContext.GetContext().AddForm(newForm);
-                //}
-
-                newForms.Add(form);
-
-            }
-
-            currentForms.ForEach(f => MultiFormContext.disp.Invoke(new Action(() => f.Close())));
-            currentForms = newForms;
         }
 
     }

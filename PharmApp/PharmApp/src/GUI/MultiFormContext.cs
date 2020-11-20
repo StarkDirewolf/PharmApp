@@ -80,13 +80,13 @@ namespace PharmApp.src.GUI
             processor.OnNoETPBatchFound += form.OnNoETPBatchFound;
             processor.OnETPBatchFound += form.OnETPBatchFound;
 
-            BringProscriptToFront();
+            //BringProscriptToFront();
         }
 
         public void RemoveForm(ScreenDrawing form)
         {
             forms.Remove(form);
-            BringProscriptToFront();
+            //BringProscriptToFront();
         }
 
         private void BringProscriptToFront()
