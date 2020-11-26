@@ -15,21 +15,21 @@ namespace PharmApp.src.GUI
 
         List<SelectedProductDrawing> availableForms = new List<SelectedProductDrawing>();
 
+        public void InitializeForms()
+        {
+            for (int i = 0; i < 14; i++)
+            {
+                MultiFormContext.disp.Invoke(new Action(() => {
+                    SelectedProductDrawing form = new SelectedProductDrawing();
+                    MultiFormContext.GetContext().AddForm(form);
+                    availableForms.Add(form);
+                }));
+
+            }
+        }
+
         public void OnSelectedProductChanged(object source, OCRResultListEventArgs args)
         {
-
-            if (availableForms.Count == 0)
-            {
-                for (int i = 0; i < 14; i++)
-                {
-                    MultiFormContext.disp.Invoke(new Action(() => {
-                        SelectedProductDrawing form = new SelectedProductDrawing();
-                        MultiFormContext.GetContext().AddForm(form);
-                        availableForms.Add(form);
-                    }));
-
-                }
-            }
 
             if (args.OCRResults.Count == 0)
             {

@@ -20,6 +20,7 @@ namespace PharmApp.src.GUI
         private static MultiFormContext singletonContext;
         private ScreenProcessor processor;
         private List<ScreenDrawing> forms = new List<ScreenDrawing>();
+        private static SelectedProductManager productManager;
 
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -36,7 +37,7 @@ namespace PharmApp.src.GUI
             AddForm(new NewETPDrawing());
             AddForm(new NewETPBatch());
             
-            SelectedProductManager productManager = new SelectedProductManager();
+            productManager = new SelectedProductManager();
             processor.OnProductsChanged += productManager.OnSelectedProductChanged;
 
         }
@@ -46,6 +47,7 @@ namespace PharmApp.src.GUI
             if (singletonContext == null)
             {
                 singletonContext = new MultiFormContext();
+                productManager.InitializeForms();
             }
             return singletonContext;
         }

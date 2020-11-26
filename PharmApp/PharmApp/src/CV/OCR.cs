@@ -259,7 +259,7 @@ namespace PharmApp
 
                 if (SHOW_OCR_IMAGE)
                 {
-                    ImageViewer.Show(patientDetailsImage);
+                    ImageViewer.Show(imageForOcr);
                     foreach (OCRResult result in results)
                     {
                         Console.WriteLine(result.GetText());
@@ -282,6 +282,7 @@ namespace PharmApp
 
                 foreach (Rectangle rect in patRects)
                 {
+                    //image.Draw(rect, new Bgr(0,0,255), 1);
                     Rectangle newRect = rect; 
                     //newRect.X = rect.X - 1;
                     //newRect.Y = rect.Y - 1;
@@ -327,6 +328,7 @@ namespace PharmApp
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
                     //ImageViewer.Show(correctedImage);
                 }
+                //ImageViewer.Show(image);
 
                 return textList;
             }
@@ -345,11 +347,18 @@ namespace PharmApp
             // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
             //ImageViewer.Show(imgGray);
+            //ImageViewer.Show(imgGray);
             // Manipulates image to highlight text areas
             Image<Gray, byte> sobel = imgGray.Sobel(1, 0, 3).AbsDiff(new Gray(0.0)).Convert<Gray, byte>().ThresholdBinary(new Gray(SOBEL_GRAY_THRESHOLD), new Gray(SOBEL_GRAY_MAX));
+            //ImageViewer.Show(sobel);
+
+            // Trialling highlighted lines removal
+            sobel = sobel.SmoothMedian(5);
+            //ImageViewer.Show(sobel);
+
+
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));
             sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
-
 
             Console.WriteLine("Image optimised in " + stopwatch.ElapsedMilliseconds + "ms");
             return sobel;
