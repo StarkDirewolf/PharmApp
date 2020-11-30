@@ -9,6 +9,7 @@ using System.Windows.Shell;
 using System.Windows;
 using System.Windows.Forms;
 using PharmApp.src.GUI;
+using System.Diagnostics;
 
 namespace PharmApp.src
 {
@@ -228,8 +229,15 @@ namespace PharmApp.src
 
                 if (IsProgramFocused)
                 {
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
+                    
                     nhsNumber = OCR.GetNhsNoFromScreen();
+                    Console.WriteLine("NHS number processing took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+
                     selectedProducts = OCR.GetSelectedProduct();
+                    Console.WriteLine("PIP codes analysed in " + stopwatch.ElapsedMilliseconds + "ms");
                 }
             }
             

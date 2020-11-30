@@ -17,7 +17,7 @@ namespace PharmApp.src.GUI
 
         public void InitializeForms()
         {
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < 20; i++)
             {
                 MultiFormContext.disp.Invoke(new Action(() => {
                     SelectedProductDrawing form = new SelectedProductDrawing();

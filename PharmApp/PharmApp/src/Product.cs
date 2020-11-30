@@ -15,5 +15,10 @@ namespace PharmApp.src
         //public string preparationCode;
         public bool isGeneric = false;
         public string supplier = "NO SUPPLIER";
+
+        public GetPlacedOrders(DateTime startDate, DateTime endDate)
+        {
+
+        }
     }
 }

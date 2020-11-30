@@ -55,11 +55,20 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON K.PreparationCodeId = P.Preparatio
 JOIN (SELECT * FROM PKBRuntime.Pharmacy.PreparationSearchView WHERE RegionId = 0) V ON P.PreparationCodeId = V.PreparationCodeId
 JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
 
+        private const string ORDERHISTORY = @"
+SELECT I.Description, I.OrderStatusReason, I.OrderQuantity, I.ReceivedQuantity, I.SuppliedBy FROM ProScriptConnect.Ordering.OrderHistoryItem I
+JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId";
+
         private const string FILTER = " WHERE ";
 
         private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = ";
 
+        private const string FILTER_ORDER_HISTORY_DATE = "DateModified BETWEEN '";
+        private const string FILTER_ORDER_HISTORY_DATE_MIDDLE = "' AND '";
+        private const string FILTER_ORDER_HISTORY_DATE_END = "'";
+
         private const string DATE_FORMAT = "yyyy/MM/dd";
+        private const string DATE_FORMAT_ORDER_HISTORY = "yyyy-MM-dd";
 
         private const string FILTER_NHSNO = "PatientNHSNumber = '";
         private const string FILTER_QUOTE_END = "'";
@@ -67,6 +76,7 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
         private const string FILTER_NEW_ETP = "s.PrescriptionStatusId = 3";
         private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
         private const string FILTER_PIP = "OrderCode = '";
+        private const string FILTER_PIP_ORDER_HISTORY = 
         private const string FILTER_NOT_DELETED = "Deleted = 0";
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
         private const string FILTER_PREP_CODE = "PreparationCodeId = '";
@@ -90,7 +100,8 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
             ORDERPAD,
             VIRTUALPRODCODE,
             PREPARATIONCODE,
-            PRODUCTINFO
+            PRODUCTINFO,
+            ORDERHISTORY
         }
 
         private enum Condition
@@ -122,10 +133,19 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
         /// <param name="day"> the day to filter by</param>
         public void SpecificDay(DateTime day)
         {
-            string dateString = day.ToString(DATE_FORMAT);
-            RemoveCondition(Condition.DATE);
-            RemoveCondition(Condition.BETWEEN_DATES);
-            AddCondition(Condition.DATE, dateString);
+            string dateString;
+            if (type == QueryType.ORDERHISTORY)
+            {
+                BetweenDays(day, day);
+            }
+            else
+            {
+                dateString = day.ToString(DATE_FORMAT);
+                RemoveCondition(Condition.DATE);
+                RemoveCondition(Condition.BETWEEN_DATES);
+                AddCondition(Condition.DATE, dateString);
+            }
+            
         }
 
         public void NewETP()
@@ -192,12 +212,23 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
         public void BetweenDays(DateTime fromDay, DateTime toDay)
         {
             string str = "";
-            for (DateTime day = fromDay; (toDay.Date - day.Date).Days >= 0; day = day.AddDays(1))
+            if (type == QueryType.ORDERHISTORY)
             {
-                str = str + FILTER_DATE + "'" + day.ToString(DATE_FORMAT) + "' ";
-                if (toDay.Date != day.Date) str += "OR ";
+                str = FILTER_ORDER_HISTORY_DATE;
+                str += fromDay.ToString(DATE_FORMAT_ORDER_HISTORY);
+                str += FILTER_ORDER_HISTORY_DATE_MIDDLE;
+                str += toDay.AddDays(1).ToString(DATE_FORMAT_ORDER_HISTORY);
+                str += FILTER_ORDER_HISTORY_DATE_END;
             }
+            else
+            {
 
+                for (DateTime day = fromDay; (toDay.Date - day.Date).Days >= 0; day = day.AddDays(1))
+                {
+                    str = str + FILTER_DATE + "'" + day.ToString(DATE_FORMAT) + "' ";
+                    if (toDay.Date != day.Date) str += "OR ";
+                }
+            }
             RemoveCondition(Condition.DATE);
             RemoveCondition(Condition.BETWEEN_DATES);
             AddCondition(Condition.BETWEEN_DATES, str);
@@ -243,7 +274,14 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
                         break;
 
                     case Condition.PIPCODE:
-                        str = FILTER_PIP + condition.Value + FILTER_QUOTE_END;
+                        if (type == QueryType.ORDERHISTORY)
+                        {
+                            str = FILTER_PIP_ORDER_HISTORY + condition.Value + FILTER_QUOTE_END;
+                        }
+                        else
+                        {
+                            str = FILTER_PIP + condition.Value + FILTER_QUOTE_END;
+                        }
                         break;
 
                     case Condition.NOTDELETED:
@@ -303,6 +341,10 @@ JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
 
                 case QueryType.PRODUCTINFO:
                     str = PRODUCTINFO;
+                    break;
+
+                case QueryType.ORDERHISTORY:
+                    str = ORDERHISTORY;
                     break;
             }
 
