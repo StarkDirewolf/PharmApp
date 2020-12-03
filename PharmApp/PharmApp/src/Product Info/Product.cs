@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PharmApp.src.Product_Info;
+using PharmApp.src.SQL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,10 +17,14 @@ namespace PharmApp.src
         //public string preparationCode;
         public bool isGeneric = false;
         public string supplier = "NO SUPPLIER";
+        private SQLLookUp<OrderHistory> orders;
 
-        public GetPlacedOrders(DateTime startDate, DateTime endDate)
+        public void GetPlacedOrders(DateTime fromDate, DateTime endDate)
         {
-
+            if (orders == null)
+            {
+                orders = new SQLLookUp<OrderHistory>(SQLQueryer.GetOrderHistory);
+            }
         }
     }
 }

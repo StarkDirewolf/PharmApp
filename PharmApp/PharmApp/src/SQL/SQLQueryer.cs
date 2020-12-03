@@ -1,5 +1,6 @@
 ﻿using PharmApp;
 using PharmApp.src;
+using PharmApp.src.Product_Info;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -76,6 +77,41 @@ namespace PharmApp
             }
 
             return nhsNumNameLookup;
+        }
+
+        public static OrderHistory GetOrderHistory(string pip, DateTime fromDate, DateTime endDate)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERHISTORY);
+
+            query.PipCode(pip);
+            query.BetweenDays(fromDate, endDate);
+
+            OrderHistory history = new OrderHistory();
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        DateTime orderDate = reader.GetDateTime(0);
+                        string description = reader.GetString(1);
+                        string statusComment = reader.GetString(2);
+                        decimal orderQty = reader.GetDecimal(3);
+                        decimal receivedQty = reader.GetDecimal(4);
+                        string supplier = reader.GetString(5);
+
+                        OrderLine line = new OrderLine(description, orderDate, supplier, orderQty, receivedQty, statusComment);
+                        history.addOrderLine(line);
+                    }
+                }
+            }
+
+            return history;
         }
 
         public static Product PopulateFromPIP(string pip)

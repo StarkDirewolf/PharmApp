@@ -56,7 +56,7 @@ JOIN (SELECT * FROM PKBRuntime.Pharmacy.PreparationSearchView WHERE RegionId = 0
 JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
 
         private const string ORDERHISTORY = @"
-SELECT I.Description, I.OrderStatusReason, I.OrderQuantity, I.ReceivedQuantity, I.SuppliedBy FROM ProScriptConnect.Ordering.OrderHistoryItem I
+SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.ReceivedQuantity, I.SuppliedBy FROM ProScriptConnect.Ordering.OrderHistoryItem I
 JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId";
 
         private const string FILTER = " WHERE ";
@@ -76,7 +76,7 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
         private const string FILTER_NEW_ETP = "s.PrescriptionStatusId = 3";
         private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
         private const string FILTER_PIP = "OrderCode = '";
-        private const string FILTER_PIP_ORDER_HISTORY = 
+        private const string FILTER_PIP_ORDER_HISTORY = "PipCode = '";
         private const string FILTER_NOT_DELETED = "Deleted = 0";
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
         private const string FILTER_PREP_CODE = "PreparationCodeId = '";

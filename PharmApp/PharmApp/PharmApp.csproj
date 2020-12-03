@@ -120,7 +120,9 @@
     <Compile Include="src\GUI\SelectedProductDrawing.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="src\Product.cs" />
+    <Compile Include="src\Product Info\OrderHistory.cs" />
+    <Compile Include="src\Product Info\OrderLine.cs" />
+    <Compile Include="src\Product Info\Product.cs" />
     <Compile Include="src\SQL\ProductLookup.cs" />
     <Compile Include="src\SQL\QueryConstructor.cs" />
     <Compile Include="src\GUI\ScreenDrawing.cs">
@@ -128,6 +130,7 @@
     </Compile>
     <Compile Include="src\GUI\ScreenDrawingManager.cs" />
     <Compile Include="src\CV\ScreenProcessor.cs" />
+    <Compile Include="src\SQL\SQLLookUp.cs" />
     <Compile Include="src\SQL\SQLQueryer.cs" />
     <Compile Include="src\SQL\StockQueryer.cs" />
     <Compile Include="src\Defunct\QueryConstructorOld.cs" />
