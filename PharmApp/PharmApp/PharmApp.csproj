@@ -131,6 +131,7 @@
     <Compile Include="src\GUI\ScreenDrawingManager.cs" />
     <Compile Include="src\CV\ScreenProcessor.cs" />
     <Compile Include="src\SQL\SQLLookUp.cs" />
+    <Compile Include="src\SQL\SQLOrderHistory.cs" />
     <Compile Include="src\SQL\SQLQueryer.cs" />
     <Compile Include="src\SQL\StockQueryer.cs" />
     <Compile Include="src\Defunct\QueryConstructorOld.cs" />

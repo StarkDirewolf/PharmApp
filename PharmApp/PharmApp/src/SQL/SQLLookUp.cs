@@ -7,32 +7,29 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.SQL
 {
-    class SQLLookUp<T>
+    abstract class SQLLookUp<T>
     {
         private T data;
         private Stopwatch timer;
-        private Func<T> queryFunction;
         private const int CACHE_TIME_MS = 10000;
-
-        public SQLLookUp(Func<T, T> queryFunction)
-        {
-            this.queryFunction = queryFunction;
-        }
 
         public T GetData()
         {
             if (timer == null || data == null)
             {
-                data = queryFunction.Invoke();
+                data = QueryFunction();
                 timer = new Stopwatch();
                 timer.Start();
             }
             else if (timer.ElapsedMilliseconds > CACHE_TIME_MS)
             {
-                data = queryFunction.Invoke();
+                data = QueryFunction();
+                timer.Restart();
             }
 
             return data;
         }
+
+        abstract protected T QueryFunction(); 
     }
 }

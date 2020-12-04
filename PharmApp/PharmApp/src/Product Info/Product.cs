@@ -17,14 +17,16 @@ namespace PharmApp.src
         //public string preparationCode;
         public bool isGeneric = false;
         public string supplier = "NO SUPPLIER";
-        private SQLLookUp<OrderHistory> orders;
+        private SQLOrderHistory orders;
 
-        public void GetPlacedOrders(DateTime fromDate, DateTime endDate)
+        public OrderHistory GetPlacedOrders(DateTime fromDate, DateTime endDate)
         {
-            if (orders == null)
+            if (orders == null || orders.fromDate != fromDate || orders.endDate != endDate)
             {
-                orders = new SQLLookUp<OrderHistory>(SQLQueryer.GetOrderHistory);
+                orders = new SQLOrderHistory(pipcode, DateTime.Today.AddDays(-7), DateTime.Today);
             }
+
+            return orders.GetData();
         }
     }
 }
