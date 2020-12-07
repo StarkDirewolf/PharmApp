@@ -30,6 +30,11 @@ namespace PharmApp.src.SQL
             return data;
         }
 
-        abstract protected T QueryFunction(); 
+        abstract protected T QueryFunction();
+
+        public override string ToString()
+        {
+            return GetData().ToString();
+        }
     }
 }

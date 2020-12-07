@@ -23,10 +23,34 @@ namespace PharmApp.src
         {
             if (orders == null || orders.fromDate != fromDate || orders.endDate != endDate)
             {
-                orders = new SQLOrderHistory(pipcode, DateTime.Today.AddDays(-7), DateTime.Today);
+                if (isGeneric)
+                {
+                    orders = new SQLOrderHistory(genericID, fromDate, endDate, true);
+                }
+                else
+                {
+                    orders = new SQLOrderHistory(pipcode, fromDate, endDate, false);
+                }
             }
 
             return orders.GetData();
+        }
+
+        public bool DeliveryDue()
+        {
+            OrderHistory history = GetRecentOrders();
+            return history.DeliveryDue();
+        }
+
+        public bool IsOrdering()
+        {
+            OrderHistory history = GetRecentOrders();
+            return history.IsOrdering();
+        }
+
+        public OrderHistory GetRecentOrders()
+        {
+            return GetPlacedOrders(DateTime.Today.AddDays(-5), DateTime.Today);
         }
     }
 }

@@ -215,6 +215,16 @@ namespace PharmApp.src
 
         }
 
+        public void PauseProcessing()
+        {
+            processing = false;
+        }
+
+        public void ContinueProcessing()
+        {
+            processing = true;
+        }
+
         public void Process()
         {
             while(processing)

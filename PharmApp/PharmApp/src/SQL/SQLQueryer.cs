@@ -33,7 +33,7 @@ namespace PharmApp
                     query.BetweenDays(fromDay, toDay);
                 }
                 
-                query.SortBy();
+                query.SortByName();
                 SqlCommand command = new SqlCommand(query.ToString(), connection);
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
@@ -79,12 +79,13 @@ namespace PharmApp
             return nhsNumNameLookup;
         }
 
-        public static OrderHistory GetOrderHistory(string pip, DateTime fromDate, DateTime endDate)
+        public static OrderHistory GetOrderHistory(string code, DateTime fromDate, DateTime endDate, bool byGenericID)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERHISTORY);
 
-            query.PipCode(pip);
+            query.PipCode(code);
             query.BetweenDays(fromDate, endDate);
+            query.SortByDate();
 
             OrderHistory history = new OrderHistory();
 
@@ -106,7 +107,7 @@ namespace PharmApp
                         string supplier = reader.GetString(5);
 
                         OrderLine line = new OrderLine(description, orderDate, supplier, orderQty, receivedQty, statusComment);
-                        history.addOrderLine(line);
+                        history.AddOrderLine(line);
                     }
                 }
             }

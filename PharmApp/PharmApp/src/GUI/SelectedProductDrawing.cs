@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,8 @@ namespace PharmApp.src.GUI
         private PictureBox img;
         private Product product = new Product();
         protected ToolTip tooltip = new ToolTip();
+        private const int TOOLTIP_MIN_REFRESH_DELAY = 5000, TOOLTIP_SHOW_DURATION = 15000;
+        private Stopwatch tooltip_timer = new Stopwatch();
 
         public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
         {
@@ -28,6 +31,18 @@ namespace PharmApp.src.GUI
             this.Controls.Add(img);
             
             tooltip.ShowAlways = true;
+            tooltip.AutoPopDelay = TOOLTIP_SHOW_DURATION;
+            tooltip.Popup += Tooltip_Popup;
+        }
+
+        private void Tooltip_Popup(object sender, PopupEventArgs e)
+        {
+            if (tooltip_timer.ElapsedMilliseconds > TOOLTIP_MIN_REFRESH_DELAY)
+            {
+                SetTooltipToOrderHistory();
+                tooltip_timer.Restart();
+            }
+            
         }
 
         public Product GetProduct()
@@ -38,15 +53,29 @@ namespace PharmApp.src.GUI
         public void SetProduct(Product product)
         {
             this.product = product;
-            SetTooltip(product.description);
+            SetTooltipToOrderHistory();
+            tooltip_timer.Start();
             if (product.genericID == "0")
             {
-                img.Image = Image.FromFile(ResourceManager.redCircle);
+                img.Image = Image.FromFile(ResourceManager.blueCircle);
             }
             else
             {
-                img.Image = Image.FromFile(ResourceManager.greenCircle);
+                if (product.IsOrdering())
+                {
+                    img.Image = Image.FromFile(ResourceManager.greenCircle);
+                }
+                else
+                {
+                    img.Image = Image.FromFile(ResourceManager.redCircle);
+                }
+                
             }
+        }
+
+        public void SetTooltipToOrderHistory()
+        {
+            SetTooltip(product.GetRecentOrders().ToString());
         }
 
         public void SetTooltip(string text) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>

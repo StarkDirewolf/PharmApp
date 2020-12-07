@@ -83,6 +83,8 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
 
         private const string FILTER_AND = " AND ";
 
+        private const string ORDER_BY_DATE_MODIFIED = "ORDER BY DateModified DESC";
+
         private readonly QueryType type;
 
         private List<KeyValuePair<Condition, string>> conditions = new List<KeyValuePair<Condition, string>>();
@@ -204,9 +206,14 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
         }
 
         // Temporary hardcode
-        public void SortBy()
+        public void SortByName()
         {
             sort = "ORDER BY P.Surname";
+        }
+
+        public void SortByDate()
+        {
+            sort = ORDER_BY_DATE_MODIFIED;
         }
 
         public void BetweenDays(DateTime fromDay, DateTime toDay)

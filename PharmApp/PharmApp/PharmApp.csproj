@@ -123,6 +123,7 @@
     <Compile Include="src\Product Info\OrderHistory.cs" />
     <Compile Include="src\Product Info\OrderLine.cs" />
     <Compile Include="src\Product Info\Product.cs" />
+    <Compile Include="src\Product Info\Suppliers\AAH.cs" />
     <Compile Include="src\SQL\ProductLookup.cs" />
     <Compile Include="src\SQL\QueryConstructor.cs" />
     <Compile Include="src\GUI\ScreenDrawing.cs">
@@ -320,6 +321,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License-LGPL.txt" />
+    <Content Include="Resources\Blue_circle.png" />
     <Content Include="Resources\Green_circle.png" />
     <Content Include="Resources\Red_circle.png" />
     <Content Include="Resources\tessdata\.gitmodules" />

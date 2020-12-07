@@ -11,22 +11,19 @@ namespace PharmApp.src.SQL
     {
         private string pip;
         public DateTime fromDate, endDate;
+        private bool byGenericID;
 
-        public SQLOrderHistory(string pip, DateTime fromDate, DateTime endDate)
+        public SQLOrderHistory(string pip, DateTime fromDate, DateTime endDate, bool byGenericID)
         {
             this.pip = pip;
             this.fromDate = fromDate;
             this.endDate = endDate;
+            this.byGenericID = byGenericID;
         }
 
         protected override OrderHistory QueryFunction()
         {
-            return SQLQueryer.GetOrderHistory(pip, fromDate, endDate);
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();) 
+            return SQLQueryer.GetOrderHistory(pip, fromDate, endDate, byGenericID);
         }
     }
 }

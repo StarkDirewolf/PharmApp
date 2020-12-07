@@ -25,11 +25,16 @@ namespace PharmApp.src.Product_Info
             this.statusComment = statusComment;
         }
 
+        public bool DeliveryDue()
+        {
+            throw new NotImplementedException();
+        }
+
         public override string ToString()
         {
-            string str = date.ToString("dd/MM/yy") + " - ";
+            string str = date.ToString("g") + " - ";
             str += description + " "; 
-            str += receivedQty.ToString() + "/" + orderQty.ToString() + " (" + supplier;
+            str += receivedQty.ToString().Replace(".000", "") + "/" + orderQty.ToString().Replace(".000", "") + " (" + supplier;
             if (statusComment != null)
             {
                 str += " - " + statusComment;
