@@ -99,6 +99,7 @@
   <ItemGroup>
     <Compile Include="src\CV\OCRResultListEventArgs.cs" />
     <Compile Include="src\Email\NHSClient.cs" />
+    <Compile Include="src\GUI\HotKey.cs" />
     <Compile Include="src\GUI\MultiFormContext.cs" />
     <Compile Include="src\GUI\NewETPBatch.cs">
       <SubType>Form</SubType>

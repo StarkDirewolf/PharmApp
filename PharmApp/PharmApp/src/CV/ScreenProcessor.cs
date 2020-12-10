@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Forms;
 using PharmApp.src.GUI;
 using System.Diagnostics;
+using ConsoleHotKey;
 
 namespace PharmApp.src
 {
@@ -225,11 +226,21 @@ namespace PharmApp.src
             processing = true;
         }
 
+        private void OnHotKeyHandler(object sender, HotKeyEventArgs e)
+        {
+            processing = !processing;
+        }
+
         public void Process()
         {
-            while(processing)
+            while(true)
             {
                 Thread.Sleep(500);
+
+                if (!processing)
+                {
+                    continue;
+                }
 
                 if (proscriptHandle == IntPtr.Zero)
                 {

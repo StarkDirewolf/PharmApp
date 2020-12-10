@@ -56,8 +56,9 @@ JOIN (SELECT * FROM PKBRuntime.Pharmacy.PreparationSearchView WHERE RegionId = 0
 JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
 
         private const string ORDERHISTORY = @"
-SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.ReceivedQuantity, I.SuppliedBy FROM ProScriptConnect.Ordering.OrderHistoryItem I
-JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId";
+SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.ReceivedQuantity, I.SuppliedBy, OrderHistoryItemId FROM ProScriptConnect.Ordering.OrderHistoryItem I
+JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId
+JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
         private const string FILTER = " WHERE ";
 
@@ -77,13 +78,14 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
         private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
         private const string FILTER_PIP = "OrderCode = '";
         private const string FILTER_PIP_ORDER_HISTORY = "PipCode = '";
+        private const string FILTER_GENERIC_ORDER_HISTORY = "Gncs = '";
         private const string FILTER_NOT_DELETED = "Deleted = 0";
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
         private const string FILTER_PREP_CODE = "PreparationCodeId = '";
 
         private const string FILTER_AND = " AND ";
 
-        private const string ORDER_BY_DATE_MODIFIED = "ORDER BY DateModified DESC";
+        private const string ORDER_BY_DATE_MODIFIED = " ORDER BY DateModified DESC";
 
         private readonly QueryType type;
 
@@ -119,7 +121,8 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
             PIPCODE,
             NOTDELETED,
             VIRTUALID,
-            PREPCODE
+            PREPCODE,
+            GENERICCODE
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -190,6 +193,12 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
         {
             RemoveCondition(Condition.NOTDELETED);
             AddCondition(Condition.NOTDELETED);
+        }
+
+        public void GenericCode(string code)
+        {
+            RemoveCondition(Condition.GENERICCODE);
+            AddCondition(Condition.GENERICCODE, code);
         }
 
         /// <summary>
@@ -301,6 +310,10 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
 
                     case Condition.PREPCODE:
                         str = FILTER_PREP_CODE + condition.Value + FILTER_QUOTE_END;
+                        break;
+
+                    case Condition.GENERICCODE:
+                        str = FILTER_GENERIC_ORDER_HISTORY + condition.Value + FILTER_QUOTE_END;
                         break;
                 }
                 conditionList.RemoveAt(0);

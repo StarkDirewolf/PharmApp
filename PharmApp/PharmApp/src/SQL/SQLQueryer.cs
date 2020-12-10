@@ -83,7 +83,15 @@ namespace PharmApp
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERHISTORY);
 
-            query.PipCode(code);
+            if (byGenericID)
+            {
+                query.GenericCode(code);
+            }
+            else
+            {
+                query.PipCode(code);
+            }
+            
             query.BetweenDays(fromDate, endDate);
             query.SortByDate();
 
@@ -95,16 +103,41 @@ namespace PharmApp
 
                 SqlCommand command = new SqlCommand(query.ToString(), connection);
 
+                int itemID = 0;
+
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
+                        int thisItemID = reader.GetInt32(6);
+                        if (itemID == thisItemID)
+                        {
+                            continue;
+                        }
+                        itemID = thisItemID;
+
                         DateTime orderDate = reader.GetDateTime(0);
                         string description = reader.GetString(1);
-                        string statusComment = reader.GetString(2);
+                        string statusComment;
+                        if (reader.IsDBNull(2))
+                        {
+                            statusComment = "NONE";
+                        }
+                        else
+                        {
+                            statusComment = reader.GetString(2);
+                        }
                         decimal orderQty = reader.GetDecimal(3);
                         decimal receivedQty = reader.GetDecimal(4);
-                        string supplier = reader.GetString(5);
+                        string supplier;
+                        if (reader.IsDBNull(5))
+                        {
+                            supplier = "NONE";
+                        }
+                        else
+                        {
+                            supplier = reader.GetString(5);
+                        }
 
                         OrderLine line = new OrderLine(description, orderDate, supplier, orderQty, receivedQty, statusComment);
                         history.AddOrderLine(line);

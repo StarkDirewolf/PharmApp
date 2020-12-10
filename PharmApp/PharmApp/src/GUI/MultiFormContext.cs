@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsoleHotKey;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -21,6 +22,7 @@ namespace PharmApp.src.GUI
         private ScreenProcessor processor;
         private List<ScreenDrawing> forms = new List<ScreenDrawing>();
         private static SelectedProductManager productManager;
+        private bool hotkeyState = true;
 
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -40,6 +42,8 @@ namespace PharmApp.src.GUI
             productManager = new SelectedProductManager();
             processor.OnProductsChanged += productManager.OnSelectedProductChanged;
 
+            HotKeyManager.RegisterHotKey(Keys.F12, KeyModifiers.Control);
+            HotKeyManager.HotKeyPressed += new EventHandler<HotKeyEventArgs>(HotkeyPressed);
         }
 
         public static MultiFormContext GetContext()
@@ -89,6 +93,18 @@ namespace PharmApp.src.GUI
         {
             forms.Remove(form);
             //BringProscriptToFront();
+        }
+
+        public void HotkeyPressed(object send, HotKeyEventArgs e)
+        {
+            hotkeyState = !hotkeyState;
+            foreach (Form form in forms)
+            {
+                if (hotkeyState)
+                {
+                    form.visi
+                }
+            }
         }
 
         private void BringProscriptToFront()
