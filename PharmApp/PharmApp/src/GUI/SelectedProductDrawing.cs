@@ -75,7 +75,13 @@ namespace PharmApp.src.GUI
 
         public void SetTooltipToOrderHistory()
         {
-            SetTooltip(product.GetRecentOrders().ToString());
+            string tooltip = product.ToString() + ":\n\n";
+            if (product.deliveryNotes != null)
+            {
+                tooltip += product.deliveryNotes + "\n\n";
+            }
+            tooltip += product.GetRecentOrders().ToString();
+            SetTooltip(tooltip);
         }
 
         public void SetTooltip(string text) => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>

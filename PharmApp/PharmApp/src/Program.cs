@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using PharmApp.src.GUI;
 using System.Drawing;
 using PharmApp.src.Email;
+using ConsoleHotKey;
 
 namespace PharmApp
 {
@@ -23,6 +24,7 @@ namespace PharmApp
         {
 
             Application.EnableVisualStyles();
+            HotKeyManager.RegisterHotKey(Keys.F12, KeyModifiers.Control);
             Application.Run(MultiFormContext.GetContext());
             //NHSClient client = new NHSClient();
             //client.Connect();

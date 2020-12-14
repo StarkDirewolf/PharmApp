@@ -18,6 +18,8 @@ namespace PharmApp.src
         public bool isGeneric = false;
         public string supplier = "NO SUPPLIER";
         private SQLOrderHistory orders;
+        public decimal dtPrice = 0.0M;
+        public string deliveryNotes;
 
         public OrderHistory GetPlacedOrders(DateTime fromDate, DateTime endDate)
         {
@@ -51,6 +53,11 @@ namespace PharmApp.src
         public OrderHistory GetRecentOrders()
         {
             return GetPlacedOrders(DateTime.Today.AddDays(-5), DateTime.Today);
+        }
+
+        public override string ToString()
+        {
+            return description + " (" + Util.TrimTrailingZeros(unitsPerPack.ToString()) + ") - £" + Util.TrimTrailingZeros(dtPrice.ToString());
         }
     }
 }

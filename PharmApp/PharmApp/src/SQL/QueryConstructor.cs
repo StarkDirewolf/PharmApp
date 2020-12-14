@@ -49,11 +49,13 @@ SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM ProScriptConnect
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 
         private const string PRODUCTINFO = @"
-SELECT Description, Gncs, UnitsPerPack, K.IsGeneric, SupplierName FROM PKBRuntime.Pharmacy.PackOrderCode O
+SELECT Description, Gncs, UnitsPerPack, K.IsGeneric, SupplierName, Price, OrderingNotes FROM PKBRuntime.Pharmacy.PackOrderCode O
 JOIN PKBRuntime.Pharmacy.Pack K ON O.PackCodeId = K.PackCodeId
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON K.PreparationCodeId = P.PreparationCodeId AND K.PackCodeId = P.PackCodeId
 JOIN (SELECT * FROM PKBRuntime.Pharmacy.PreparationSearchView WHERE RegionId = 0) V ON P.PreparationCodeId = V.PreparationCodeId
-JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId";
+JOIN PKBRuntime.Pharmacy.Supplier S ON K.SupplierId = S.SupplierId
+JOIN (SELECT * FROM PKBRuntime.Pharmacy.PackRegion R WHERE RegionId = 0) R ON O.PackCodeId = R.PackCodeId
+LEFT JOIN App.dbo.CustomNotes A ON O.OrderCode = A.Pipcode";
 
         private const string ORDERHISTORY = @"
 SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.ReceivedQuantity, I.SuppliedBy, OrderHistoryItemId FROM ProScriptConnect.Ordering.OrderHistoryItem I

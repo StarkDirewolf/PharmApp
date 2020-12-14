@@ -38,12 +38,13 @@ namespace PharmApp.src.GUI
 
             AddForm(new NewETPDrawing());
             AddForm(new NewETPBatch());
+
+            PharmTrayIcon icon = new PharmTrayIcon();
             
             productManager = new SelectedProductManager();
             processor.OnProductsChanged += productManager.OnSelectedProductChanged;
 
-            HotKeyManager.RegisterHotKey(Keys.F12, KeyModifiers.Control);
-            HotKeyManager.HotKeyPressed += new EventHandler<HotKeyEventArgs>(HotkeyPressed);
+            HotKeyManager.HotKeyPressed += new EventHandler<HotKeyEventArgs>(PharmHotKey.HotKeyPressed);
         }
 
         public static MultiFormContext GetContext()
@@ -63,6 +64,14 @@ namespace PharmApp.src.GUI
                 if (form.Handle == handle) return true;
             }
             return false;
+        }
+
+        public void RefreshVisibility()
+        {
+            foreach (var form in forms)
+            {
+                form.ChangeVisibility();
+            }
         }
 
         public void AddForm(ScreenDrawing form)
@@ -95,17 +104,6 @@ namespace PharmApp.src.GUI
             //BringProscriptToFront();
         }
 
-        public void HotkeyPressed(object send, HotKeyEventArgs e)
-        {
-            hotkeyState = !hotkeyState;
-            foreach (Form form in forms)
-            {
-                if (hotkeyState)
-                {
-                    form.visi
-                }
-            }
-        }
 
         private void BringProscriptToFront()
         {

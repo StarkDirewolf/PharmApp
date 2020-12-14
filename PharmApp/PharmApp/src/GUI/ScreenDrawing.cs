@@ -100,7 +100,7 @@ namespace PharmApp.src
         public void ChangeVisibility() => MultiFormContext.disp.BeginInvoke(System.Windows.Threading.DispatcherPriority.Render, new Action(() =>
         {
             if (IsDisposed) return;
-            if (ShouldBeVisible && ProscriptHasFocus) Show();
+            if (ShouldBeVisible && ProscriptHasFocus && PharmHotKey.hotKeyVisible) Show();
             else Hide();
 
         }));

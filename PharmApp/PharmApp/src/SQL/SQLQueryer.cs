@@ -173,6 +173,11 @@ namespace PharmApp
                         prod.unitsPerPack = reader.GetDecimal(2);
                         prod.isGeneric = reader.GetBoolean(3);
                         prod.supplier = reader.GetString(4);
+                        prod.dtPrice = reader.GetDecimal(5);
+                        if (!reader.IsDBNull(6))
+                        {
+                            prod.deliveryNotes = reader.GetString(6);
+                        }
                     }
                 }
 

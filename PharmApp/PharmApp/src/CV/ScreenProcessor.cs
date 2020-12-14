@@ -25,7 +25,7 @@ namespace PharmApp.src
         // Scanner Thread
         static private ThreadStart scanScreenRef;
         static private Thread scanScreen;
-        private bool processing = true;
+        private bool processing = false;
 
         private static ScreenProcessor singleton;
 
@@ -237,14 +237,14 @@ namespace PharmApp.src
             {
                 Thread.Sleep(500);
 
-                if (!processing)
-                {
-                    continue;
-                }
-
                 if (proscriptHandle == IntPtr.Zero)
                 {
                     PopulateProscriptHandle();
+                }
+
+                if (!processing)
+                {
+                    continue;
                 }
 
 
