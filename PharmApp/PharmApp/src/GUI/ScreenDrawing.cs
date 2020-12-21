@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using System.Windows;
 using System.Runtime.InteropServices;
 using PharmApp.src.GUI;
+using Emgu.CV.Structure;
 
 namespace PharmApp.src
 {
@@ -24,6 +25,12 @@ namespace PharmApp.src
 
         private bool _shouldBeVisible = false, _proscriptHasFocus = false;
         protected Label textLabel;
+        protected OCRResult ocrResult;
+
+        public void SetOCRResut(OCRResult image)
+        {
+            ocrResult = image;
+        }
         
 
         protected bool ProscriptHasFocus
@@ -65,7 +72,7 @@ namespace PharmApp.src
             TransparencyKey = Color.White;
             BackColor = Color.White;
             FormBorderStyle = FormBorderStyle.None;
-            //FormBorderStyle = FormBorderStyle.FixedToolWindow;
+            //FormBorderStyle = FormBorderStyle.SizableToolWindow;
             ControlBox = false;
             Bounds = rect;
             ShowInTaskbar = false;
@@ -84,6 +91,43 @@ namespace PharmApp.src
 
             TopMost = true;
 
+            ControlAdded += ControlAddedEvent;
+
+        }
+
+        private void ControlAddedEvent(object sender, ControlEventArgs e)
+        {
+            e.Control.MouseClick += ClickEvent;
+        }
+
+        private void ClickEvent(object sender, MouseEventArgs e)
+        {
+            if (ocrResult != null)
+            {
+                Form popup = new Form();
+
+                PictureBox image = new PictureBox();
+                image.Image = ocrResult.GetImage().ToBitmap();
+                image.SizeMode = PictureBoxSizeMode.AutoSize;
+                popup.Controls.Add(image);
+
+                PictureBox ocrImage = new PictureBox();
+                ocrImage.Image = ocrResult.GetOCRImage().ToImage<Bgr, byte>().ToBitmap();
+                ocrImage.SizeMode = PictureBoxSizeMode.AutoSize;
+                System.Drawing.Point location = image.Location;
+                location.Offset(image.Width, 0);
+                ocrImage.Location = location;
+                popup.Controls.Add(ocrImage);
+
+                Label text = new Label();
+                text.Text = ocrResult.GetText();
+                location.Offset(0, ocrImage.Height);
+                text.Location = location;
+                popup.Controls.Add(text);
+
+                
+                popup.Show();
+            }
         }
 
         protected override bool ShowWithoutActivation
@@ -138,6 +182,17 @@ namespace PharmApp.src
         }
         public virtual void OnETPBatchFound(object source, EventArgs args)
         {
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                // turn on WS_EX_TOOLWINDOW style bit
+                cp.ExStyle |= 0x80;
+                return cp;
+            }
         }
 
     }

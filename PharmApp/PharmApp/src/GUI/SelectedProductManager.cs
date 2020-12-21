@@ -74,6 +74,7 @@ namespace PharmApp.src.GUI
                     unusedForm.SetProduct(ProductLookup.GetInstance().FindByPIP(pip));
                     unusedForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
                     unusedForm.ShouldBeVisible = true;
+                    unusedForm.SetOCRResut(ocrResult);
                 }
             }
 

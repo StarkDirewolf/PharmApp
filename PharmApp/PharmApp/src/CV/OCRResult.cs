@@ -16,12 +16,14 @@ namespace PharmApp.src
         private readonly int OFFSET_X = 20;
         private readonly int OFFSET_Y = 0;
         private readonly Image<Bgr, byte> image;
+        private readonly Mat ocrImage;
 
-        public OCRResult(string text, Rectangle rect, Image<Bgr, byte> image)
+        public OCRResult(string text, Rectangle rect, Image<Bgr, byte> image, Mat ocrImage)
         {
             this.text = text.Trim();
             this.rect = rect;
             this.image = image;
+            this.ocrImage = ocrImage;
         }
 
         public string GetText()
@@ -32,6 +34,11 @@ namespace PharmApp.src
         public Rectangle GetRectangle()
         {
             return rect;
+        }
+
+        public Mat GetOCRImage()
+        {
+            return ocrImage;
         }
 
         public Point GetOffsetPoint()

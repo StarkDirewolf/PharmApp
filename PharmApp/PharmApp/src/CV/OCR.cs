@@ -192,7 +192,7 @@ namespace PharmApp
                     if (NHS_NUM_MASK.IsMatch(trimmedDetail))
                     {
                         Console.WriteLine(trimmedDetail);
-                        return new OCRResult(trimmedDetail, detail.GetRectangle(), detail.GetImage());
+                        return new OCRResult(trimmedDetail, detail.GetRectangle(), detail.GetImage(), detail.GetOCRImage());
                     }
                 }
             }
@@ -314,17 +314,20 @@ namespace PharmApp
                         CvInvoke.BitwiseNot(gray, correctedImage);
                     }
 
-                    //Mat finalImage = new Mat();
-                    //CvInvoke.EdgePreservingFilter(gray, finalImage);
+                    Mat finalImage2 = new Mat();
+                    Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
+                    CvInvoke.Resize(correctedImage, finalImage2, newSize, 0, 0, Inter.Cubic);
+
+                    Mat finalImage = new Mat();
+                    CvInvoke.EdgePreservingFilter(finalImage2, finalImage);
 
                     //Mat blackwhite = new Mat();
                     //CvInvoke.Threshold(gray, blackwhite, 150, 255, ThresholdType.BinaryInv);
 
                     image.ROI = Rectangle.Empty;
-
-                    OCR_PROVIDER.SetImage(correctedImage);
+                    OCR_PROVIDER.SetImage(finalImage);
                     
-                    textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg));
+                    textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg, finalImage));
                     
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
                     //ImageViewer.Show(correctedImage);

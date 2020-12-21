@@ -27,7 +27,8 @@ namespace PharmApp.src.GUI
             }
             else
             {
-                Rectangle nhsRect = args.OCRResult.GetRectangle();
+                SetOCRResut(args.OCRResult);
+                Rectangle nhsRect = ocrResult.GetRectangle();
                 ChangeLocation(nhsRect.X + nhsRect.Width + X_OFFSET, nhsRect.Y + Y_OFFSET);
 
                 if (hasUnprintedETP || hasPrintedETP)

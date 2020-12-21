@@ -9,7 +9,7 @@ namespace PharmApp.src.GUI
 {
     class NewETPBatch : ScreenDrawing
     {
-        private const int WIDTH = 45, HEIGHT = 12, X_OFFSET = 10, Y_OFFSET = 20;
+        private const int WIDTH = 65, HEIGHT = 12, X_OFFSET = 10, Y_OFFSET = 20;
 
         private bool hasETPBatch;
 
@@ -26,7 +26,8 @@ namespace PharmApp.src.GUI
             }
             else
             {
-                Rectangle nhsRect = args.OCRResult.GetRectangle();
+                SetOCRResut(args.OCRResult);
+                Rectangle nhsRect = ocrResult.GetRectangle();
                 ChangeLocation(nhsRect.X + nhsRect.Width + X_OFFSET, nhsRect.Y + Y_OFFSET);
 
                 if (hasETPBatch)
