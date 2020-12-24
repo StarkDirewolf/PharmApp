@@ -58,7 +58,7 @@ namespace PharmApp
 
         private const int NHS_X = 340, NHS_Y = 100, NHS_WIDTH = 990, NHS_HEIGHT = 25;
         // Orderpad height can be 318 to cut off around 100ms but it wont span all of goods in screen
-        private const int ORDERPAD_X = 140, ORDERPAD_Y = 362, ORDERPAD_WIDTH = 1435, ORDERPAD_HEIGHT = 450;
+        private const int ORDERPAD_X = 140, ORDERPAD_Y = 362, ORDERPAD_WIDTH = 1435, ORDERPAD_HEIGHT = 460;
 
         private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
             PIP_MASK = new Regex("[0-9]{7}");
@@ -315,7 +315,7 @@ namespace PharmApp
                     }
 
                     Mat finalImage2 = new Mat();
-                    Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
+                    Size newSize = new Size(textImg.Width * 4, textImg.Height * 4);
                     CvInvoke.Resize(correctedImage, finalImage2, newSize, 0, 0, Inter.Cubic);
 
                     Mat finalImage = new Mat();

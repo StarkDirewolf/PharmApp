@@ -77,6 +77,11 @@ namespace PharmApp.src
             Bounds = rect;
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
+            
+
+            TopMost = true;
+
+            ControlAdded += ControlAddedEvent;
 
             if (text != "")
             {
@@ -87,11 +92,6 @@ namespace PharmApp.src
                 textLabel.Text = text;
                 Controls.Add(textLabel);
             }
-            
-
-            TopMost = true;
-
-            ControlAdded += ControlAddedEvent;
 
         }
 
@@ -105,6 +105,8 @@ namespace PharmApp.src
             if (ocrResult != null)
             {
                 Form popup = new Form();
+                popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                popup.AutoSize = true;
 
                 PictureBox image = new PictureBox();
                 image.Image = ocrResult.GetImage().ToBitmap();
@@ -125,7 +127,6 @@ namespace PharmApp.src
                 text.Location = location;
                 popup.Controls.Add(text);
 
-                
                 popup.Show();
             }
         }
