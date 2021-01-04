@@ -123,6 +123,7 @@ namespace PharmApp.src
             get => _hasETPBatch;
             set
             {
+                if (value) Console.WriteLine("Batch found");
                 if (value != _hasETPBatch)
                 {
                     if (OnETPBatchFound == null || OnNoETPBatchFound == null) return;
@@ -148,6 +149,7 @@ namespace PharmApp.src
             get => _hasNewETP;
             set
             {
+                if (value) Console.WriteLine("New ETP found");
                 // Wait until there's a subscriber to dispatch the event
                 if (OnNoNewETPFound == null || OnNewPrintedETPFound == null || OnNewUnprintedETPFound == null) return;
 

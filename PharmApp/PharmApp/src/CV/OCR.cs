@@ -27,7 +27,7 @@ namespace PharmApp
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
             USE_EXAMPLE_PMR = false,
-            SHOW_OCR_IMAGE = false;
+            SHOW_OCR_IMAGE = true;
 
 
         // CV settings
@@ -211,7 +211,7 @@ namespace PharmApp
                 //    results.AddRange(OCRImage(screen, rect));
                 //}
 
-                List<OCRResult> results = OCRImage(screen, GetProductRect(), new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
+                List<OCRResult> results = OCRImage(screen, GetProductRect(screen), new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
 
                 List<OCRResult> validResults = new List<OCRResult>();
 
@@ -472,9 +472,39 @@ namespace PharmApp
             return new Rectangle(NHS_X, NHS_Y, NHS_WIDTH, NHS_HEIGHT);
         }
 
-        private static Rectangle GetProductRect()
+        // Tries to guess which screen user is on and returns appropriate rectangle for OCR
+        private static Rectangle GetProductRect(Image<Bgr, byte> screen)
         {
+            if (IsEveryColour(screen[100, 240], 239))
+            {
+                // Should be on order screen
+                if (IsEveryColour(screen[100, 140], 255))
+                {
+                    // Order pad selected
+                    return new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+                }
+
+                if (IsEveryColour(screen[100, 300], 255))
+                {
+                    // Goods in selected 138 372
+                    for (int i = 138; i < 1200; i++)
+                    {
+                        if (IsEveryColour(screen[372, i], 195) && IsEveryColour(screen[372, i+1], 195) && IsEveryColour(screen[372, i+2], 195) &&
+                            IsEveryColour(screen[372, i+3], 195) && IsEveryColour(screen[372, i+4], 195) && IsEveryColour(screen[372, i+5], 255) &&
+                            IsEveryColour(screen[372, i+6], 195))
+                        {
+                            return new Rectangle(i + 7, 372, 80, 450);
+                        }
+                    }
+                }
+            }
             return new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+        }
+
+        private static bool IsEveryColour(Bgr bgr, int value)
+        {
+            if (bgr.Blue == value && bgr.Red == value && bgr.Green == value) return true;
+            return false;
         }
 
         // -------DEFUNCT--------
