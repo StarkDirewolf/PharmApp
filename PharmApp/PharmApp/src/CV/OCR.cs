@@ -52,13 +52,19 @@ namespace PharmApp
             PRODUCT_MIN_WIDTH = 60,
             PRODUCT_MAX_WIDTH = 80,
             PRODUCT_MIN_HEIGHT = 10,
-            PRODUCT_MAX_HEIGHT = 15;
+            PRODUCT_MAX_HEIGHT = 15,
+            ORDERCODE_MIN_WIDTH = 75,
+            ORDERCODE_MAX_WIDTH = 85,
+            ORDERCODE_MIN_HEIGHT = 12,
+            ORDERCODE_MAX_HEIGHT = 20;
 
         private const double BGR_BUFFER = 2;
 
         private const int NHS_X = 340, NHS_Y = 100, NHS_WIDTH = 990, NHS_HEIGHT = 25;
         // Orderpad height can be 318 to cut off around 100ms but it wont span all of goods in screen
         private const int ORDERPAD_X = 140, ORDERPAD_Y = 362, ORDERPAD_WIDTH = 1435, ORDERPAD_HEIGHT = 460;
+
+        private const int ORDERCOLUMNS_X = 140, ORDERCOLUMNS_Y = 340, ORDERCOLUMNS_WIDTH = 1430, ORDERCOLUMNS_HEIGHT = 25;
 
         private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
             PIP_MASK = new Regex("[0-9]{7}");
@@ -475,13 +481,34 @@ namespace PharmApp
         // Tries to guess which screen user is on and returns appropriate rectangle for OCR
         private static Rectangle GetProductRect(Image<Bgr, byte> screen)
         {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+            Rectangle returnRect;
             if (IsEveryColour(screen[100, 240], 239))
             {
                 // Should be on order screen
                 if (IsEveryColour(screen[100, 140], 255))
                 {
                     // Order pad selected
-                    return new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+
+                    // Find "Order Code" tab
+                    List<OCRResult> results = OCRImage(screen, new Rectangle(ORDERCOLUMNS_X, ORDERCOLUMNS_Y, ORDERCOLUMNS_WIDTH, ORDERCOLUMNS_HEIGHT),
+                        new Size(ORDERCODE_MIN_WIDTH, ORDERCODE_MIN_HEIGHT), new Size(ORDERCODE_MAX_WIDTH, ORDERCODE_MAX_HEIGHT));
+
+                    OCRResult result = results.Find(r => r.GetText().Equals("Order Code"));
+                    if (result != null)
+                    {
+                        Rectangle resultRect = result.GetRectangle();
+                        returnRect = new Rectangle(resultRect.X, resultRect.Y + resultRect.Height, 80, 300);
+                        Console.WriteLine("Order pad detected and pipcode column found in " + timer.ElapsedMilliseconds + "ms");
+                        timer.Stop();
+                        return returnRect;
+                    }
+
+                    returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+                    Console.WriteLine("Order pad detected but pipcode column could not be found in " + timer.ElapsedMilliseconds + "ms");
+                    timer.Stop();
+                    return returnRect;
                 }
 
                 if (IsEveryColour(screen[100, 300], 255))
@@ -493,12 +520,18 @@ namespace PharmApp
                             IsEveryColour(screen[372, i+3], 195) && IsEveryColour(screen[372, i+4], 195) && IsEveryColour(screen[372, i+5], 255) &&
                             IsEveryColour(screen[372, i+6], 195))
                         {
-                            return new Rectangle(i + 7, 372, 80, 450);
+                            returnRect = new Rectangle(i + 7, 372, 80, 450);
+                            Console.WriteLine("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
+                            timer.Stop();
+                            return returnRect;
                         }
                     }
                 }
             }
-            return new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+            returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+            Console.WriteLine("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
+            timer.Stop();
+            return returnRect;
         }
 
         private static bool IsEveryColour(Bgr bgr, int value)
