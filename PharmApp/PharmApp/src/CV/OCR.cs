@@ -27,7 +27,9 @@ namespace PharmApp
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
             USE_EXAMPLE_PMR = false,
-            SHOW_OCR_IMAGE = false;
+            SHOW_OCR_IMAGE = true,
+            SHOW_INDIVIDUAL_OCR_RECT = false,
+            SHOW_BOUNDING_RECTS = false;
 
 
         // CV settings
@@ -53,10 +55,13 @@ namespace PharmApp
             PRODUCT_MAX_WIDTH = 80,
             PRODUCT_MIN_HEIGHT = 10,
             PRODUCT_MAX_HEIGHT = 15,
-            ORDERCODE_MIN_WIDTH = 75,
-            ORDERCODE_MAX_WIDTH = 85,
+            ORDERCODE_MIN_WIDTH = 80,
+            ORDERCODE_MAX_WIDTH = 90,
             ORDERCODE_MIN_HEIGHT = 12,
-            ORDERCODE_MAX_HEIGHT = 20;
+            ORDERCODE_MAX_HEIGHT = 20,
+            PMR_PAT_DET_BLUE = 250,
+            PMR_PAT_DET_RED = 211,
+            PMR_PAT_DET_GREEN = 238;
 
         private const double BGR_BUFFER = 2;
 
@@ -266,11 +271,12 @@ namespace PharmApp
 
                 if (SHOW_OCR_IMAGE)
                 {
-                    ImageViewer.Show(imageForOcr);
                     foreach (OCRResult result in results)
                     {
                         Console.WriteLine(result.GetText());
+                        imageForOcr.Draw(result.GetRectangle(), new Bgr(0, 0, 255));
                     }
+                    ImageViewer.Show(imageForOcr);
                 }
 
                 patientDetails.AddRange(results);
@@ -284,6 +290,16 @@ namespace PharmApp
             using (Image<Gray, byte> optImg = GetOptImage(image))
             {
                 List<Rectangle> patRects = GetBoundingRectangles(optImg, minSize, maxSize);
+
+                if (SHOW_BOUNDING_RECTS)
+                {
+                    Image<Bgr, byte> imageToShow = image.Copy();
+                    foreach (Rectangle rect in patRects)
+                    {
+                        imageToShow.Draw(rect, new Bgr(0,255,0));
+                    }
+                    ImageViewer.Show(imageToShow);
+                }
 
                 List<OCRResult> textList = new List<OCRResult>();
 
@@ -337,8 +353,13 @@ namespace PharmApp
                     
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
                     //ImageViewer.Show(correctedImage);
+
+                    if (SHOW_INDIVIDUAL_OCR_RECT)
+                    {
+                        ImageViewer.Show(finalImage);
+                    }
                 }
-                //ImageViewer.Show(image);
+                
 
                 return textList;
             }
@@ -484,9 +505,11 @@ namespace PharmApp
             Stopwatch timer = new Stopwatch();
             timer.Start();
             Rectangle returnRect;
+
             if (IsEveryColour(screen[100, 240], 239))
             {
                 // Should be on order screen
+
                 if (IsEveryColour(screen[100, 140], 255))
                 {
                     // Order pad selected
@@ -527,11 +550,54 @@ namespace PharmApp
                         }
                     }
                 }
+
+                returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+                Console.WriteLine("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
+                timer.Stop();
+                return returnRect;
             }
-            returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
-            Console.WriteLine("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
-            timer.Stop();
-            return returnRect;
+
+            if (screen[100, 150].Blue == PMR_PAT_DET_BLUE && screen[100, 150].Red == PMR_PAT_DET_RED && screen[100, 150].Green == PMR_PAT_DET_GREEN) {
+                // PMR selected
+
+                for (int i = 420; i < 800; i++)
+                {
+                    if (IsEveryColour(screen[i, 150], 195) && IsEveryColour(screen[i + 1, 150], 195) && IsEveryColour(screen[i + 2, 150], 195) &&
+                        IsEveryColour(screen[i + 3, 150], 195) && IsEveryColour(screen[i + 4, 150], 195) && IsEveryColour(screen[i + 5, 150], 255) &&
+                        IsEveryColour(screen[i + 6, 150], 195))
+                    {
+
+                    }
+                }
+
+            }
+
+
+        }
+
+        /// <summary>
+        /// Scans through pixels and finds pattern for resizable borders
+        /// </summary>
+        /// <param name="startPos">the first pixel to start checking from</param>
+        /// <param name="endPos">the last pixel to check to - will return 0 if it reaches</param>
+        /// <param name="constPos">the position on the axis to keep constant</param>
+        /// <param name="checkHorizontal">set to false if looking vertically</param>
+        /// <returns>Position just after the pattern (right-most for horizontal, bottom-most for vertical). Returns 0 if not found</returns>
+        private static int FindAdjustableEdge(Image<Bgr, byte> screen, int startPos, int endPos, int constPos, bool checkHorizontal = true)
+        {
+            for (int i = startPos; i < endPos; i++)
+            {
+                if (checkHorizontal)
+                {
+
+                }
+                if (IsEveryColour(screen[372, i], 195) && IsEveryColour(screen[372, i + 1], 195) && IsEveryColour(screen[372, i + 2], 195) &&
+                            IsEveryColour(screen[372, i + 3], 195) && IsEveryColour(screen[372, i + 4], 195) && IsEveryColour(screen[372, i + 5], 255) &&
+                            IsEveryColour(screen[372, i + 6], 195))
+                {
+
+                }
+            }
         }
 
         private static bool IsEveryColour(Bgr bgr, int value)
