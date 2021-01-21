@@ -214,6 +214,9 @@ namespace PharmApp.src
             else
             {
                 Console.WriteLine("Proscript process not found");
+                Console.WriteLine("Trying again in 5 seconds");
+                Thread.Sleep(5000);
+                PopulateProscriptHandle();
             }
 
         }
