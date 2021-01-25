@@ -61,7 +61,21 @@ namespace PharmApp
             ORDERCODE_MAX_HEIGHT = 20,
             PMR_PAT_DET_BLUE = 250,
             PMR_PAT_DET_RED = 211,
-            PMR_PAT_DET_GREEN = 238;
+            PMR_PAT_DET_GREEN = 238,
+            GOODS_IN_X_MIN = 138,
+            GOODS_IN_X_MAX = 1200,
+            GOODS_IN_Y = 372,
+            GOODS_IN_WIDTH = 80,
+            GOODS_IN_HEIGHT = 450,
+            PMR_PRODUCT_X = 150,
+            PMR_PRODUCT_MIN_Y = 420,
+            PMR_PRODUCT_MAX_Y = 800,
+            PMR_PRODUCT_WIDTH = 780,
+            PMR_PRODUCT_TABS_HEIGHT = 35,
+            PIPCODE_MIN_HEIGHT = 12,
+            PIPCODE_MAX_HEIGHT = 25,
+            PIPCODE_MIN_WIDTH = 55,
+            PIPCODE_MAX_WIDTH = 75;
 
         private const double BGR_BUFFER = 2;
 
@@ -534,20 +548,17 @@ namespace PharmApp
                     return returnRect;
                 }
 
+                // Goods in tab
                 if (IsEveryColour(screen[100, 300], 255))
                 {
-                    // Goods in selected 138 372
-                    for (int i = 138; i < 1200; i++)
+
+                    int edgePos = FindAdjustableEdge(screen, GOODS_IN_X_MIN, GOODS_IN_X_MAX, GOODS_IN_Y);
+                    if (edgePos != 0)
                     {
-                        if (IsEveryColour(screen[372, i], 195) && IsEveryColour(screen[372, i+1], 195) && IsEveryColour(screen[372, i+2], 195) &&
-                            IsEveryColour(screen[372, i+3], 195) && IsEveryColour(screen[372, i+4], 195) && IsEveryColour(screen[372, i+5], 255) &&
-                            IsEveryColour(screen[372, i+6], 195))
-                        {
-                            returnRect = new Rectangle(i + 7, 372, 80, 450);
-                            Console.WriteLine("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
-                            timer.Stop();
-                            return returnRect;
-                        }
+                        returnRect = new Rectangle(edgePos, GOODS_IN_Y, GOODS_IN_WIDTH, GOODS_IN_HEIGHT);
+                        Console.WriteLine("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
+                        timer.Stop();
+                        return returnRect;
                     }
                 }
 
@@ -557,22 +568,42 @@ namespace PharmApp
                 return returnRect;
             }
 
-            if (screen[100, 150].Blue == PMR_PAT_DET_BLUE && screen[100, 150].Red == PMR_PAT_DET_RED && screen[100, 150].Green == PMR_PAT_DET_GREEN) {
+            if (screen[100, 150].Blue == PMR_PAT_DET_BLUE && screen[100, 150].Red == PMR_PAT_DET_RED && screen[100, 150].Green == PMR_PAT_DET_GREEN)
+            {
                 // PMR selected
 
-                for (int i = 420; i < 800; i++)
-                {
-                    if (IsEveryColour(screen[i, 150], 195) && IsEveryColour(screen[i + 1, 150], 195) && IsEveryColour(screen[i + 2, 150], 195) &&
-                        IsEveryColour(screen[i + 3, 150], 195) && IsEveryColour(screen[i + 4, 150], 195) && IsEveryColour(screen[i + 5, 150], 255) &&
-                        IsEveryColour(screen[i + 6, 150], 195))
-                    {
+                int edgePos = FindAdjustableEdge(screen, PMR_PRODUCT_MIN_Y, PMR_PRODUCT_MAX_Y, PMR_PRODUCT_X, false);
 
-                    }
+                Rectangle prodTabsRect = new Rectangle(PMR_PRODUCT_X, edgePos, PMR_PRODUCT_WIDTH, PMR_PRODUCT_TABS_HEIGHT);
+
+                Console.WriteLine("PMR detected and product selection found in " + timer.ElapsedMilliseconds + "ms");
+                timer.Restart();
+
+                // Find pipcode tab
+                List<OCRResult> results = OCRImage(screen, prodTabsRect,
+                        new Size(PIPCODE_MIN_WIDTH, PIPCODE_MIN_HEIGHT), new Size(PIPCODE_MAX_WIDTH, PIPCODE_MAX_HEIGHT));
+
+                OCRResult result = results.Find(r => r.GetText().Equals("Pip Code"));
+                if (result != null)
+                {
+                    Rectangle resultRect = result.GetRectangle();
+
+                    int bottomOfRect = resultRect.Y + resultRect.Height;
+                    returnRect = new Rectangle(resultRect.X, bottomOfRect, resultRect.Width, PMR_PRODUCT_MAX_Y - bottomOfRect);
+                    Console.WriteLine("Pipcode column found in " + timer.ElapsedMilliseconds + "ms");
+                    timer.Stop();
+                    return returnRect;
                 }
 
+                // Return whole product selection window if tab not found
+                prodTabsRect.Height = PMR_PRODUCT_MAX_Y - prodTabsRect.Y;
+                Console.WriteLine("Pipcode column NOT found in " + timer.ElapsedMilliseconds + "ms");
+                timer.Stop();
+                return prodTabsRect;
             }
 
-
+            timer.Stop();
+            return Rectangle.Empty;
         }
 
         /// <summary>
@@ -585,19 +616,34 @@ namespace PharmApp
         /// <returns>Position just after the pattern (right-most for horizontal, bottom-most for vertical). Returns 0 if not found</returns>
         private static int FindAdjustableEdge(Image<Bgr, byte> screen, int startPos, int endPos, int constPos, bool checkHorizontal = true)
         {
-            for (int i = startPos; i < endPos; i++)
+
+            if (checkHorizontal)
             {
-                if (checkHorizontal)
+                for (int i = startPos; i < endPos; i++)
                 {
-
-                }
-                if (IsEveryColour(screen[372, i], 195) && IsEveryColour(screen[372, i + 1], 195) && IsEveryColour(screen[372, i + 2], 195) &&
-                            IsEveryColour(screen[372, i + 3], 195) && IsEveryColour(screen[372, i + 4], 195) && IsEveryColour(screen[372, i + 5], 255) &&
-                            IsEveryColour(screen[372, i + 6], 195))
-                {
-
+                    if (IsEveryColour(screen[constPos, i], 195) && IsEveryColour(screen[constPos, i + 1], 195) && IsEveryColour(screen[constPos, i + 2], 195) &&
+                            IsEveryColour(screen[constPos, i + 3], 195) && IsEveryColour(screen[constPos, i + 4], 195) && IsEveryColour(screen[constPos, i + 5], 255) &&
+                            IsEveryColour(screen[constPos, i + 6], 195))
+                    {
+                        return i + 7;
+                    }
                 }
             }
+            else
+            {
+                for (int i = startPos; i < endPos; i++)
+                {
+                    if (IsEveryColour(screen[i, constPos], 195) && IsEveryColour(screen[i + 1, constPos], 195) && IsEveryColour(screen[i + 2, constPos], 195) &&
+                                                                IsEveryColour(screen[i + 3, constPos], 195) && IsEveryColour(screen[i + 4, constPos], 195) && IsEveryColour(screen[i + 5, constPos], 255) &&
+                                                                IsEveryColour(screen[i + 6, constPos], 195))
+                    {
+                        return i + 7;
+                    }
+                }
+            }
+
+            // Not found
+            return 0;
         }
 
         private static bool IsEveryColour(Bgr bgr, int value)
