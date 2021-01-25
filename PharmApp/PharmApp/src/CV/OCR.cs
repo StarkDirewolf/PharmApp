@@ -27,7 +27,7 @@ namespace PharmApp
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
             USE_EXAMPLE_PMR = false,
-            SHOW_OCR_IMAGE = true,
+            SHOW_OCR_IMAGE = false,
             SHOW_INDIVIDUAL_OCR_RECT = false,
             SHOW_BOUNDING_RECTS = false;
 
