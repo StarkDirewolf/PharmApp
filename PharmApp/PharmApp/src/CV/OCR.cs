@@ -88,6 +88,9 @@ namespace PharmApp
         private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
             PIP_MASK = new Regex("[0-9]{7}");
 
+        // Updating screenshot at the start of each processing cycle
+        private static Image<Bgr, byte> screen;
+
 
         //public void Test()
         //{
@@ -202,62 +205,55 @@ namespace PharmApp
         public static OCRResult GetNhsNoFromScreen()
         {
 
-            using (Image<Bgr, byte> screen = GetScreen())
-            {
+ 
+            // If this pixel isn't blue, we're not looking at patient records
+            if (Math.Abs(screen[100, 140].Blue - 250.0) >= 2.0) return null;
 
-                // If this pixel isn't blue, we're not looking at patient records
-                if (Math.Abs(screen[100, 140].Blue - 250.0) >= 2.0) return null;
-
-                List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
+            List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
                 
-                foreach (OCRResult detail in patientDetails)
-                {
-                    string trimmedDetail = Regex.Replace(detail.GetText(), @"\s+", "");
+            foreach (OCRResult detail in patientDetails)
+            {
+                string trimmedDetail = Regex.Replace(detail.GetText(), @"\s+", "");
 
-                    if (NHS_NUM_MASK.IsMatch(trimmedDetail))
-                    {
-                        Console.WriteLine(trimmedDetail);
-                        return new OCRResult(trimmedDetail, detail.GetRectangle(), detail.GetImage(), detail.GetOCRImage());
-                    }
+                if (NHS_NUM_MASK.IsMatch(trimmedDetail))
+                {
+                    Console.WriteLine(trimmedDetail);
+                    return new OCRResult(trimmedDetail, detail.GetRectangle(), detail.GetImage(), detail.GetOCRImage());
                 }
             }
 
-            return null;
+        return null;
         }
 
         public static List<OCRResult> GetSelectedProduct()
         {
-            using (Image<Bgr, byte> screen = GetScreen())
+            //List<Rectangle> colouredRects = GetSelectedProductRects(screen);
+            //List<OCRResult> results = new List<OCRResult>();
+            //foreach (Rectangle rect in colouredRects)
+            //{
+            //    results.AddRange(OCRImage(screen, rect));
+            //}
+
+            List<OCRResult> results = OCRImage(screen, GetProductRect(screen), new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
+
+            List<OCRResult> validResults = new List<OCRResult>();
+
+            foreach (OCRResult result in results)
             {
-                //List<Rectangle> colouredRects = GetSelectedProductRects(screen);
-                //List<OCRResult> results = new List<OCRResult>();
-                //foreach (Rectangle rect in colouredRects)
-                //{
-                //    results.AddRange(OCRImage(screen, rect));
-                //}
+                string text = result.GetText();
 
-                List<OCRResult> results = OCRImage(screen, GetProductRect(screen), new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
+                //Console.WriteLine(text);
+                //ImageViewer.Show(result.GetImage());
 
-                List<OCRResult> validResults = new List<OCRResult>();
-
-                foreach (OCRResult result in results)
+                if (PIP_MASK.IsMatch(text))
                 {
-                    string text = result.GetText();
+                    Console.WriteLine("Found PIP: " + text);
 
-                    //Console.WriteLine(text);
-                    //ImageViewer.Show(result.GetImage());
-
-                    if (PIP_MASK.IsMatch(text))
-                    {
-                        Console.WriteLine("Found PIP: " + text);
-
-                        validResults.Add(result);
-                    }
+                    validResults.Add(result);
                 }
-
-                return validResults;
-                
             }
+
+            return validResults;
         }
 
         private static List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
@@ -733,9 +729,6 @@ namespace PharmApp
                  return new Image<Bgr, byte>(ResourceManager.robertPrydePMR);
             }
 
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             Rectangle bounds = Screen.GetBounds(Point.Empty);
             if (screenArea != Rectangle.Empty)
             {
@@ -750,7 +743,6 @@ namespace PharmApp
                 g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
                 Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
 
-                Console.WriteLine("Screen capture took " + stopwatch.ElapsedMilliseconds + "ms");
                 return screenCap;
             }
 
@@ -759,6 +751,11 @@ namespace PharmApp
         private static Image<Bgr, byte> GetScreen()
         {
             return GetScreen(Rectangle.Empty);
+        }
+
+        public static void UpdateScreenshot()
+        {
+            screen = GetScreen(Rectangle.Empty);
         }
 
         public static bool IsResultStillVisible(OCRResult toCompare)

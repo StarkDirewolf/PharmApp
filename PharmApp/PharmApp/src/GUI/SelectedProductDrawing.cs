@@ -63,11 +63,28 @@ namespace PharmApp.src.GUI
             {
                 if (product.IsOrdering())
                 {
-                    img.Image = Image.FromFile(ResourceManager.greenCircle);
+                    if (product.deliveryNotes != null)
+                    {
+                        img.Image = Image.FromFile(ResourceManager.greenAstCircle);
+                    }
+                    else
+                    {
+                        img.Image = Image.FromFile(ResourceManager.greenCircle);
+                    }
+                    
+                    
                 }
                 else
                 {
-                    img.Image = Image.FromFile(ResourceManager.redCircle);
+                    if (product.deliveryNotes != null)
+                    {
+                        img.Image = Image.FromFile(ResourceManager.redAstCircle);
+                    }
+                    else
+                    {
+                        img.Image = Image.FromFile(ResourceManager.redCircle);
+                    }
+                    
                 }
                 
             }

@@ -255,12 +255,23 @@ namespace PharmApp.src
 
                 if (IsProgramFocused)
                 {
+
                     Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
-                    
+
+                    UpdateOrderpadProductList();
+                    Console.WriteLine("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+
+                    OCR.UpdateScreenshot();
+                    Console.WriteLine("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+
                     nhsNumber = OCR.GetNhsNoFromScreen();
                     Console.WriteLine("NHS number processing took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
+
+                    
 
                     selectedProducts = OCR.GetSelectedProduct();
                     Console.WriteLine("PIP codes analysed in " + stopwatch.ElapsedMilliseconds + "ms");
