@@ -20,6 +20,7 @@ namespace PharmApp.src
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
         public string deliveryNotes;
+        private SQLOrderPadLine currentlyOnOrder;
 
         public OrderHistory GetPlacedOrders(DateTime fromDate, DateTime endDate)
         {

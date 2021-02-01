@@ -327,6 +327,13 @@ namespace PharmApp.src
             //}
         }
 
+        private void UpdateOrderpadProductList()
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+            query.PageNumber("1");
+            query.NotDeleted();
+        }
+
         private void CheckProgramIsInFocus()
         {
             IntPtr foregroundHandle = GetForegroundWindow();

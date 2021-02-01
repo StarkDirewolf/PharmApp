@@ -124,9 +124,9 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="src\Product Info\OrderHistory.cs" />
-    <Compile Include="src\Product Info\OrderLine.cs" />
+    <Compile Include="src\Product Info\OrderHistoryLine.cs" />
     <Compile Include="src\Product Info\Product.cs" />
-    <Compile Include="src\Product Info\Suppliers\AAH.cs" />
+    <Compile Include="src\Product Info\OrderPadLine.cs" />
     <Compile Include="src\SQL\ProductLookup.cs" />
     <Compile Include="src\SQL\QueryConstructor.cs" />
     <Compile Include="src\GUI\ScreenDrawing.cs">
@@ -135,9 +135,10 @@
     <Compile Include="src\GUI\ScreenDrawingManager.cs" />
     <Compile Include="src\CV\ScreenProcessor.cs" />
     <Compile Include="src\SQL\SQLLookUp.cs" />
+    <Compile Include="src\SQL\SQLOrderPadPIPs.cs" />
+    <Compile Include="src\SQL\SQLOrderPadLine.cs" />
     <Compile Include="src\SQL\SQLOrderHistory.cs" />
     <Compile Include="src\SQL\SQLQueryer.cs" />
-    <Compile Include="src\SQL\StockQueryer.cs" />
     <Compile Include="src\Defunct\QueryConstructorOld.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

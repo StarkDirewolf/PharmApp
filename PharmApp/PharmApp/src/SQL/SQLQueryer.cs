@@ -139,7 +139,7 @@ namespace PharmApp
                             supplier = reader.GetString(5);
                         }
 
-                        OrderLine line = new OrderLine(description, orderDate, supplier, orderQty, receivedQty, statusComment);
+                        OrderHistoryLine line = new OrderHistoryLine(description, orderDate, supplier, orderQty, receivedQty, statusComment);
                         history.AddOrderLine(line);
                     }
                 }
@@ -198,6 +198,65 @@ namespace PharmApp
             }
 
             return prod;
+        }
+
+        public static OrderPadLine GetOrderPadLine(string pip)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+            query.PageNumber("1");
+            query.NotDeleted();
+            query.PipCode(pip);
+
+            int eCass = 0;
+            int aah = 0;
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.GetInt32(2) == 1)
+                        {
+                            aah += reader.GetInt32(1);
+                        }
+                        else if (reader.GetInt32(2) == 2)
+                        {
+                            eCass += reader.GetInt32(1);
+                        }
+                    }
+                }
+            }
+
+            return new OrderPadLine(eCass, aah);
+        }
+
+        public static List<string> GetOrderPadPIPs()
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
+            query.PageNumber("1");
+            query.NotDeleted();
+
+            List<string> pips = new List<string>();
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        pips.Add(reader.GetString(0));
+                    }
+                }
+            }
+
+            return pips;
         }
 
         public static bool NewETPs(string nhsNum, out bool unprinted, out bool batch)

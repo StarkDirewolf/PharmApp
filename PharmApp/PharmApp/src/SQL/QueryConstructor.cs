@@ -44,9 +44,13 @@ LEFT JOIN PKBRuntime.Dmd.ActualProductPack V ON D.DmdProductPackCodeId = V.Actua
 SELECT TOP 1 P.PreparationCodeId FROM PKBRuntime.Pharmacy.PackOrderCode O
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 
+        //        private const string ORDERPAD = @"
+        //SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM ProScriptConnect.Ordering.OrderPad O
+        //JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
+
+            // Just grabs orders on page 1 of both suppliers
         private const string ORDERPAD = @"
-SELECT O.Description, O.Quantity, O.WholeSalerId, O.PageNo FROM ProScriptConnect.Ordering.OrderPad O
-JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
+SELECT OrderCode, Quantity, WholeSalerId FROM ProScriptConnect.Ordering.OrderPad";
 
         private const string PRODUCTINFO = @"
 SELECT Description, Gncs, UnitsPerPack, K.IsGeneric, SupplierName, Price, OrderingNotes FROM PKBRuntime.Pharmacy.PackOrderCode O
@@ -84,6 +88,7 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
         private const string FILTER_NOT_DELETED = "Deleted = 0";
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
         private const string FILTER_PREP_CODE = "PreparationCodeId = '";
+        private const string FILTER_PAGE = "PageNo = ";
 
         private const string FILTER_AND = " AND ";
 
@@ -124,7 +129,8 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
             NOTDELETED,
             VIRTUALID,
             PREPCODE,
-            GENERICCODE
+            GENERICCODE,
+            PAGENO
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -201,6 +207,12 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
         {
             RemoveCondition(Condition.GENERICCODE);
             AddCondition(Condition.GENERICCODE, code);
+        }
+        
+        public void PageNumber(string page)
+        {
+            RemoveCondition(Condition.PAGENO);
+            AddCondition(Condition.PAGENO, page);
         }
 
         /// <summary>
@@ -316,6 +328,10 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
                     case Condition.GENERICCODE:
                         str = FILTER_GENERIC_ORDER_HISTORY + condition.Value + FILTER_QUOTE_END;
+                        break;
+
+                    case Condition.PAGENO:
+                        str = FILTER_PAGE + condition.Value + " ";
                         break;
                 }
                 conditionList.RemoveAt(0);

@@ -9,9 +9,9 @@ namespace PharmApp.src.Product_Info
     class OrderHistory
     {
 
-        private List<OrderLine> orderLines = new List<OrderLine>();
+        private List<OrderHistoryLine> orderLines = new List<OrderHistoryLine>();
 
-        public void AddOrderLine(OrderLine line)
+        public void AddOrderLine(OrderHistoryLine line)
         {
             orderLines.Add(line);
         }
@@ -25,7 +25,7 @@ namespace PharmApp.src.Product_Info
 
         public bool DeliveryDue()
         {
-            foreach (OrderLine line in orderLines)
+            foreach (OrderHistoryLine line in orderLines)
             {
                 if (line.DeliveryDue()) return true;
             }
@@ -35,7 +35,7 @@ namespace PharmApp.src.Product_Info
 
         public bool IsOrdering()
         {
-            foreach (OrderLine line in orderLines)
+            foreach (OrderHistoryLine line in orderLines)
             {
                 if (line.receivedQty > 0) return true;
             }

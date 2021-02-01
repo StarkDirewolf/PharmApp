@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.Product_Info
 {
-    class OrderLine
+    class OrderHistoryLine
     {
         public readonly string description;
         public readonly DateTime date;
@@ -15,7 +15,7 @@ namespace PharmApp.src.Product_Info
         public readonly decimal orderQty;
         public readonly decimal receivedQty;
 
-        public OrderLine(string description, DateTime date, string supplier, decimal orderQty, decimal receivedQty, string statusComment)
+        public OrderHistoryLine(string description, DateTime date, string supplier, decimal orderQty, decimal receivedQty, string statusComment)
         {
             this.description = description;
             this.date = date;
