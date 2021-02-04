@@ -11,7 +11,7 @@ namespace PharmApp.src.SQL
         private static ProductLookup singleton;
         private List<Product> cache = new List<Product>();
 
-        public static ProductLookup GetInstance()
+        public static ProductLookup Get()
         {
             if (singleton == null)
             {

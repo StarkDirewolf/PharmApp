@@ -94,6 +94,7 @@ namespace PharmApp.src.GUI
             processor.OnNoNewETPFound += form.OnNoNewETPFound;
             processor.OnNoETPBatchFound += form.OnNoETPBatchFound;
             processor.OnETPBatchFound += form.OnETPBatchFound;
+            processor.OnOrderPadCommentsChanged += form.OnOrderPadCommentsChanged;
 
             //BringProscriptToFront();
         }

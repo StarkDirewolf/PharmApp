@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.Product_Info
 {
-    class OrderPadLine
+    class OrderPadQuantities
     {
         public enum Supplier
         {
@@ -16,7 +16,7 @@ namespace PharmApp.src.Product_Info
 
         private Dictionary<Supplier, int> onOrder = new Dictionary<Supplier, int>();
 
-        public OrderPadLine(int eCassQty, int aahQty)
+        public OrderPadQuantities(int eCassQty, int aahQty)
         {
             onOrder.Add(Supplier.ECASS, eCassQty);
             onOrder.Add(Supplier.AAH, aahQty);

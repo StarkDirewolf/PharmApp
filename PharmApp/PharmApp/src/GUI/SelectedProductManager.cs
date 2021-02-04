@@ -71,7 +71,7 @@ namespace PharmApp.src.GUI
                 {
                     SelectedProductDrawing unusedForm = lostForms.First();
                     lostForms.Remove(unusedForm);
-                    unusedForm.SetProduct(ProductLookup.GetInstance().FindByPIP(pip));
+                    unusedForm.SetProduct(ProductLookup.Get().FindByPIP(pip));
                     unusedForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
                     unusedForm.ShouldBeVisible = true;
                     unusedForm.SetOCRResut(ocrResult);

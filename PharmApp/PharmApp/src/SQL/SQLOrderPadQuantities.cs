@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.SQL
 {
-    class SQLOrderPadLine : SQLLookUp<OrderPadLine>
+    class SQLOrderPadQuantities : SQLLookUp<OrderPadQuantities>
     {
         private string pip;
 
-        public SQLOrderPadLine(string pip)
+        public SQLOrderPadQuantities(string pip)
         {
             this.pip = pip;
         }
 
-        protected override OrderPadLine QueryFunction()
+        protected override OrderPadQuantities QueryFunction()
         {
             return SQLQueryer.GetOrderPadLine(pip);
         }

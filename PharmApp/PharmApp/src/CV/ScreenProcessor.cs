@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using PharmApp.src.GUI;
 using System.Diagnostics;
 using ConsoleHotKey;
+using PharmApp.src.Product_Info;
 
 namespace PharmApp.src
 {
@@ -174,6 +175,25 @@ namespace PharmApp.src
             }
         }
 
+        private List<Product> _orderPadComments = new List<Product>();
+        
+        private List<Product> orderPadComments
+        {
+            get => _orderPadComments;
+            set
+            {
+                List<Product> newItems = value.Except(_orderPadComments).ToList();
+                List<Product> deletedItems = _orderPadComments.Except(value).ToList();
+
+                if (newItems.Count != 0 || deletedItems.Count != 0)
+                {
+                    _orderPadComments = value;
+                    OnOrderPadCommentsChanged(this, newItems, deletedItems);
+                }
+            }
+        }
+
+
         public IntPtr GetProScriptHandle()
         {
             return proscriptHandle;
@@ -329,9 +349,7 @@ namespace PharmApp.src
 
         private void UpdateOrderpadProductList()
         {
-            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
-            query.PageNumber("1");
-            query.NotDeleted();
+            orderPadComments = OrderPad.Get().GetProductsWithNotes();
         }
 
         private void CheckProgramIsInFocus()
@@ -394,6 +412,9 @@ namespace PharmApp.src
 
         public delegate void OCRListProcessHandler(object source, OCRResultListEventArgs args);
         public event OCRListProcessHandler OnProductsChanged;
+
+        public delegate void OrderPadProcessHandler(object source, List<Product> newItems, List<Product> deletedItems);
+        public event OrderPadProcessHandler OnOrderPadCommentsChanged;
 
         protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
         protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);

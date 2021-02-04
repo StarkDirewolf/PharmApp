@@ -20,7 +20,16 @@ namespace PharmApp.src
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
         public string deliveryNotes;
-        private SQLOrderPadLine currentlyOnOrder;
+        private SQLOrderPadQuantities currentlyOnOrder;
+
+        public OrderPadQuantities GetCurrentOrders()
+        {
+            if (currentlyOnOrder == null)
+            {
+                currentlyOnOrder = new SQLOrderPadQuantities(pipcode);
+            }
+            return currentlyOnOrder.GetData();
+        }
 
         public OrderHistory GetPlacedOrders(DateTime fromDate, DateTime endDate)
         {

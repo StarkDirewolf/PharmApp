@@ -185,6 +185,10 @@ namespace PharmApp.src
         {
         }
 
+        public virtual void OnOrderPadCommentsChanged(object source, List<Product> newItems, List<Product> deletedItems)
+        {
+        }
+
         protected override CreateParams CreateParams
         {
             get

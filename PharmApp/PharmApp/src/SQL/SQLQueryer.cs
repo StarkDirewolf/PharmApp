@@ -200,7 +200,7 @@ namespace PharmApp
             return prod;
         }
 
-        public static OrderPadLine GetOrderPadLine(string pip)
+        public static OrderPadQuantities GetOrderPadLine(string pip)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERPAD);
             query.PageNumber("1");
@@ -231,7 +231,7 @@ namespace PharmApp
                 }
             }
 
-            return new OrderPadLine(eCass, aah);
+            return new OrderPadQuantities(eCass, aah);
         }
 
         public static List<string> GetOrderPadPIPs()
