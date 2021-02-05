@@ -101,6 +101,9 @@
     <Compile Include="src\Email\NHSClient.cs" />
     <Compile Include="src\GUI\HotKey.cs" />
     <Compile Include="src\GUI\MultiFormContext.cs" />
+    <Compile Include="src\GUI\OrderingCommentsDrawing.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="src\GUI\NewETPBatch.cs">
       <SubType>Form</SubType>
     </Compile>

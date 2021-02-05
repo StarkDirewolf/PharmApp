@@ -212,6 +212,7 @@ namespace PharmApp
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
+                connection.Open();
 
                 SqlCommand command = new SqlCommand(query.ToString(), connection);
 
@@ -244,6 +245,8 @@ namespace PharmApp
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
+
+                connection.Open();
 
                 SqlCommand command = new SqlCommand(query.ToString(), connection);
 

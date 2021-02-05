@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.SQL
 {
-    class SQLOrderPad : SQLLookUp<List<string>>
+    class SQLOrderPadPIPs : SQLLookUp<List<string>>
     {
 
         protected override List<string> QueryFunction()
