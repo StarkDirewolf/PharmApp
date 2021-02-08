@@ -523,6 +523,7 @@ namespace PharmApp
                 if (IsEveryColour(screen[100, 140], 255))
                 {
                     // Order pad selected
+                    ScreenProcessor.GetScreenProcessor().viewingOrderPad = true;
 
                     // Find "Order Code" tab
                     List<OCRResult> results = OCRImage(screen, new Rectangle(ORDERCOLUMNS_X, ORDERCOLUMNS_Y, ORDERCOLUMNS_WIDTH, ORDERCOLUMNS_HEIGHT),
@@ -547,6 +548,7 @@ namespace PharmApp
                 // Goods in tab
                 if (IsEveryColour(screen[100, 300], 255))
                 {
+                    ScreenProcessor.GetScreenProcessor().viewingOrderPad = false;
 
                     int edgePos = FindAdjustableEdge(screen, GOODS_IN_X_MIN, GOODS_IN_X_MAX, GOODS_IN_Y);
                     if (edgePos != 0)
@@ -563,6 +565,13 @@ namespace PharmApp
                 timer.Stop();
                 return returnRect;
             }
+            else
+            {
+                // Not on order screen
+                ScreenProcessor.GetScreenProcessor().viewingOrderPad = false;
+            }
+
+            
 
             if (screen[100, 150].Blue == PMR_PAT_DET_BLUE && screen[100, 150].Red == PMR_PAT_DET_RED && screen[100, 150].Green == PMR_PAT_DET_GREEN)
             {

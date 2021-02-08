@@ -14,26 +14,34 @@ namespace PharmApp.src.Product_Info
             AAH
         }
 
-        private Dictionary<Supplier, int> onOrder = new Dictionary<Supplier, int>();
+        private Dictionary<Supplier, Decimal> onOrder = new Dictionary<Supplier, Decimal>();
 
-        public OrderPadQuantities(int eCassQty, int aahQty)
+        public OrderPadQuantities(Decimal eCassQty, Decimal aahQty)
         {
             onOrder.Add(Supplier.ECASS, eCassQty);
             onOrder.Add(Supplier.AAH, aahQty);
         }
 
-        public int GetAAH()
+        public Decimal GetAAH()
         {
-            int returnValue;
+            Decimal returnValue;
             onOrder.TryGetValue(Supplier.AAH, out returnValue);
             return returnValue;
         }
 
-        public int GetECass()
+        public Decimal GetECass()
         {
-            int returnValue;
+            Decimal returnValue;
             onOrder.TryGetValue(Supplier.ECASS, out returnValue);
             return returnValue;
+        }
+
+        public bool IsOnOrder()
+        {
+            if (GetECass() > 0 || GetAAH() > 0)
+                return true;
+
+            return false;
         }
     }
 }

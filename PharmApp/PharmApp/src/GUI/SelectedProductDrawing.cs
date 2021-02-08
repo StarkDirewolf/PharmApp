@@ -63,7 +63,7 @@ namespace PharmApp.src.GUI
             {
                 if (product.IsOrdering())
                 {
-                    if (product.deliveryNotes != null)
+                    if (product.orderingNotes != null)
                     {
                         img.Image = Image.FromFile(ResourceManager.greenAstCircle);
                     }
@@ -76,7 +76,7 @@ namespace PharmApp.src.GUI
                 }
                 else
                 {
-                    if (product.deliveryNotes != null)
+                    if (product.orderingNotes != null)
                     {
                         img.Image = Image.FromFile(ResourceManager.redAstCircle);
                     }
@@ -93,9 +93,9 @@ namespace PharmApp.src.GUI
         public void SetTooltipToOrderHistory()
         {
             string tooltip = product.ToString() + ":\n\n";
-            if (product.deliveryNotes != null)
+            if (product.orderingNotes != null)
             {
-                tooltip += product.deliveryNotes + "\n\n";
+                tooltip += product.orderingNotes + "\n\n";
             }
             tooltip += product.GetRecentOrders().ToString();
             SetTooltip(tooltip);

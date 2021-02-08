@@ -38,6 +38,7 @@ namespace PharmApp.src.GUI
 
             AddForm(new NewETPDrawing());
             AddForm(new NewETPBatch());
+            AddForm(new OrderingCommentsDrawing());
 
             PharmTrayIcon icon = new PharmTrayIcon();
             
@@ -95,6 +96,8 @@ namespace PharmApp.src.GUI
             processor.OnNoETPBatchFound += form.OnNoETPBatchFound;
             processor.OnETPBatchFound += form.OnETPBatchFound;
             processor.OnOrderPadCommentsChanged += form.OnOrderPadCommentsChanged;
+            processor.OnStartViewingOrderPad += form.OnStartViewingOrderPad;
+            processor.OnStopViewingOrderPad += form.OnStopViewingOrderPad;
 
             //BringProscriptToFront();
         }

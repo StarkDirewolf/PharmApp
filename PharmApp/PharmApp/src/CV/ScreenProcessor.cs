@@ -193,6 +193,23 @@ namespace PharmApp.src
             }
         }
 
+        private bool _viewingOrderPad = false;
+
+        public bool viewingOrderPad
+        {
+            get => _viewingOrderPad;
+            set
+            {
+                if (value != viewingOrderPad)
+                {
+                    if (value) _onStartViewingOrderPad();
+                    else _onStopViewingOrderPad();
+                }
+
+                _viewingOrderPad = value;
+            }
+        }
+
 
         public IntPtr GetProScriptHandle()
         {
@@ -262,6 +279,7 @@ namespace PharmApp.src
             {
                 Thread.Sleep(500);
 
+
                 if (proscriptHandle == IntPtr.Zero)
                 {
                     PopulateProscriptHandle();
@@ -275,6 +293,12 @@ namespace PharmApp.src
 
                 if (IsProgramFocused)
                 {
+
+                    Console.WriteLine("");
+                    Console.WriteLine("");
+                    Console.WriteLine("----------------------------------------------------");
+                    Console.WriteLine("Processing loop starting at " + DateTime.Now.ToString());
+
 
                     Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
@@ -406,6 +430,8 @@ namespace PharmApp.src
         public event ProcessHandler OnNewUnprintedETPFound;
         public event ProcessHandler OnETPBatchFound;
         public event ProcessHandler OnNoETPBatchFound;
+        public event ProcessHandler OnStartViewingOrderPad;
+        public event ProcessHandler OnStopViewingOrderPad;
 
         public delegate void OCRProcessHandler(object source, OCRResultEventArgs args);
         public event OCRProcessHandler OnNHSNumberChanged;
@@ -426,6 +452,8 @@ namespace PharmApp.src
         protected void _onNoNewETPFound() => OnNoNewETPFound?.Invoke(this, EventArgs.Empty);
         protected void _onNoETPBatchFound() => OnNoETPBatchFound?.Invoke(this, EventArgs.Empty);
         protected void _onETPBatchFound() => OnETPBatchFound?.Invoke(this, EventArgs.Empty);
+        protected void _onStartViewingOrderPad() => OnStartViewingOrderPad?.Invoke(this, EventArgs.Empty);
+        protected void _onStopViewingOrderPad() => OnStopViewingOrderPad?.Invoke(this, EventArgs.Empty);
 
     }
 }

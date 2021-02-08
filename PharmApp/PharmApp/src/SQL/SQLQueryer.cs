@@ -176,7 +176,7 @@ namespace PharmApp
                         prod.dtPrice = reader.GetDecimal(5);
                         if (!reader.IsDBNull(6))
                         {
-                            prod.deliveryNotes = reader.GetString(6);
+                            prod.orderingNotes = reader.GetString(6);
                         }
                     }
                 }
@@ -207,8 +207,8 @@ namespace PharmApp
             query.NotDeleted();
             query.PipCode(pip);
 
-            int eCass = 0;
-            int aah = 0;
+            Decimal eCass = 0;
+            Decimal aah = 0;
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -222,11 +222,11 @@ namespace PharmApp
                     {
                         if (reader.GetInt32(2) == 1)
                         {
-                            aah += reader.GetInt32(1);
+                            aah += reader.GetDecimal(1);
                         }
                         else if (reader.GetInt32(2) == 2)
                         {
-                            eCass += reader.GetInt32(1);
+                            eCass += reader.GetDecimal(1);
                         }
                     }
                 }

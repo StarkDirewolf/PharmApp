@@ -26,10 +26,12 @@ namespace PharmApp.src
         private bool _shouldBeVisible = false, _proscriptHasFocus = false;
         protected Label textLabel;
         protected OCRResult ocrResult;
+        protected Form popup;
 
         public void SetOCRResut(OCRResult image)
         {
             ocrResult = image;
+            if (popup == null) SetDefaultPopup();
         }
         
 
@@ -102,33 +104,33 @@ namespace PharmApp.src
 
         private void ClickEvent(object sender, MouseEventArgs e)
         {
-            if (ocrResult != null)
-            {
-                Form popup = new Form();
-                popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                popup.AutoSize = true;
+            if (popup != null) popup.Show();
+        }
 
-                PictureBox image = new PictureBox();
-                image.Image = ocrResult.GetImage().ToBitmap();
-                image.SizeMode = PictureBoxSizeMode.AutoSize;
-                popup.Controls.Add(image);
+        private void SetDefaultPopup()
+        {
+            popup = new Form();
+            popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            popup.AutoSize = true;
 
-                PictureBox ocrImage = new PictureBox();
-                ocrImage.Image = ocrResult.GetOCRImage().ToImage<Bgr, byte>().ToBitmap();
-                ocrImage.SizeMode = PictureBoxSizeMode.AutoSize;
-                System.Drawing.Point location = image.Location;
-                location.Offset(image.Width, 0);
-                ocrImage.Location = location;
-                popup.Controls.Add(ocrImage);
+            PictureBox image = new PictureBox();
+            image.Image = ocrResult.GetImage().ToBitmap();
+            image.SizeMode = PictureBoxSizeMode.AutoSize;
+            popup.Controls.Add(image);
 
-                Label text = new Label();
-                text.Text = ocrResult.GetText();
-                location.Offset(0, ocrImage.Height);
-                text.Location = location;
-                popup.Controls.Add(text);
+            PictureBox ocrImage = new PictureBox();
+            ocrImage.Image = ocrResult.GetOCRImage().ToImage<Bgr, byte>().ToBitmap();
+            ocrImage.SizeMode = PictureBoxSizeMode.AutoSize;
+            System.Drawing.Point location = image.Location;
+            location.Offset(image.Width, 0);
+            ocrImage.Location = location;
+            popup.Controls.Add(ocrImage);
 
-                popup.Show();
-            }
+            Label text = new Label();
+            text.Text = ocrResult.GetText();
+            location.Offset(0, ocrImage.Height);
+            text.Location = location;
+            popup.Controls.Add(text);
         }
 
         protected override bool ShowWithoutActivation
@@ -186,6 +188,14 @@ namespace PharmApp.src
         }
 
         public virtual void OnOrderPadCommentsChanged(object source, List<Product> newItems, List<Product> deletedItems)
+        {
+        }
+
+        public virtual void OnStartViewingOrderPad(object source, EventArgs args)
+        {
+        }
+
+        public virtual void OnStopViewingOrderPad(object source, EventArgs args)
         {
         }
 
