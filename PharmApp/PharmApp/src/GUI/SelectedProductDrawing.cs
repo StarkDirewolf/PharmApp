@@ -18,6 +18,7 @@ namespace PharmApp.src.GUI
         protected ToolTip tooltip = new ToolTip();
         private const int TOOLTIP_MIN_REFRESH_DELAY = 5000, TOOLTIP_SHOW_DURATION = 15000;
         private Stopwatch tooltip_timer = new Stopwatch();
+        private TextBox text = new TextBox();
 
         public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
         {
@@ -88,11 +89,14 @@ namespace PharmApp.src.GUI
                 }
                 
             }
+
+            SetOverridePopup();
         }
 
         public void SetTooltipToOrderHistory()
         {
             string tooltip = product.ToString() + ":\n\n";
+
             if (product.orderingNotes != null)
             {
                 tooltip += product.orderingNotes + "\n\n";
@@ -140,6 +144,47 @@ namespace PharmApp.src.GUI
         public void ChangeLocationByOCRRect(Rectangle rect)
         {
             ChangeLocation(rect.X + rect.Width + X_OFFSET, rect.Y + Y_OFFSET);
+        }
+
+        protected void SetOverridePopup()
+        {
+            if (product.orderingNotes == null) popup = null;
+
+            popup = new Form();
+            popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            popup.AutoSize = true;
+
+            if (product.orderingNotes != null)
+                text.Text = product.orderingNotes;
+            text.AutoSize = true;
+            popup.Controls.Add(text);
+
+
+            Button saveButton = new Button();
+            saveButton.Text = "Save";
+            saveButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            saveButton.AutoSize = true;
+            saveButton.Click += SaveButton_Click;
+            popup.Controls.Add(saveButton);
+
+            Button cancelButton = new Button();
+            cancelButton.Text = "Cancel";
+            cancelButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            cancelButton.AutoSize = true;
+            cancelButton.Click += CancelButton_Click;
+            popup.Controls.Add(cancelButton);
+        }
+
+        private void CancelButton_Click(object sender, EventArgs e)
+        {
+            text.Text = "";
+            popup.Hide();
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            product.orderingNotes = text.Text;
+            popup.Hide();
         }
     }
 }

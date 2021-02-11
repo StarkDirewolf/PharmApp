@@ -316,6 +316,11 @@ namespace PharmApp
             }
         }
 
+        public static bool SaveOrderingNotes(string pipcode, string orderingNote)
+        {
+            QueryConstructor query = new QueryContructor(QueryConstructor.QueryType.UPDATE_ORDERING_NOTE);
+        }
+
         //public static Product SearchOrderPad(string pipcode)
         //{
         //    QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);

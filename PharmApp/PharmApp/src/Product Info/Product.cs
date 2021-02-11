@@ -19,7 +19,20 @@ namespace PharmApp.src
         public string supplier = "NO SUPPLIER";
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
-        public string orderingNotes;
+        private string _orderingNotes;
+        public string orderingNotes
+        {
+            get => _orderingNotes;
+            set
+            {
+                if (value != _orderingNotes)
+                {
+                    _orderingNotes = value;
+
+                    SQLQueryer.SaveOrderingNote(pipcode, value);
+                }
+            }
+        }
         private SQLOrderPadQuantities currentlyOnOrder;
 
         public OrderPadQuantities GetCurrentOrders()
