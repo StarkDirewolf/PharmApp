@@ -53,7 +53,7 @@ namespace PharmApp.src.GUI
             foreach (Product product in orderPadCommentProducts)
             {
                 Label text = new Label();
-                text.Text = product.ToString() + " - " + product.orderingNotes;
+                text.Text = product.ToString() + " - " + product.orderingNote;
                 text.AutoSize = true;
                 popup.Controls.Add(text);
             }

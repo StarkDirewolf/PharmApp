@@ -19,17 +19,33 @@ namespace PharmApp.src
         public string supplier = "NO SUPPLIER";
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
-        private string _orderingNotes;
-        public string orderingNotes
+        public string orderpadComment = "NO COMMENT";
+        private OrderingNote _orderingNote;
+        public OrderingNote orderingNote
         {
-            get => _orderingNotes;
+            get => _orderingNote;
             set
             {
-                if (value != _orderingNotes)
+                if (_orderingNote == null && value.note != "")
                 {
-                    _orderingNotes = value;
+                    _orderingNote = value;
 
-                    SQLQueryer.SaveOrderingNote(pipcode, value);
+                    SQLQueryer.SaveOrderingNote(pipcode, value.note, value.requiresAction);
+                }
+                else if (value.note != _orderingNote.note || value.requiresAction != _orderingNote.requiresAction)
+                {
+                    _orderingNote = value;
+
+                    if (value.note == "")
+                    {
+                        SQLQueryer.DeleteOrderingNote(pipcode);
+                    }
+                    else 
+                    { 
+                        
+                        SQLQueryer.SaveOrderingNote(pipcode, value.note, value.requiresAction);
+                    }
+                    
                 }
             }
         }

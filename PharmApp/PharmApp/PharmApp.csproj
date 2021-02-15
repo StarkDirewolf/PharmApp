@@ -120,6 +120,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="src\GUI\OrderingNoteInputForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GUI\OrderingNoteInputForm.Designer.cs">
+      <DependentUpon>OrderingNoteInputForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\GUI\PharmHotKey.cs" />
     <Compile Include="src\GUI\PharmTrayIcon.cs" />
     <Compile Include="src\GUI\SelectedProductManager.cs" />
@@ -128,6 +134,7 @@
     </Compile>
     <Compile Include="src\Product Info\OrderHistory.cs" />
     <Compile Include="src\Product Info\OrderHistoryLine.cs" />
+    <Compile Include="src\Product Info\OrderingNote.cs" />
     <Compile Include="src\Product Info\OrderPad.cs" />
     <Compile Include="src\Product Info\Product.cs" />
     <Compile Include="src\Product Info\OrderPadQuantities.cs" />
@@ -359,7 +366,11 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="src\GUI\OrderingNoteInputFOrm.resx">
+      <DependentUpon>OrderingNoteInputForm.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\EMGU.CV.4.1.1.3497\build\EMGU.CV.targets" Condition="Exists('..\packages\EMGU.CV.4.1.1.3497\build\EMGU.CV.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -66,6 +66,28 @@ SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.Rece
 JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
+        private const string UPDATEORDERINGNOTE_1 = @"
+MERGE
+INTO App.dbo.CustomNotes WITH (HOLDLOCK) AS target
+USING (SELECT ";
+
+        private const string UPDATEORDERINGNOTE_2 = @" AS PipCode,";
+
+        private const string UPDATEORDERNOTE_3 = @" AS OrderingNotes,";
+
+        private const string UPDATEORDERINGNOTE_4 = @" AS RequiresAction) AS source
+(PipCode, OrderingNotes, RequiresAction)
+ON (target.PipCode = source.PipCode)
+WHEN MATCHED 
+THEN UPDATE
+SET OrderingNotes = source.OrderingNotes,
+RequiresAction = source.RequiresAction
+WHEN NOT MATCHED
+THEN INSERT (PipCode, OrderingNotes, RequiresAction)
+VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
+
+        private const string DELETEORDERINGNOTE = @"DELETE FROM App.dbo.CustomNotes";
+
         private const string FILTER = " WHERE ";
 
         private const string FILTER_DATE = "CONVERT(VARCHAR(10), V.AddedDate, 111) = ";
@@ -112,7 +134,9 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
             VIRTUALPRODCODE,
             PREPARATIONCODE,
             PRODUCTINFO,
-            ORDERHISTORY
+            ORDERHISTORY,
+            UPDATEORDERINGNOTE,
+            DELETEORDERINGNOTE
         }
 
         private enum Condition
@@ -130,7 +154,9 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
             VIRTUALID,
             PREPCODE,
             GENERICCODE,
-            PAGENO
+            PAGENO,
+            ORDERINGNOTE,
+            REQUIRESACTION
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -213,6 +239,18 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
         {
             RemoveCondition(Condition.PAGENO);
             AddCondition(Condition.PAGENO, page);
+        }
+
+        public void OrderingNote(string note)
+        {
+            RemoveCondition(Condition.ORDERINGNOTE);
+            AddCondition(Condition.ORDERINGNOTE, note);
+        }
+
+        public void RequiresAction(bool requiresAction)
+        {
+            RemoveCondition(Condition.REQUIRESACTION);
+            AddCondition(Condition.REQUIRESACTION, requiresAction.ToString());
         }
 
         /// <summary>
@@ -383,6 +421,21 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
                 case QueryType.ORDERHISTORY:
                     str = ORDERHISTORY;
+                    break;
+
+                case QueryType.UPDATEORDERINGNOTE:
+                    str = UPDATEORDERINGNOTE_1;
+                    str += conditions.Find(c => c.Key == Condition.PIPCODE).Value;
+                    str += UPDATEORDERINGNOTE_2;
+                    str += conditions.Find(c => c.Key == Condition.ORDERINGNOTE).Value;
+                    str += UPDATEORDERNOTE_3;
+                    str += Boolean.Parse(conditions.Find(c => c.Key == Condition.REQUIRESACTION).Value);
+                    str += UPDATEORDERINGNOTE_4;
+                    conditions.Clear();
+                    break;
+
+                case QueryType.DELETEORDERINGNOTE:
+                    str = DELETEORDERINGNOTE;
                     break;
             }
 

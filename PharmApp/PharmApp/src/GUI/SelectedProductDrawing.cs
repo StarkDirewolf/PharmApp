@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PharmApp.src.Product_Info;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -18,7 +19,11 @@ namespace PharmApp.src.GUI
         protected ToolTip tooltip = new ToolTip();
         private const int TOOLTIP_MIN_REFRESH_DELAY = 5000, TOOLTIP_SHOW_DURATION = 15000;
         private Stopwatch tooltip_timer = new Stopwatch();
-        private TextBox text = new TextBox();
+
+        private TextBox text;
+        private CheckBox checkBox;
+        private Label checkBoxLabel;
+        private Button cancelButton, saveButton;
 
         public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
         {
@@ -34,6 +39,8 @@ namespace PharmApp.src.GUI
             tooltip.ShowAlways = true;
             tooltip.AutoPopDelay = TOOLTIP_SHOW_DURATION;
             tooltip.Popup += Tooltip_Popup;
+
+
         }
 
         private void Tooltip_Popup(object sender, PopupEventArgs e)
@@ -64,7 +71,7 @@ namespace PharmApp.src.GUI
             {
                 if (product.IsOrdering())
                 {
-                    if (product.orderingNotes != null)
+                    if (product.orderingNote != null)
                     {
                         img.Image = Image.FromFile(ResourceManager.greenAstCircle);
                     }
@@ -77,7 +84,7 @@ namespace PharmApp.src.GUI
                 }
                 else
                 {
-                    if (product.orderingNotes != null)
+                    if (product.orderingNote != null)
                     {
                         img.Image = Image.FromFile(ResourceManager.redAstCircle);
                     }
@@ -97,9 +104,9 @@ namespace PharmApp.src.GUI
         {
             string tooltip = product.ToString() + ":\n\n";
 
-            if (product.orderingNotes != null)
+            if (product.orderingNote != null)
             {
-                tooltip += product.orderingNotes + "\n\n";
+                tooltip += product.orderingNote + "\n\n";
             }
             tooltip += product.GetRecentOrders().ToString();
             SetTooltip(tooltip);
@@ -148,42 +155,68 @@ namespace PharmApp.src.GUI
 
         protected void SetOverridePopup()
         {
-            if (product.orderingNotes == null) popup = null;
+            OrderingNoteInputForm popup = new OrderingNoteInputForm();
 
-            popup = new Form();
-            popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            popup.AutoSize = true;
+            text = popup.noteTextBox;
+            //text.Width = 400;
+            if (product.orderingNote != null) text.Text = product.orderingNote.note;
+            //text.AutoSize = true;
+            //text.Anchor = AnchorStyles.Top;
+            //popup.Controls.Add(text);
+            popup.ActiveControl = text;
 
-            if (product.orderingNotes != null)
-                text.Text = product.orderingNotes;
-            text.AutoSize = true;
-            popup.Controls.Add(text);
+            //checkBoxLabel = new Label();
+            //checkBoxLabel.Text = "Requires action?";
+            //checkBoxLabel.AutoSize = true;
+            //text.Anchor = AnchorStyles.None;
+            //popup.Controls.Add(checkBoxLabel);
+
+            checkBox = popup.checkBox;
+            if (product.orderingNote != null)
+            {
+                checkBox.Checked = product.orderingNote.requiresAction;
+            }
 
 
-            Button saveButton = new Button();
-            saveButton.Text = "Save";
-            saveButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            saveButton.AutoSize = true;
+            saveButton = popup.saveButton;
+            //saveButton.Text = "Save";
+            //saveButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            //saveButton.AutoSize = true;
             saveButton.Click += SaveButton_Click;
-            popup.Controls.Add(saveButton);
+            //popup.Controls.Add(saveButton);
+            //popup.AcceptButton = saveButton;
 
-            Button cancelButton = new Button();
-            cancelButton.Text = "Cancel";
-            cancelButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            cancelButton.AutoSize = true;
+            cancelButton = popup.cancelButton;
+            //cancelButton.Text = "Cancel";
+            //cancelButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            //cancelButton.AutoSize = true;
             cancelButton.Click += CancelButton_Click;
-            popup.Controls.Add(cancelButton);
+            //popup.Controls.Add(cancelButton);
+            //popup.CancelButton = cancelButton;
+            //popup.PerformLayout();
+
+            base.popup = popup;
         }
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            text.Text = "";
+            if (product.orderingNote != null)
+            {
+                text.Text = product.orderingNote.note;
+                checkBox.Checked = product.orderingNote.requiresAction;
+            }
+            else
+            {
+                text.Text = "";
+                checkBox.Checked = false;
+            }
             popup.Hide();
         }
 
         private void SaveButton_Click(object sender, EventArgs e)
         {
-            product.orderingNotes = text.Text;
+            OrderingNote note = new OrderingNote(text.Text, checkBox.Checked);
+            product.orderingNote = note;
             popup.Hide();
         }
     }

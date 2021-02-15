@@ -176,7 +176,7 @@ namespace PharmApp
                         prod.dtPrice = reader.GetDecimal(5);
                         if (!reader.IsDBNull(6))
                         {
-                            prod.orderingNotes = reader.GetString(6);
+                            prod.orderpadComment = reader.GetString(6);
                         }
                     }
                 }
@@ -316,9 +316,44 @@ namespace PharmApp
             }
         }
 
-        public static bool SaveOrderingNotes(string pipcode, string orderingNote)
+        public static bool SaveOrderingNote(string pipcode, string orderingNote, bool requiresAction)
         {
-            QueryConstructor query = new QueryContructor(QueryConstructor.QueryType.UPDATE_ORDERING_NOTE);
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.UPDATEORDERINGNOTE);
+            query.PipCode(pipcode);
+            query.OrderingNote(orderingNote);
+            query.RequiresAction(requiresAction);
+
+            int rowsAffected = 0;
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                rowsAffected = command.ExecuteNonQuery();
+            }
+
+            return (rowsAffected > 0);
+        }
+
+        public static bool DeleteOrderingNote(string pipcode)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.DELETEORDERINGNOTE);
+            query.PipCode(pipcode);
+
+            int rowsAffected = 0;
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                rowsAffected = command.ExecuteNonQuery();
+            }
+
+            return (rowsAffected > 0);
         }
 
         //public static Product SearchOrderPad(string pipcode)

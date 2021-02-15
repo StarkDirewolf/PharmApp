@@ -75,7 +75,7 @@ namespace PharmApp.src.Product_Info
 
         public List<Product> GetProductsWithNotes()
         {
-            return products.FindAll(p => p.orderingNotes != null && p.GetCurrentOrders().IsOnOrder());
+            return products.FindAll(p => p.orderingNote != null && p.GetCurrentOrders().IsOnOrder());
         }
     }
 }
