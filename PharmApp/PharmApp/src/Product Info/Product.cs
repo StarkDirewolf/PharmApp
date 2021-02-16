@@ -19,7 +19,6 @@ namespace PharmApp.src
         public string supplier = "NO SUPPLIER";
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
-        public string orderpadComment = "NO COMMENT";
         private OrderingNote _orderingNote;
         public OrderingNote orderingNote
         {

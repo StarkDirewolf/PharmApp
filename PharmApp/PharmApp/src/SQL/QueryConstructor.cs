@@ -53,7 +53,7 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON O.PackCodeId = P.PackCodeId";
 SELECT OrderCode, Quantity, WholeSalerId FROM ProScriptConnect.Ordering.OrderPad";
 
         private const string PRODUCTINFO = @"
-SELECT Description, Gncs, UnitsPerPack, K.IsGeneric, SupplierName, Price, OrderingNotes FROM PKBRuntime.Pharmacy.PackOrderCode O
+SELECT Description, Gncs, UnitsPerPack, K.IsGeneric, SupplierName, Price, OrderingNotes, RequiresAction FROM PKBRuntime.Pharmacy.PackOrderCode O
 JOIN PKBRuntime.Pharmacy.Pack K ON O.PackCodeId = K.PackCodeId
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON K.PreparationCodeId = P.PreparationCodeId AND K.PackCodeId = P.PackCodeId
 JOIN (SELECT * FROM PKBRuntime.Pharmacy.PreparationSearchView WHERE RegionId = 0) V ON P.PreparationCodeId = V.PreparationCodeId

@@ -176,7 +176,8 @@ namespace PharmApp
                         prod.dtPrice = reader.GetDecimal(5);
                         if (!reader.IsDBNull(6))
                         {
-                            prod.orderpadComment = reader.GetString(6);
+                            OrderingNote note = new OrderingNote(reader.GetString(6), reader.GetBoolean(7));
+                            prod.orderingNote = note;
                         }
                     }
                 }
