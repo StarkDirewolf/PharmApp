@@ -22,7 +22,6 @@ namespace PharmApp.src.GUI
 
         private TextBox text;
         private CheckBox checkBox;
-        private Label checkBoxLabel;
         private Button cancelButton, saveButton;
 
         public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
@@ -39,7 +38,6 @@ namespace PharmApp.src.GUI
             tooltip.ShowAlways = true;
             tooltip.AutoPopDelay = TOOLTIP_SHOW_DURATION;
             tooltip.Popup += Tooltip_Popup;
-
 
         }
 
@@ -98,6 +96,14 @@ namespace PharmApp.src.GUI
             }
 
             SetOverridePopup();
+            SetContextMenu();
+        }
+
+        public void SetContextMenu()
+        {
+            ContextMenuStrip menu = new ContextMenuStrip();
+            ToolStripItem patients = new ToolStripItem();
+            img.ContextMenuStrip = menu;
         }
 
         public void SetTooltipToOrderHistory()
