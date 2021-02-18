@@ -317,12 +317,12 @@ namespace PharmApp
             }
         }
 
-        public static bool SaveOrderingNote(string pipcode, string orderingNote, bool requiresAction)
+        public static bool SaveOrderingNote(string pipcode, OrderingNote orderingNote)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.UPDATEORDERINGNOTE);
             query.PipCode(pipcode);
-            query.OrderingNote(orderingNote);
-            query.RequiresAction(requiresAction);
+            query.OrderingNote(orderingNote.note);
+            query.RequiresAction(orderingNote.requiresAction);
 
             int rowsAffected = 0;
 
@@ -355,6 +355,32 @@ namespace PharmApp
             }
 
             return (rowsAffected > 0);
+        }
+
+        public static OrderingNote GetOrderingNote(string pipcode)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.GETORDERINGNOTE);
+            query.PipCode(pipcode);
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        if (!reader.IsDBNull(0))
+                        {
+                            return new OrderingNote(reader.GetString(0), reader.GetBoolean(1));
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         //public static Product SearchOrderPad(string pipcode)

@@ -69,11 +69,11 @@ JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
         private const string UPDATEORDERINGNOTE_1 = @"
 MERGE
 INTO App.dbo.CustomNotes WITH (HOLDLOCK) AS target
-USING (SELECT ";
+USING (SELECT '";
 
-        private const string UPDATEORDERINGNOTE_2 = @" AS PipCode,";
+        private const string UPDATEORDERINGNOTE_2 = @"' AS PipCode, '";
 
-        private const string UPDATEORDERNOTE_3 = @" AS OrderingNotes,";
+        private const string UPDATEORDERNOTE_3 = @"' AS OrderingNotes, ";
 
         private const string UPDATEORDERINGNOTE_4 = @" AS RequiresAction) AS source
 (PipCode, OrderingNotes, RequiresAction)
@@ -87,6 +87,8 @@ THEN INSERT (PipCode, OrderingNotes, RequiresAction)
 VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
 
         private const string DELETEORDERINGNOTE = @"DELETE FROM App.dbo.CustomNotes";
+
+        private const string GETORDERINGNOTE = @"SELECT OrderingNotes, RequiresAction FROM App.dbo.CustomNotes";
 
         private const string FILTER = " WHERE ";
 
@@ -104,8 +106,8 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
 
         private const string FILTER_NEW_ETP = "s.PrescriptionStatusId = 3";
         private const string FILTER_TO_BE_DISPENSED = "i.PrescriptionItemStatusId = 1";
-        private const string FILTER_PIP = "OrderCode = '";
-        private const string FILTER_PIP_ORDER_HISTORY = "PipCode = '";
+        private const string FILTER_ORDERCODE = "OrderCode = '";
+        private const string FILTER_PIPCODE = "PipCode = '";
         private const string FILTER_GENERIC_ORDER_HISTORY = "Gncs = '";
         private const string FILTER_NOT_DELETED = "Deleted = 0";
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
@@ -136,7 +138,8 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             PRODUCTINFO,
             ORDERHISTORY,
             UPDATEORDERINGNOTE,
-            DELETEORDERINGNOTE
+            DELETEORDERINGNOTE,
+            GETORDERINGNOTE
         }
 
         private enum Condition
@@ -342,13 +345,13 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
                         break;
 
                     case Condition.PIPCODE:
-                        if (type == QueryType.ORDERHISTORY)
+                        if (type == QueryType.ORDERHISTORY || type == QueryType.GETORDERINGNOTE || type == QueryType.DELETEORDERINGNOTE)
                         {
-                            str = FILTER_PIP_ORDER_HISTORY + condition.Value + FILTER_QUOTE_END;
+                            str = FILTER_PIPCODE + condition.Value + FILTER_QUOTE_END;
                         }
                         else
                         {
-                            str = FILTER_PIP + condition.Value + FILTER_QUOTE_END;
+                            str = FILTER_ORDERCODE + condition.Value + FILTER_QUOTE_END;
                         }
                         break;
 
@@ -429,13 +432,24 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
                     str += UPDATEORDERINGNOTE_2;
                     str += conditions.Find(c => c.Key == Condition.ORDERINGNOTE).Value;
                     str += UPDATEORDERNOTE_3;
-                    str += Boolean.Parse(conditions.Find(c => c.Key == Condition.REQUIRESACTION).Value);
+                    if (conditions.Find(c => c.Key == Condition.REQUIRESACTION).Value == "True")
+                    {
+                        str += "1";
+                    }
+                    else
+                    {
+                        str += "0";
+                    }
                     str += UPDATEORDERINGNOTE_4;
                     conditions.Clear();
                     break;
 
                 case QueryType.DELETEORDERINGNOTE:
                     str = DELETEORDERINGNOTE;
+                    break;
+
+                case QueryType.GETORDERINGNOTE:
+                    str = GETORDERINGNOTE;
                     break;
             }
 

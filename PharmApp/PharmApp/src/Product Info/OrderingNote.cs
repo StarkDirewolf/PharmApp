@@ -17,5 +17,11 @@ namespace PharmApp.src.Product_Info
             this.note = note;
             this.requiresAction = requiresAction;
         }
+
+        public override string ToString()
+        {
+            return note;
+        }
+
     }
 }

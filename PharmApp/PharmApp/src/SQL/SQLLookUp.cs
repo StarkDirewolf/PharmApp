@@ -36,5 +36,21 @@ namespace PharmApp.src.SQL
         {
             return GetData().ToString();
         }
+
+        public void SetData(T data)
+        {
+            if (timer == null)
+            {
+                timer = new Stopwatch();
+                timer.Start();
+            }
+            else
+            {
+                timer.Restart();
+            }
+
+            this.data = data;
+        }
+
     }
 }

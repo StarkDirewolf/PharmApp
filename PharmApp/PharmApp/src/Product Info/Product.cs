@@ -19,30 +19,40 @@ namespace PharmApp.src
         public string supplier = "NO SUPPLIER";
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
-        private OrderingNote _orderingNote;
+        private SQLOrderingNote _orderingNote;
         public OrderingNote orderingNote
         {
-            get => _orderingNote;
+            get
+            {
+                if (_orderingNote == null)
+                {
+                    _orderingNote = new SQLOrderingNote(pipcode);
+                }
+                return _orderingNote.GetData();
+            }
             set
             {
-                if (_orderingNote == null && value.note != "")
-                {
-                    _orderingNote = value;
+                if (_orderingNote == null) _orderingNote = new SQLOrderingNote(pipcode);
 
-                    SQLQueryer.SaveOrderingNote(pipcode, value.note, value.requiresAction);
-                }
-                else if (value.note != _orderingNote.note || value.requiresAction != _orderingNote.requiresAction)
+                if (_orderingNote.IsEmpty() && value.note != "")
                 {
-                    _orderingNote = value;
+                    _orderingNote.SetData(value);
+
+                    SQLQueryer.SaveOrderingNote(pipcode, value); ;
+                }
+                else if (!_orderingNote.NoteEquals(value.note) || !_orderingNote.RequiresActionEquals(value.requiresAction))
+                {
+                    _orderingNote.SetData(value);
 
                     if (value.note == "")
                     {
+                        _orderingNote.Clear();
                         SQLQueryer.DeleteOrderingNote(pipcode);
                     }
                     else 
                     { 
                         
-                        SQLQueryer.SaveOrderingNote(pipcode, value.note, value.requiresAction);
+                        SQLQueryer.SaveOrderingNote(pipcode, value);
                     }
                     
                 }

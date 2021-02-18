@@ -26,6 +26,8 @@ namespace PharmApp.src.Product_Info
         {
             Decimal returnValue;
             onOrder.TryGetValue(Supplier.AAH, out returnValue);
+            string returnValueString = returnValue.ToString();
+            if (returnValueString.Substring(returnValueString.Length - 4) == ".000") returnValue = Decimal.Truncate(returnValue);
             return returnValue;
         }
 
@@ -33,6 +35,8 @@ namespace PharmApp.src.Product_Info
         {
             Decimal returnValue;
             onOrder.TryGetValue(Supplier.ECASS, out returnValue);
+            string returnValueString = returnValue.ToString();
+            if (returnValueString.Substring(returnValueString.Length - 4) == ".000") returnValue = Decimal.Truncate(returnValue);
             return returnValue;
         }
 

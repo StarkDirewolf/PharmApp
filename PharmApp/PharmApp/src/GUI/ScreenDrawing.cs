@@ -131,7 +131,11 @@ namespace PharmApp.src
             location.Offset(0, ocrImage.Height);
             text.Location = location;
             popup.Controls.Add(text);
+
+            popup.Disposed += (s, e) => SetDefaultPopup();
+
         }
+
 
         protected override bool ShowWithoutActivation
         {

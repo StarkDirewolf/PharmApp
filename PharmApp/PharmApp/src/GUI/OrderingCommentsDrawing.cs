@@ -50,13 +50,17 @@ namespace PharmApp.src.GUI
             popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             popup.AutoSize = true;
 
+            Label text = new Label();
+            text.Text = "";
             foreach (Product product in orderPadCommentProducts)
             {
-                Label text = new Label();
-                text.Text = product.ToString() + " - " + product.orderingNote;
-                text.AutoSize = true;
-                popup.Controls.Add(text);
+                text.Text += product.GetCurrentOrders().GetECass() + " X " + product.ToString() + " - " + product.orderingNote + "\n";
             }
+
+            text.AutoSize = true;
+            popup.Controls.Add(text);
+
+            popup.Disposed += (s, e) => SetOverridePopup();
         }
 
     }
