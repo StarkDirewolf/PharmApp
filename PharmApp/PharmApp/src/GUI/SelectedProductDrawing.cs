@@ -102,8 +102,17 @@ namespace PharmApp.src.GUI
         public void SetContextMenu()
         {
             ContextMenuStrip menu = new ContextMenuStrip();
-            ToolStripItem patients = new ToolStripItem();
+            ToolStripItem patients = new ToolStripButton();
             img.ContextMenuStrip = menu;
+
+            patients.Text = "Patients";
+            patients.Click += OpenPatientHistory;
+            menu.Items.Add(patients);
+        }
+
+        private void OpenPatientHistory(object sender, EventArgs e)
+        {
+
         }
 
         public void SetTooltipToOrderHistory()

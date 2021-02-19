@@ -129,6 +129,12 @@
     </Compile>
     <Compile Include="src\GUI\PharmHotKey.cs" />
     <Compile Include="src\GUI\PharmTrayIcon.cs" />
+    <Compile Include="src\GUI\ProductInPatientHistory.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GUI\ProductInPatientHistory.Designer.cs">
+      <DependentUpon>ProductInPatientHistory.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\GUI\SelectedProductManager.cs" />
     <Compile Include="src\GUI\SelectedProductDrawing.cs">
       <SubType>Form</SubType>
@@ -371,6 +377,9 @@
   <ItemGroup>
     <EmbeddedResource Include="src\GUI\OrderingNoteInputFOrm.resx">
       <DependentUpon>OrderingNoteInputForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GUI\ProductInPatientHistory.resx">
+      <DependentUpon>ProductInPatientHistory.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
