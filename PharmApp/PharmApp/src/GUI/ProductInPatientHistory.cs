@@ -7,15 +7,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PharmApp.src.Product_Info;
 
 namespace PharmApp.src.GUI
 {
     public partial class ProductInPatientHistory : Form
     {
+
         public ProductInPatientHistory()
         {
             InitializeComponent();
         }
 
+        //public void SetProduct(Product product)
+        //{
+        //    //patientHistoryView.DataSource =
+        //}
     }
 }

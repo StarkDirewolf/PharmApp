@@ -28,31 +28,32 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.patientHistoryView = new System.Windows.Forms.DataGridView();
             this.Date = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Patient = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Quantity = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Item = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.patientHistoryView)).BeginInit();
             this.SuspendLayout();
             // 
-            // dataGridView1
+            // patientHistoryView
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.patientHistoryView.AllowUserToAddRows = false;
+            this.patientHistoryView.AllowUserToDeleteRows = false;
+            this.patientHistoryView.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.patientHistoryView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.patientHistoryView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Date,
             this.Patient,
             this.Quantity,
             this.Item});
-            this.dataGridView1.Location = new System.Drawing.Point(-1, -1);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.ShowEditingIcon = false;
-            this.dataGridView1.Size = new System.Drawing.Size(486, 200);
-            this.dataGridView1.TabIndex = 0;
+            this.patientHistoryView.Location = new System.Drawing.Point(-1, -1);
+            this.patientHistoryView.Name = "patientHistoryView";
+            this.patientHistoryView.ReadOnly = true;
+            this.patientHistoryView.RowHeadersVisible = false;
+            this.patientHistoryView.ShowEditingIcon = false;
+            this.patientHistoryView.Size = new System.Drawing.Size(486, 200);
+            this.patientHistoryView.TabIndex = 0;
             // 
             // Date
             // 
@@ -83,17 +84,17 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(485, 199);
-            this.Controls.Add(this.dataGridView1);
+            this.Controls.Add(this.patientHistoryView);
             this.Name = "ProductInPatientHistory";
             this.Text = "Patients";
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.patientHistoryView)).EndInit();
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView patientHistoryView;
         private System.Windows.Forms.DataGridViewTextBoxColumn Date;
         private System.Windows.Forms.DataGridViewTextBoxColumn Patient;
         private System.Windows.Forms.DataGridViewTextBoxColumn Quantity;
