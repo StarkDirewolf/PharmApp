@@ -11,17 +11,22 @@ using PharmApp.src.Product_Info;
 
 namespace PharmApp.src.GUI
 {
-    public partial class ProductInPatientHistory : Form
+    partial class ProductInPatientHistory : Form
     {
+        private Product product;
 
-        public ProductInPatientHistory()
+        public ProductInPatientHistory(Product product)
         {
             InitializeComponent();
+            this.product = product;
+            SetProduct(product);
         }
 
-        //public void SetProduct(Product product)
-        //{
-        //    //patientHistoryView.DataSource =
-        //}
+        public void SetProduct(Product product)
+        {
+            patientHistoryView.DataSource = SQLQueryer.GetProductPatientHistory(product);
+            //this.Width = patientHistoryView.Width;
+            this.Width = Enumerable.patientH.Aggregate(0, (acc, e) => patientHistoryView.Columns.
+        }
     }
 }

@@ -112,7 +112,7 @@ namespace PharmApp.src.GUI
 
         private void OpenPatientHistory(object sender, EventArgs e)
         {
-            ProductInPatientHistory popup = new ProductInPatientHistory();
+            ProductInPatientHistory popup = new ProductInPatientHistory(product);
             popup.Show();
         }
 

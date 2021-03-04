@@ -66,6 +66,14 @@ SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.Rece
 JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
+        private const string PRODUCTPATIENTHISTORY = @"
+SELECT DISTINCT V.AddedDate, Pat.Surname, Pat.CallingName, Pa.Description, P.Quantity
+FROM ProScriptConnect.PMR.PrescriptionCollectionSummaryView V
+JOIN ProScriptConnect.PMR.PrescriptionItemDispensed P ON P.PrescriptionItemId = V.PrescriptionItemId
+JOIN ProScriptConnect.dbo.PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId
+JOIN ProScriptConnect.dbo.Patient Pat ON V.PatientId = Pat.PatientId
+JOIN PKBRUntime.Pharmacy.PreparationPack K ON P.PackCodeId = K.PackCodeId";
+
         private const string UPDATEORDERINGNOTE_1 = @"
 MERGE
 INTO App.dbo.CustomNotes WITH (HOLDLOCK) AS target
@@ -117,6 +125,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
         private const string FILTER_AND = " AND ";
 
         private const string ORDER_BY_DATE_MODIFIED = " ORDER BY DateModified DESC";
+        private const string ORDER_BY_DATE_ADDED = " ORDER BY AddedDate DESC";
 
         private readonly QueryType type;
 
@@ -139,7 +148,8 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             ORDERHISTORY,
             UPDATEORDERINGNOTE,
             DELETEORDERINGNOTE,
-            GETORDERINGNOTE
+            GETORDERINGNOTE,
+            PRODUCTPATIENTHISTORY
         }
 
         private enum Condition
@@ -275,9 +285,14 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             sort = "ORDER BY P.Surname";
         }
 
-        public void SortByDate()
+        public void SortByDateModified()
         {
             sort = ORDER_BY_DATE_MODIFIED;
+        }
+
+        public void SortByDateAdded()
+        {
+            sort = ORDER_BY_DATE_ADDED;
         }
 
         public void BetweenDays(DateTime fromDay, DateTime toDay)
@@ -345,7 +360,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
                         break;
 
                     case Condition.PIPCODE:
-                        if (type == QueryType.ORDERHISTORY || type == QueryType.GETORDERINGNOTE || type == QueryType.DELETEORDERINGNOTE)
+                        if (type == QueryType.ORDERHISTORY || type == QueryType.GETORDERINGNOTE || type == QueryType.DELETEORDERINGNOTE || type == QueryType.PRODUCTPATIENTHISTORY)
                         {
                             str = FILTER_PIPCODE + condition.Value + FILTER_QUOTE_END;
                         }
@@ -450,6 +465,10 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
 
                 case QueryType.GETORDERINGNOTE:
                     str = GETORDERINGNOTE;
+                    break;
+
+                case QueryType.PRODUCTPATIENTHISTORY:
+                    str = PRODUCTPATIENTHISTORY;
                     break;
             }
 

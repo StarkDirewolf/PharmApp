@@ -79,6 +79,38 @@ namespace PharmApp
             return nhsNumNameLookup;
         }
 
+        public static object GetProductPatientHistory(Product product)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PRODUCTPATIENTHISTORY);
+
+            if (product.isGeneric)
+            {
+                query.GenericCode(product.genericID);
+            }
+            else
+            {
+                query.PipCode(product.pipcode);
+            }
+
+            query.SortByDateAdded();
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                SqlDataAdapter adapter = new SqlDataAdapter();
+                adapter.SelectCommand = command;
+
+                DataTable table = new DataTable();
+
+                adapter.Fill(table);
+
+                return table;
+            }
+        }
+
         public static OrderHistory GetOrderHistory(string code, DateTime fromDate, DateTime endDate, bool byGenericID)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.ORDERHISTORY);
@@ -93,7 +125,7 @@ namespace PharmApp
             }
             
             query.BetweenDays(fromDate, endDate);
-            query.SortByDate();
+            query.SortByDateModified();
 
             OrderHistory history = new OrderHistory();
 
