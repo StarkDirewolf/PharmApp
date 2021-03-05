@@ -26,7 +26,8 @@ namespace PharmApp.src.GUI
         {
             patientHistoryView.DataSource = SQLQueryer.GetProductPatientHistory(product);
             //this.Width = patientHistoryView.Width;
-            this.Width = Enumerable.patientH.Aggregate(0, (acc, e) => patientHistoryView.Columns.
+
+            //this.Width = patientHistoryView.Columns.OfType<DataGridViewColumn>().Aggregate(0, (acc, next) => acc + next.Width);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace PharmApp.src.Product_Info
             Decimal returnValue;
             onOrder.TryGetValue(Supplier.AAH, out returnValue);
             string returnValueString = returnValue.ToString();
-            if (returnValueString.Substring(returnValueString.Length - 4) == ".000") returnValue = Decimal.Truncate(returnValue);
+            if (returnValueString.Length > 5 && returnValueString.Substring(returnValueString.Length - 4) == ".000") returnValue = Decimal.Truncate(returnValue);
             return returnValue;
         }
 
