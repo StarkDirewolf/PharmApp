@@ -26,8 +26,9 @@ namespace PharmApp.src.GUI
         {
             patientHistoryView.DataSource = SQLQueryer.GetProductPatientHistory(product);
             //this.Width = patientHistoryView.Width;
-
-            //this.Width = patientHistoryView.Columns.OfType<DataGridViewColumn>().Aggregate(0, (acc, next) => acc + next.Width);
+            patientHistoryView.DataBindingComplete += (s, e) => this.Width = patientHistoryView.Columns.OfType<DataGridViewColumn>().Aggregate(0, (acc, next) => acc + next.Width) + 34;
+            
         }
+
     }
 }

@@ -104,7 +104,6 @@ namespace PharmApp
                 adapter.SelectCommand = command;
 
                 DataTable table = new DataTable();
-
                 adapter.Fill(table);
 
                 return table;

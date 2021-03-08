@@ -41,6 +41,7 @@
             this.patientHistoryView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.patientHistoryView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.patientHistoryView.Location = new System.Drawing.Point(0, 0);
+            this.patientHistoryView.Margin = new System.Windows.Forms.Padding(0);
             this.patientHistoryView.Name = "patientHistoryView";
             this.patientHistoryView.ReadOnly = true;
             this.patientHistoryView.RowHeadersVisible = false;

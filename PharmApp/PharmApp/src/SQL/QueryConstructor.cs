@@ -67,7 +67,7 @@ JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHisto
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
         private const string PRODUCTPATIENTHISTORY = @"
-SELECT DISTINCT V.AddedDate, Pat.Surname, Pat.CallingName, Pa.Description, P.Quantity
+SELECT DISTINCT V.AddedDate AS 'Date', Pat.Surname, Pat.CallingName AS 'First Name', Pa.Description, REPLACE(P.Quantity, '.000', '') AS 'Quantity'
 FROM ProScriptConnect.PMR.PrescriptionCollectionSummaryView V
 JOIN ProScriptConnect.PMR.PrescriptionItemDispensed P ON P.PrescriptionItemId = V.PrescriptionItemId
 JOIN ProScriptConnect.dbo.PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId
