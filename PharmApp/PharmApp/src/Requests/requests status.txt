@@ -1,0 +1,17 @@
+﻿SELECT * FROM ProScriptConnect.RMS.Request R
+JOIN ProScriptConnect.PTS.PrescriptionTracking T ON T.PrescriptionTrackingId = R.PrescriptionTrackingId
+
+
+SELECT * FROM ProScriptConnect.PTS.PrescriptionTrackingStatusType
+
+
+finding surgery code
+SELECT DISTINCT PrescribingOrganisationId, PrescribingOrganisationName FROM ProScriptConnect.RMS.RequestSummaryView
+WHERE PrescribingOrganisationName LIKE '%Bower%'
+
+
+
+summary view filter out deleted and by surgery and status(?)
+SELECT * FROM ProScriptConnect.RMS.RequestSummaryView R 
+WHERE Deleted = 0 AND PrescribingOrganisationId = 190 AND
+ORDER BY RequestDateAdded

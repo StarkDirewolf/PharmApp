@@ -105,7 +105,7 @@ namespace PharmApp
 
                 DataTable table = new DataTable();
                 adapter.Fill(table);
-
+                
                 return table;
             }
         }

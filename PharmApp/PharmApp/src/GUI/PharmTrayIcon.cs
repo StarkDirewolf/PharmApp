@@ -18,8 +18,9 @@ namespace PharmApp.src.GUI
             icon.Icon = new Icon(ResourceManager.linkIcon);
             icon.Visible = true;
 
-            MenuItem item = new MenuItem("Exit", ExitEvent);
-            MenuItem[] items = { item };
+            MenuItem exit = new MenuItem("Exit", ExitEvent);
+            MenuItem requests = new MenuItem("Requests", RequestsEvent);
+            MenuItem[] items = { requests, exit };
             icon.ContextMenu = new ContextMenu(items);
         }
 
@@ -28,6 +29,12 @@ namespace PharmApp.src.GUI
             icon.Visible = false;
             Application.Exit();
             Environment.Exit(1);
+        }
+
+        public void RequestsEvent(object sender, EventArgs e)
+        {
+            EmailForm emailForm = new EmailForm();
+            emailForm.Visible = true;
         }
     }
 }
