@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PharmApp.src.Requests;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -33,8 +34,8 @@ namespace PharmApp.src.GUI
 
         public void RequestsEvent(object sender, EventArgs e)
         {
-            EmailForm emailForm = new EmailForm();
-            emailForm.Visible = true;
+            RequestManager requester = new RequestManager();
+            requester.GenerateRequestEmail();
         }
     }
 }

@@ -12,11 +12,12 @@ namespace PharmApp.src
         public static string TrimTrailingZeros(string decimalStr)
         {
             if (decimalStr.EndsWith(".0000"))
-            {
                 return decimalStr.Substring(0, decimalStr.Length - 5);
-            }
 
-            return decimalStr.Substring(0, decimalStr.Length - 2);
+            if (decimalStr.EndsWith(".000"))
+                return decimalStr.Substring(0, decimalStr.Length - 4);
+
+            return decimalStr;
         }
     }
 }

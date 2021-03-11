@@ -60,5 +60,9 @@ namespace PharmApp.src.GUI
             bodyRichTextBox2.Text = text;
         }
 
+        public void SetToText(string text)
+        {
+            toTextBox.Text = text;
+        }
     }
 }

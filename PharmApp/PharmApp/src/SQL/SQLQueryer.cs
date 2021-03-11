@@ -1,6 +1,7 @@
 ﻿using PharmApp;
 using PharmApp.src;
 using PharmApp.src.Product_Info;
+using PharmApp.src.Requests;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +15,77 @@ namespace PharmApp
     class SQLQueryer
     {
         private const string CONNECTION_STRING = @"Data Source=12212360VSVR\PHARMACYE14;Initial Catalog=ProScriptConnect;Integrated Security=true;";
+
+        public static string FindSurgeryNameFromCode(int code)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.SURGERYNAME);
+            query.SurgeryCode(code.ToString());
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return reader[0].ToString();
+                    }
+
+                    // Not found if method hasn't returned yet
+                    return null;
+                }
+            }
+        }
+
+        public static string FindSurgeryEmailFromCode(int code)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.SURGERYEMAIL);
+            query.SurgeryCode(code.ToString());
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return reader[0].ToString();
+                    }
+
+                    // Not found if method hasn't returned yet
+                    return null;
+                }
+            }
+        }
+
+        // Grabs the next repeat request within the last month and returns surgery code attached to it
+        // Returns -1 if one hasn't been found
+        public static int FindSurgeryCodeForARepeatRequest()
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.NEXTREQUESTSURGERY);
+            query.SinceDate(DateTime.Today.AddMonths(-1));
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return reader.GetInt32(0);
+                    }
+
+                    // Not found if method hasn't returned yet
+                    return -1;
+                }
+            }
+        }
 
         public static Dictionary<string, string> GetDeliveryNHSNumbers(DateTime fromDay, DateTime toDay, bool onlyNomads)
         {

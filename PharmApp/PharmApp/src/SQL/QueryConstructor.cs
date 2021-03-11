@@ -74,6 +74,13 @@ JOIN ProScriptConnect.dbo.PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId
 JOIN ProScriptConnect.dbo.Patient Pat ON V.PatientId = Pat.PatientId
 JOIN PKBRUntime.Pharmacy.PreparationPack K ON P.PackCodeId = K.PackCodeId";
 
+        private const string SURGERYEMAIL = @"
+SELECT Email FROM App.dbo.SurgeryEmail";
+
+        private const string SURGERYNAME = @"
+SELECT Name
+FROM ProScriptConnect.dbo.PrescribingOrganisation";
+
         private const string UPDATEORDERINGNOTE_1 = @"
 MERGE
 INTO App.dbo.CustomNotes WITH (HOLDLOCK) AS target
@@ -124,8 +131,12 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
 
         private const string FILTER_AND = " AND ";
 
+        private const string FILTER_SURGERY_CODE = "PrescribingOrganisationId = ";
+
         private const string ORDER_BY_DATE_MODIFIED = " ORDER BY DateModified DESC";
         private const string ORDER_BY_DATE_ADDED = " ORDER BY AddedDate DESC";
+
+        private const string FILTER_SINCE_DATE = " DateAdded > '";
 
         private readonly QueryType type;
 
@@ -149,7 +160,9 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             UPDATEORDERINGNOTE,
             DELETEORDERINGNOTE,
             GETORDERINGNOTE,
-            PRODUCTPATIENTHISTORY
+            PRODUCTPATIENTHISTORY,
+            SURGERYNAME,
+            SURGERYEMAIL
         }
 
         private enum Condition
@@ -169,7 +182,9 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             GENERICCODE,
             PAGENO,
             ORDERINGNOTE,
-            REQUIRESACTION
+            REQUIRESACTION,
+            SURGERYCODE,
+            SINCEDATE
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -195,6 +210,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
                 dateString = day.ToString(DATE_FORMAT);
                 RemoveCondition(Condition.DATE);
                 RemoveCondition(Condition.BETWEEN_DATES);
+                RemoveCondition(Condition.SINCEDATE);
                 AddCondition(Condition.DATE, dateString);
             }
             
@@ -266,6 +282,20 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             AddCondition(Condition.REQUIRESACTION, requiresAction.ToString());
         }
 
+        public void SurgeryCode(string code)
+        {
+            RemoveCondition(Condition.SURGERYCODE);
+            AddCondition(Condition.SURGERYCODE, code);
+        }
+
+        public void SinceDate(DateTime date)
+        {
+            RemoveCondition(Condition.SINCEDATE);
+            RemoveCondition(Condition.DATE);
+            RemoveCondition(Condition.BETWEEN_DATES);
+            AddCondition(Condition.SINCEDATE, date.ToString(DATE_FORMAT));
+        }
+
         /// <summary>
         /// Removes a condition from the query if there is one, otherwise does nothing
         /// </summary>
@@ -317,6 +347,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             }
             RemoveCondition(Condition.DATE);
             RemoveCondition(Condition.BETWEEN_DATES);
+            RemoveCondition(Condition.SINCEDATE);
             AddCondition(Condition.BETWEEN_DATES, str);
         }
 
@@ -388,6 +419,14 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
 
                     case Condition.PAGENO:
                         str = FILTER_PAGE + condition.Value + " ";
+                        break;
+
+                    case Condition.SURGERYCODE:
+                        str = FILTER_SURGERY_CODE + condition.Value;
+                        break;
+
+                    case Condition.SINCEDATE:
+                        str = FILTER_SINCE_DATE + condition.Value + FILTER_QUOTE_END;
                         break;
                 }
                 conditionList.RemoveAt(0);
@@ -469,6 +508,14 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
 
                 case QueryType.PRODUCTPATIENTHISTORY:
                     str = PRODUCTPATIENTHISTORY;
+                    break;
+
+                case QueryType.SURGERYNAME:
+                    str = SURGERYNAME;
+                    break;
+
+                case QueryType.SURGERYEMAIL:
+                    str = SURGERYEMAIL;
                     break;
             }
 
