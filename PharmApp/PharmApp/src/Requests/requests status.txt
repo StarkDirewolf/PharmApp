@@ -15,3 +15,28 @@ summary view filter out deleted and by surgery and status(?)
 SELECT * FROM ProScriptConnect.RMS.RequestSummaryView R 
 WHERE Deleted = 0 AND PrescribingOrganisationId = 190 AND
 ORDER BY RequestDateAdded
+
+
+RMS recent requested that arent back yet
+SELECT DISTINCT P.GivenName, P.Surname, P.PatientId, Prep.PreparationCodeId, Prep.ApprovedName ,R.DateAdded, O.Name FROM ProScriptConnect.RMS.RequestItem I
+JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
+JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
+JOIN ProScriptConnect.dbo.PrescribingOrganisation O ON O.PrescribingOrganisationId = R.PrescribingOrganisationId
+JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = I.PreparationCodeId
+JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON Pt.PrescriptionTrackingId = R.PrescriptionTrackingId
+WHERE R.DateAdded > '2021-01-01' AND R.Deleted = 0 AND Pt.PrescriptionTrackingStatusTypeId = 3 AND P.DateOfDeath IS NULL
+ORDER BY R.DateAdded ASC
+
+
+
+
+PMR history with most recent had items but lists all brands - need to show only brand they had
+SELECT DISTINCT P.MostRecentDate, Prep.ApprovedName FROM (SELECT MAX(Presc.AddedDate) AS MostRecentDate, Pa.Gncs
+FROM ProScriptConnect.PMR.PrescriptionItem Pitem
+JOIN ProScriptConnect.PMR.Prescription Presc ON Presc.PrescriptionId = Pitem.PrescriptionId
+JOIN PKBRuntime.Pharmacy.PreparationPack Pa ON Pa.PreparationCodeId = Pitem.PreparationCodeId
+WHERE Presc.PatientId = 38561
+GROUP BY Pa.Gncs) AS P
+JOIN PKBRuntime.Pharmacy.PreparationPack PrepPack ON P.Gncs = PrepPack.Gncs
+JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = PrepPack.PreparationCodeId
+ORDER BY P.MostRecentDate DESC
