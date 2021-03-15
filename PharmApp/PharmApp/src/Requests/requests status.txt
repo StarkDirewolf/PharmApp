@@ -1,4 +1,42 @@
-﻿SELECT * FROM ProScriptConnect.RMS.Request R
+﻿Finds details of items that have come back but request is still showing as requested
+SELECT P.GivenName, P.Surname, P.PatientId, Prep.PreparationCodeId, Prep.ApprovedName ,R.DateAdded, O.Name, Pack.*, Recent.* FROM ProScriptConnect.RMS.RequestItem I
+JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
+JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
+JOIN ProScriptConnect.dbo.PrescribingOrganisation O ON O.PrescribingOrganisationId = R.PrescribingOrganisationId
+JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = I.PreparationCodeId
+JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON Pt.PrescriptionTrackingId = R.PrescriptionTrackingId
+
+OUTER APPLY (SELECT TOP 1 Pack2.Gncs FROM PKBRuntime.Pharmacy.PreparationPack Pack2 WHERE I.PreparationCodeId = Pack2.PreparationCodeId) AS Pack
+
+OUTER APPLY (
+	SELECT Dates.MostRecentDate, Pack2.Gncs, Prep2.ApprovedName FROM (
+	SELECT MAX(Pre.AddedDate) AS MostRecentDate, I.PreparationCodeId FROM ProScriptConnect.PMR.PrescriptionItem I
+	JOIN ProScriptConnect.PMR.Prescription Pre ON I.PrescriptionId = Pre.PrescriptionId
+	WHERE Pre.PatientId = P.PatientId
+	GROUP BY I.PreparationCodeId) AS Dates
+
+	JOIN PKBRuntime.Pharmacy.Preparation Prep2 ON Dates.PreparationCodeId = Prep2.PreparationCodeId
+	OUTER APPLY (SELECT TOP 1 Pack3.Gncs FROM PKBRuntime.Pharmacy.PreparationPack Pack3 WHERE Dates.PreparationCodeId = Pack3.PreparationCodeId) AS Pack2
+	WHERE Pack2.Gncs = Pack.Gncs
+) AS Recent
+
+WHERE R.DateAdded < Recent.MostRecentDate AND R.Deleted = 0 AND Pt.PrescriptionTrackingStatusTypeId = 3 AND P.DateOfDeath IS NULL
+ORDER BY R.DateAdded ASC
+
+Updating needs following
+PTS - Statustypeid -> 10
+trackingcompletiontypeid -> 1
+collectionpatientid -> patiendid
+relationtopatientid -> 21
+
+RequestItem -> trackingID -> requests' trackingid
+
+
+
+
+
+
+SELECT * FROM ProScriptConnect.RMS.Request R
 JOIN ProScriptConnect.PTS.PrescriptionTracking T ON T.PrescriptionTrackingId = R.PrescriptionTrackingId
 
 
