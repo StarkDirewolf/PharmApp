@@ -10,12 +10,20 @@ namespace PharmApp.src.Requests
     {
 
         private string email, name;
-        private int code;
+        public readonly int id;
 
-        public Surgery(int code)
+        // This might not be wise in case of querying database during other query
+        //public Surgery(int id)
+        //{
+        //    this.id = id;
+        //    if (!SQLQueryer.FindSurgeryDetailsFromCode(id, out name, out email)) Util.ShowError("Couldn't find surgery name for code " + id.ToString());
+        //}
+
+        public Surgery(int id, string name, string email)
         {
-            this.code = code;
-            SQLQueryer.FindSurgeryDetailsFromCode(code, out name, out email);
+            this.id = id;
+            this.name = name;
+            this.email = email;
         }
     }
 }

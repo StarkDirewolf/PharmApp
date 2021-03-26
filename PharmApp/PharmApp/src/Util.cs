@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PharmApp.src
 {
@@ -18,6 +19,13 @@ namespace PharmApp.src
                 return decimalStr.Substring(0, decimalStr.Length - 4);
 
             return decimalStr;
+        }
+
+        public static string NOTFOUND = "NOT FOUND";
+
+        public static void ShowError(string str)
+        {
+            MessageBox.Show(str, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

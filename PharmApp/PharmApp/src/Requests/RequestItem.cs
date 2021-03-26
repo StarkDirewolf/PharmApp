@@ -8,15 +8,21 @@ namespace PharmApp.src.Requests
 {
     class RequestItem
     {
-        private readonly string name;
-        private readonly decimal quantity;
-        private readonly string notes;
+        public readonly int id;
+        public readonly string name;
+        public readonly decimal quantity;
+        public readonly string notes;
+        public bool dispensed;
+        public Int64 prepCodeId;
 
-        public RequestItem (string name, decimal quantity, string notes)
+        public RequestItem (int id, string name, decimal quantity, string notes, bool dispensed, Int64 prepCodeId)
         {
+            this.id = id;
             this.name = name;
             this.quantity = quantity;
             this.notes = notes;
+            this.dispensed = dispensed;
+            this.prepCodeId = prepCodeId;
         }
 
         public override string ToString()

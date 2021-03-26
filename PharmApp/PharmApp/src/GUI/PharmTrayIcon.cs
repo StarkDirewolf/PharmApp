@@ -34,7 +34,7 @@ namespace PharmApp.src.GUI
 
         public void RequestsEvent(object sender, EventArgs e)
         {
-            RequestManager requester = new RequestManager();
+            RequestManager requester = RequestManager.Get();
             requester.GenerateRequestEmail();
         }
     }

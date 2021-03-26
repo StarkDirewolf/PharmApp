@@ -164,6 +164,7 @@
     <Compile Include="src\Product Info\OrderPad.cs" />
     <Compile Include="src\Product Info\Product.cs" />
     <Compile Include="src\Product Info\OrderPadQuantities.cs" />
+    <Compile Include="src\Requests\Patient.cs" />
     <Compile Include="src\Requests\Request.cs" />
     <Compile Include="src\Requests\RequestItem.cs" />
     <Compile Include="src\Requests\RequestManager.cs" />

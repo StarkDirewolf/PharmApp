@@ -74,12 +74,9 @@ JOIN ProScriptConnect.dbo.PackSearchView Pa ON P.PackCodeId = Pa.PackCodeId
 JOIN ProScriptConnect.dbo.Patient Pat ON V.PatientId = Pat.PatientId
 JOIN PKBRUntime.Pharmacy.PreparationPack K ON P.PackCodeId = K.PackCodeId";
 
-        private const string SURGERYEMAIL = @"
-SELECT Email FROM App.dbo.SurgeryEmail";
-
-        private const string SURGERYNAME = @"
-SELECT Name
-FROM ProScriptConnect.dbo.PrescribingOrganisation";
+        private const string SURGERYDETAILS = @"
+SELECT Name, Email FROM ProScriptConnect.dbo.PrescribingOrganisation O
+LEFT JOIN App.dbo.SurgeryEmail E ON O.PrescribingOrganisationId = E.SurgeryCode";
 
         private const string UPDATEORDERINGNOTE_1 = @"
 MERGE
@@ -100,6 +97,95 @@ RequiresAction = source.RequiresAction
 WHEN NOT MATCHED
 THEN INSERT (PipCode, OrderingNotes, RequiresAction)
 VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
+
+        // Ignore all requests before march 2021
+        private const string EARLIESTDATE = @"03/01/2021";
+
+        public const string GETREQUESTS = @"SELECT R.DateAdded, R.RequestId, I.RequestItemId, Pt.PrescriptionTrackingId, O.PrescribingOrganisationId, Pt.PrescriptionTrackingStatusTypeId, O.Name, E.Email, P.PatientId, P.GivenName, P.Surname, P.DateOfBirth, A.HouseNameFlatNumber, A.NumberAndStreet, A.Postcode, R.Notes, Prep.ApprovedName, Prep.Strength, I.Quantity, Prep.DrugForm, I.Notes FROM ProScriptConnect.RMS.RequestItem I
+LEFT JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
+LEFT JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
+LEFT JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON R.PrescriptionTrackingId = Pt.PrescriptionTrackingId
+LEFT JOIN ProScriptConnect.dbo.PrescribingOrganisation O ON R.PrescribingOrganisationId = O.PrescribingOrganisationId
+LEFT JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = I.PreparationCodeId
+LEFT JOIN App.dbo.SurgeryEmail E ON O.PrescribingOrganisationId = E.SurgeryCode
+LEFT JOIN ProScriptConnect.dbo.Address A ON A.AddressId = P.AddressId
+WHERE (Pt.PrescriptionTrackingStatusTypeId = 2 OR Pt.PrescriptionTrackingStatusTypeId = 3 OR (Pt.PrescriptionTrackingStatusTypeId = 12 AND I.PrescriptionTrackingId IS NULL)) AND P.DateOfDeath IS NULL AND R.Deleted = 0 AND R.DateAdded > '" + EARLIESTDATE + "'";
+
+        // Any requested requests containing items that have since come back are changed to partially dispensed
+        public const string CLEAN_RMS_1 = @"UPDATE T
+SET PrescriptionTrackingStatusTypeId = 12
+FROM ProScriptConnect.PTS.PrescriptionTracking T
+JOIN (
+SELECT DISTINCT Pt.PrescriptionTrackingId FROM ProScriptConnect.RMS.RequestItem I
+JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
+JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
+JOIN ProScriptConnect.dbo.PrescribingOrganisation O ON O.PrescribingOrganisationId = R.PrescribingOrganisationId
+JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = I.PreparationCodeId
+JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON Pt.PrescriptionTrackingId = R.PrescriptionTrackingId
+
+OUTER APPLY (SELECT TOP 1 Pack2.Gncs FROM PKBRuntime.Pharmacy.PreparationPack Pack2 WHERE I.PreparationCodeId = Pack2.PreparationCodeId) AS Pack
+
+OUTER APPLY (
+	SELECT Dates.MostRecentDate, Pack2.Gncs, Prep2.ApprovedName FROM (
+	SELECT MAX(Pre.AddedDate) AS MostRecentDate, I.PreparationCodeId FROM ProScriptConnect.PMR.PrescriptionItem I
+	JOIN ProScriptConnect.PMR.Prescription Pre ON I.PrescriptionId = Pre.PrescriptionId
+	WHERE Pre.PatientId = P.PatientId
+	GROUP BY I.PreparationCodeId) AS Dates
+
+	JOIN PKBRuntime.Pharmacy.Preparation Prep2 ON Dates.PreparationCodeId = Prep2.PreparationCodeId
+	OUTER APPLY (SELECT TOP 1 Pack3.Gncs FROM PKBRuntime.Pharmacy.PreparationPack Pack3 WHERE Dates.PreparationCodeId = Pack3.PreparationCodeId) AS Pack2
+	WHERE Pack2.Gncs = Pack.Gncs
+) AS Recent
+
+WHERE R.DateAdded < Recent.MostRecentDate AND R.Deleted = 0 AND Pt.PrescriptionTrackingStatusTypeId = 3 AND P.DateOfDeath IS NULL AND R.DateAdded > '03/01/2021' AND I.PrescriptionTrackingId IS NULL
+) AS Q ON T.PrescriptionTrackingId = Q.PrescriptionTrackingId";
+
+        // Partially dispensed requests are checked for any items that have come back but not fulfilled then changes their status
+        public const string CLEAN_RMS_2 = @"UPDATE Item
+SET Item.PrescriptionTrackingId = Q.PrescriptionTrackingId
+FROM ProScriptConnect.RMS.RequestItem Item
+JOIN (
+SELECT I.RequestItemId, Pt.PrescriptionTrackingId FROM ProScriptConnect.RMS.RequestItem I
+JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
+JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
+JOIN ProScriptConnect.dbo.PrescribingOrganisation O ON O.PrescribingOrganisationId = R.PrescribingOrganisationId
+JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = I.PreparationCodeId
+JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON Pt.PrescriptionTrackingId = R.PrescriptionTrackingId
+
+OUTER APPLY (SELECT TOP 1 Pack2.Gncs FROM PKBRuntime.Pharmacy.PreparationPack Pack2 WHERE I.PreparationCodeId = Pack2.PreparationCodeId) AS Pack
+
+OUTER APPLY (
+	SELECT Dates.MostRecentDate, Pack2.Gncs, Prep2.ApprovedName FROM (
+	SELECT MAX(Pre.AddedDate) AS MostRecentDate, I.PreparationCodeId FROM ProScriptConnect.PMR.PrescriptionItem I
+	JOIN ProScriptConnect.PMR.Prescription Pre ON I.PrescriptionId = Pre.PrescriptionId
+	WHERE Pre.PatientId = P.PatientId
+	GROUP BY I.PreparationCodeId) AS Dates
+
+	JOIN PKBRuntime.Pharmacy.Preparation Prep2 ON Dates.PreparationCodeId = Prep2.PreparationCodeId
+	OUTER APPLY (SELECT TOP 1 Pack3.Gncs FROM PKBRuntime.Pharmacy.PreparationPack Pack3 WHERE Dates.PreparationCodeId = Pack3.PreparationCodeId) AS Pack2
+	WHERE Pack2.Gncs = Pack.Gncs
+) AS Recent
+
+WHERE R.DateAdded < Recent.MostRecentDate AND R.Deleted = 0 AND Pt.PrescriptionTrackingStatusTypeId = 12 AND P.DateOfDeath IS NULL AND R.DateAdded > '03/01/2021' AND I.PrescriptionTrackingId IS NULL
+) AS Q ON Item.RequestItemId = Q.RequestItemId";
+
+        // Checks any partially dispensed requests to see if all items have a status, then changes request's status to complete
+        public const string CLEAN_RMS_3 = @"UPDATE ProScriptConnect.PTS.PrescriptionTracking SET PrescriptionTrackingStatusTypeId = 10
+WHERE PrescriptionTrackingId IN (
+
+SELECT Pt.PrescriptionTrackingId FROM ProScriptConnect.RMS.Request R
+JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON R.PrescriptionTrackingId = Pt.PrescriptionTrackingId
+JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
+JOIN 
+(SELECT R.RequestId, COUNT(DISTINCT X.RequestItemId) AS 'Received', COUNT(DISTINCT I.RequestItemID) AS 'Total' FROM ProScriptConnect.RMS.Request R
+JOIN ProScriptConnect.RMS.RequestItem I ON I.RequestId = R.RequestId
+JOIN (SELECT * FROM ProScriptConnect.RMS.RequestItem WHERE PrescriptionTrackingId IS NOT NULL) AS X ON X.RequestId = R.RequestId
+GROUP BY R.RequestId)
+
+AS Y ON R.RequestId = Y.RequestId
+
+WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AND Y.Received = Y.Total AND R.Deleted = 0
+)";
 
         private const string DELETEORDERINGNOTE = @"DELETE FROM App.dbo.CustomNotes";
 
@@ -161,8 +247,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
             DELETEORDERINGNOTE,
             GETORDERINGNOTE,
             PRODUCTPATIENTHISTORY,
-            SURGERYNAME,
-            SURGERYEMAIL
+            SURGERYDETAILS
         }
 
         private enum Condition
@@ -510,13 +595,10 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
                     str = PRODUCTPATIENTHISTORY;
                     break;
 
-                case QueryType.SURGERYNAME:
-                    str = SURGERYNAME;
+                case QueryType.SURGERYDETAILS:
+                    str = SURGERYDETAILS;
                     break;
 
-                case QueryType.SURGERYEMAIL:
-                    str = SURGERYEMAIL;
-                    break;
             }
 
             if (conditions.Count > 0)

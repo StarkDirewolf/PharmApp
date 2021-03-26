@@ -11,11 +11,39 @@ namespace PharmApp.src.Requests
     {
 
         private static RequestManager obj;
+        private List<Patient> patients = new List<Patient>();
+        private List<Request> requests = new List<Request>();
+        private List<Surgery> surgeries = new List<Surgery>();
 
         public static RequestManager Get()
         {
             if (obj == null) obj = new RequestManager();
             return obj;
+        }
+
+        public void AddRequest(Request request)
+        {
+            requests.Add(request);
+        }
+
+        public void AddPatient(Patient patient)
+        {
+            patients.Add(patient);
+        }
+
+        public Request findRequestByID(int id)
+        {
+            return requests.Find(r => r.ID == id);
+        }
+
+        public Patient findPatientByID(int id)
+        {
+            return patients.Find(p => p.id == id);
+        }
+
+        public Surgery findSurgeryByID(int id)
+        {
+            return surgeries.Find(s => s.id == id);
         }
 
         private RequestManager()
@@ -31,7 +59,5 @@ namespace PharmApp.src.Requests
             emailForm.Visible = true;
         }
 
-        // Returns surgery code of latest repeat request, or null if there isn't one in the last month
-        public 
     }
 }
