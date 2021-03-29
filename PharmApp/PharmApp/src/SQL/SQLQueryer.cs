@@ -57,6 +57,77 @@ namespace PharmApp
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
                 connection.Open();
+
+                SqlCommand command = new SqlCommand(QueryConstructor.CLEAN_RMS_1, connection);
+                command.ExecuteNonQuery();
+
+                command = new SqlCommand(QueryConstructor.CLEAN_RMS_2, connection);
+                command.ExecuteNonQuery();
+
+                command = new SqlCommand(QueryConstructor.CLEAN_RMS_3, connection);
+                command.ExecuteNonQuery();
+
+                //command = new SqlCommand(QueryConstructor.GETREQUESTS, connection);
+                //using (SqlDataReader reader = command.ExecuteReader())
+                //{
+
+                //    while (reader.Read())
+                //    {
+                //        DateTime dateAdded = reader.GetDateTime(0);
+                //        int requestId = reader.GetInt32(1);
+                //        int requestItemId = reader.GetInt32(2);
+                //        int requestTrackingId = reader.GetInt32(3);
+                //        int itemTrackingId = reader.GetInt32(4);
+                //        int surgeryId = reader.GetInt32(5);
+                //        Request.StatusType requestStatus = (Request.StatusType)reader.GetByte(6);
+                //        string surgeryName = reader.GetString(7);
+                //        string surgeryEmail = reader.GetString(8);
+                //        int patientId = reader.GetInt32(9);
+                //        string patientFirstName = reader.GetString(10);
+                //        string patientLastName = reader.GetString(11);
+                //        DateTime patientDob = reader.GetDateTime(12);
+                //        string addressNumber = reader.GetString(13);
+                //        string addressLine1 = reader.GetString(14);
+                //        string addressPostcode = reader.GetString(15);
+                //        string requestNotes = reader.GetString(16);
+                //        string itemName = reader.GetString(17);
+                //        string itemStrength = reader.GetString(18);
+                //        decimal itemQty = reader.GetDecimal(19);
+                //        string itemForm = reader.GetString(20);
+                //        string itemNotes = reader.GetString(21);
+
+                //        Request request = requestManager.findRequestByID(requestId);
+
+                //        if (request == null)
+                //        {
+                //            request = new Request(requestId, (Request.StatusType)requestStatus, dateAdded, requestNotes, requestTrackingId);
+                //        }
+
+                //        RequestItem requestItem = new RequestItem(requestItemId, itemName, itemStrength, itemForm, itemQty, itemNotes, itemTrackingId);
+
+                //        request.AddItem(requestItem);
+
+
+                //        Surgery surgery = requestManager.findSurgeryByID(surgeryId);
+
+                //        if (surgery == null)
+                //        {
+                //            surgery = new Surgery(surgeryId, surgeryName, surgeryEmail);
+                //        }
+
+
+                //        Patient patient = requestManager.findPatientByID(patientId);
+
+                //        if (patient == null)
+                //        {
+                //            patient = new Patient(patientId, addressNumber + addressLine1, addressPostcode, patientFirstName, patientLastName, patientDob);
+                //            surgery.AddPatient(patient);
+                //        }
+
+                //        patient.AddRequest(request);
+
+                //    }
+                //}
             }
         }
 

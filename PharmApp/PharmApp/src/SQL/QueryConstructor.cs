@@ -101,7 +101,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
         // Ignore all requests before march 2021
         private const string EARLIESTDATE = @"03/01/2021";
 
-        public const string GETREQUESTS = @"SELECT R.DateAdded, R.RequestId, I.RequestItemId, Pt.PrescriptionTrackingId, O.PrescribingOrganisationId, Pt.PrescriptionTrackingStatusTypeId, O.Name, E.Email, P.PatientId, P.GivenName, P.Surname, P.DateOfBirth, A.HouseNameFlatNumber, A.NumberAndStreet, A.Postcode, R.Notes, Prep.ApprovedName, Prep.Strength, I.Quantity, Prep.DrugForm, I.Notes FROM ProScriptConnect.RMS.RequestItem I
+        public const string GETREQUESTS = @"SELECT R.DateAdded, R.RequestId, I.RequestItemId, Pt.PrescriptionTrackingId, I.PrescriptionTrackingId, O.PrescribingOrganisationId, Pt.PrescriptionTrackingStatusTypeId, O.Name, E.Email, P.PatientId, P.GivenName, P.Surname, P.DateOfBirth, A.HouseNameFlatNumber, A.NumberAndStreet, A.Postcode, R.Notes, Prep.ApprovedName, Prep.Strength, I.Quantity, Prep.DrugForm, I.Notes FROM ProScriptConnect.RMS.RequestItem I
 LEFT JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
 LEFT JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
 LEFT JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON R.PrescriptionTrackingId = Pt.PrescriptionTrackingId

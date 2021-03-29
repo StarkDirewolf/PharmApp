@@ -12,22 +12,24 @@ namespace PharmApp.src.Requests
         public readonly string name;
         public readonly decimal quantity;
         public readonly string notes;
-        public bool dispensed;
-        public Int64 prepCodeId;
+        public readonly string form;
+        public readonly string strength;
+        public readonly int trackingId;
 
-        public RequestItem (int id, string name, decimal quantity, string notes, bool dispensed, Int64 prepCodeId)
+        public RequestItem (int id, string name, string strength, string form, decimal quantity, string notes, int trackingId)
         {
             this.id = id;
             this.name = name;
             this.quantity = quantity;
             this.notes = notes;
-            this.dispensed = dispensed;
-            this.prepCodeId = prepCodeId;
+            this.notes = strength;
+            this.notes = form;
+            this.trackingId = trackingId;
         }
 
         public override string ToString()
         {
-            string returnString = Util.TrimTrailingZeros(quantity.ToString()) + " x " + name;
+            string returnString = Util.TrimTrailingZeros(quantity.ToString()) + " x " + name + " " + strength + " " + form;
             if (notes != null) returnString += " - " + notes;
             return returnString;
         }

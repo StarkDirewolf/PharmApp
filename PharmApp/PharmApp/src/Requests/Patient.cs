@@ -14,6 +14,7 @@ namespace PharmApp.src.Requests
         public readonly string firstName;
         public readonly string lastName;
         public readonly DateTime dateOfBirth;
+        private List<Request> requests;
 
         public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth)
         {
@@ -23,6 +24,12 @@ namespace PharmApp.src.Requests
             this.firstName = firstName;
             this.lastName = lastName;
             this.dateOfBirth = dateOfBirth;
+            requests = new List<Request>();
+        }
+
+        public void AddRequest(Request request)
+        {
+            requests.Add(request);
         }
     }
 }

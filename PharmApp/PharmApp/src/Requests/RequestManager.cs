@@ -52,11 +52,10 @@ namespace PharmApp.src.Requests
 
         public void GenerateRequestEmail()
         {
-            // Get code from first repeat request
+            SQLQueryer.PopulateRequests();
 
-
-            EmailForm emailForm = new EmailForm();
-            emailForm.Visible = true;
+            //EmailForm emailForm = new EmailForm();
+            //emailForm.Visible = true;
         }
 
     }

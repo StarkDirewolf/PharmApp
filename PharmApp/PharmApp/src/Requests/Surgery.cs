@@ -11,6 +11,7 @@ namespace PharmApp.src.Requests
 
         private string email, name;
         public readonly int id;
+        private List<Patient> patients;
 
         // This might not be wise in case of querying database during other query
         //public Surgery(int id)
@@ -24,6 +25,12 @@ namespace PharmApp.src.Requests
             this.id = id;
             this.name = name;
             this.email = email;
+            patients = new List<Patient>();
+        }
+
+        public void AddPatient(Patient patient)
+        {
+            patients.Add(patient);
         }
     }
 }

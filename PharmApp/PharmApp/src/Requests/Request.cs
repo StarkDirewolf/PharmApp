@@ -12,12 +12,16 @@ namespace PharmApp.src.Requests
         private readonly DateTime dateCreated;
         private List<RequestItem> items;
         private readonly StatusType status;
+        private readonly string notes;
+        private readonly int trackingId;
 
-        public Request(int id, StatusType status, DateTime dateCreated)
+        public Request(int id, StatusType status, DateTime dateCreated, string notes, int trackingId)
         {
             this.id = id;
             this.status = status;
             this.dateCreated = dateCreated;
+            this.notes = notes;
+            this.trackingId = trackingId;
             items = new List<RequestItem>();
         }
 
