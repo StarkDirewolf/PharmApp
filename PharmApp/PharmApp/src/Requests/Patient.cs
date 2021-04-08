@@ -15,6 +15,7 @@ namespace PharmApp.src.Requests
         public readonly string lastName;
         public readonly DateTime dateOfBirth;
         private List<Request> requests;
+        private const string DATEFORMAT = "dd/MM/yyyy";
 
         public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth)
         {
@@ -30,6 +31,18 @@ namespace PharmApp.src.Requests
         public void AddRequest(Request request)
         {
             requests.Add(request);
+        }
+
+        public override string ToString()
+        {
+            string str = firstName + " " + lastName;
+            str += "\n";
+            str += dateOfBirth.ToString(DATEFORMAT);
+            str += "\n";
+            str += address;
+            str += "\n";
+            str += postcode;
+            return str;
         }
     }
 }
