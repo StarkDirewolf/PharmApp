@@ -14,6 +14,7 @@ namespace PharmApp.src.Requests
         private readonly StatusType status;
         private readonly string notes;
         private readonly int trackingId;
+        private const string DATEFORMAT = "dd/MM/yyyy";
 
         public Request(int id, StatusType status, DateTime dateCreated, string notes, int trackingId)
         {
@@ -40,6 +41,23 @@ namespace PharmApp.src.Requests
             TOBEREQUESTED = 2,
             REQUESTED = 3,
             PARTIALLYDISPENSED = 12
+        }
+
+        public override string ToString()
+        {
+            string str = dateCreated.ToString(DATEFORMAT);
+            str += "\n";
+            if (notes != null)
+            {
+                str += notes;
+                str += "\n";
+            }
+            items.ForEach(i => {
+                str += i.ToString();
+                str += "\n";
+                    });
+
+            return str;
         }
     }
 }

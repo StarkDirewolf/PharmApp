@@ -54,8 +54,15 @@ namespace PharmApp.src.Requests
         {
             SQLQueryer.PopulateRequests();
 
-            //EmailForm emailForm = new EmailForm();
-            //emailForm.Visible = true;
+            EmailForm emailForm = new EmailForm();
+            emailForm.Visible = true;
+
+            Surgery surgeryWithNewRequests = surgeries.FirstOrDefault(s => s.HasNewRequests());
+
+            if (surgeryWithNewRequests != default(Surgery))
+            {
+                List<Patient> newRequestPatients = surgeryWithNewRequests.GetPatientsWithNewRequests();
+            }
         }
 
     }

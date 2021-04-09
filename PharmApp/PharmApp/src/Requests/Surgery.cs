@@ -32,5 +32,30 @@ namespace PharmApp.src.Requests
         {
             patients.Add(patient);
         }
+
+        public override string ToString()
+        {
+            return name;
+        }
+
+        public bool HasNewRequests()
+        {
+            if (patients.FirstOrDefault(p => p.hasNewRequest()) == default(Patient))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public List<Patient> GetPatientsWithNewRequests()
+        {
+            List<Patient> newRequestPatients = patients.FindAll(p => p.hasNewRequest());
+            if (name == "Bower Mount Medical Practice" && newRequestPatients.Count > 10)
+            {
+                newRequestPatients.RemoveRange(10, newRequestPatients.Count - 1);
+            }
+
+            return newRequestPatients;
+        }
     }
 }

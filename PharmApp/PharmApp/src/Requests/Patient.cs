@@ -33,6 +33,17 @@ namespace PharmApp.src.Requests
             requests.Add(request);
         }
 
+        public bool hasNewRequest()
+        {
+            Request request = requests.FirstOrDefault(r => r.Status == Request.StatusType.TOBEREQUESTED);
+            if (request == default(Request))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public override string ToString()
         {
             string str = firstName + " " + lastName;
