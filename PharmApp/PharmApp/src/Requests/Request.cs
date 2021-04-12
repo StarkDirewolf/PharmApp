@@ -59,5 +59,16 @@ namespace PharmApp.src.Requests
 
             return str;
         }
+
+        public string GetNotes()
+        {
+            return notes;
+        }
+
+        public bool HasNotes()
+        {
+            if (notes == null) return false;
+            return true;
+        }
     }
 }

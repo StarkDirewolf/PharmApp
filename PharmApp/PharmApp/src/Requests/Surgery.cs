@@ -50,12 +50,24 @@ namespace PharmApp.src.Requests
         public List<Patient> GetPatientsWithNewRequests()
         {
             List<Patient> newRequestPatients = patients.FindAll(p => p.hasNewRequest());
-            if (name == "Bower Mount Medical Practice" && newRequestPatients.Count > 10)
-            {
-                newRequestPatients.RemoveRange(10, newRequestPatients.Count - 1);
-            }
 
             return newRequestPatients;
+        }
+
+        public string GetName()
+        {
+            return name;
+        }
+
+        public bool HasEmailAddress()
+        {
+            if (email == null) return false;
+            return true;
+        }
+
+        public string GetEmail()
+        {
+            return email;
         }
     }
 }

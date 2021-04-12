@@ -77,11 +77,13 @@ namespace PharmApp
                         int requestId = reader.GetInt32(1);
                         int requestItemId = reader.GetInt32(2);
                         int requestTrackingId = reader.GetInt32(3);
-                        int itemTrackingId = reader.GetInt32(4);
+                        Nullable<int> itemTrackingId = null;
+                        if (!reader.IsDBNull(4)) itemTrackingId = reader.GetInt32(4);
                         int surgeryId = reader.GetInt32(5);
                         Request.StatusType requestStatus = (Request.StatusType)reader.GetByte(6);
                         string surgeryName = reader.GetString(7);
-                        string surgeryEmail = reader.GetString(8);
+                        string surgeryEmail = null;
+                        if (!reader.IsDBNull(8)) surgeryEmail = reader.GetString(8);
                         int patientId = reader.GetInt32(9);
                         string patientFirstName = reader.GetString(10);
                         string patientLastName = reader.GetString(11);
@@ -92,9 +94,11 @@ namespace PharmApp
                         string requestNotes = reader.GetString(16);
                         string itemName = reader.GetString(17);
                         string itemStrength = reader.GetString(18);
-                        decimal itemQty = reader.GetDecimal(19);
+                        Nullable<decimal> itemQty = null;
+                        if(!reader.IsDBNull(19)) itemQty = reader.GetDecimal(19);
                         string itemForm = reader.GetString(20);
-                        string itemNotes = reader.GetString(21);
+                        string itemNotes = null;
+                        if (!reader.IsDBNull(21)) itemNotes = reader.GetString(21);
 
                         bool isRequestNew = false;
 
@@ -104,6 +108,7 @@ namespace PharmApp
                         {
                             request = new Request(requestId, (Request.StatusType)requestStatus, dateAdded, requestNotes, requestTrackingId);
                             isRequestNew = true;
+                            requestManager.AddRequest(request);
                         }
 
                         RequestItem requestItem = new RequestItem(requestItemId, itemName, itemStrength, itemForm, itemQty, itemNotes, itemTrackingId);
@@ -116,6 +121,7 @@ namespace PharmApp
                         if (surgery == null)
                         {
                             surgery = new Surgery(surgeryId, surgeryName, surgeryEmail);
+                            requestManager.AddSurgery(surgery);
                         }
 
 
@@ -123,8 +129,9 @@ namespace PharmApp
 
                         if (patient == null)
                         {
-                            patient = new Patient(patientId, addressNumber + addressLine1, addressPostcode, patientFirstName, patientLastName, patientDob);
+                            patient = new Patient(patientId, addressNumber + " " + addressLine1, addressPostcode, patientFirstName, patientLastName, patientDob);
                             surgery.AddPatient(patient);
+                            requestManager.AddPatient(patient);
                         }
 
                         if (isRequestNew) patient.AddRequest(request);

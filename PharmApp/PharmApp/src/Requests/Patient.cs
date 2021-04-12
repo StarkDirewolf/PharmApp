@@ -9,11 +9,11 @@ namespace PharmApp.src.Requests
     class Patient
     {
         public readonly int id;
-        public readonly string address;
-        public readonly string postcode;
-        public readonly string firstName;
-        public readonly string lastName;
-        public readonly DateTime dateOfBirth;
+        private readonly string address;
+        private readonly string postcode;
+        private readonly string firstName;
+        private readonly string lastName;
+        private readonly DateTime dateOfBirth;
         private List<Request> requests;
         private const string DATEFORMAT = "dd/MM/yyyy";
 
@@ -54,6 +54,19 @@ namespace PharmApp.src.Requests
             str += "\n";
             str += postcode;
             return str;
+        }
+
+        public int GetTotalNumberOfRequestingItems()
+        {
+            int number = 0;
+            requests.ForEach(r => number += r.Items.Count);
+
+            return number;
+        }
+
+        public List<Request> GetRequests()
+        {
+            return requests;
         }
     }
 }

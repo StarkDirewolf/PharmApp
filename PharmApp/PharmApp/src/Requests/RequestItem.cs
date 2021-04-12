@@ -8,28 +8,29 @@ namespace PharmApp.src.Requests
 {
     class RequestItem
     {
-        public readonly int id;
-        public readonly string name;
-        public readonly decimal quantity;
-        public readonly string notes;
-        public readonly string form;
-        public readonly string strength;
-        public readonly int trackingId;
+        private readonly int id;
+        private readonly string name;
+        private readonly Nullable<decimal> quantity;
+        private readonly string notes;
+        private readonly string form;
+        private readonly string strength;
+        private readonly Nullable<int> trackingId;
 
-        public RequestItem (int id, string name, string strength, string form, decimal quantity, string notes, int trackingId)
+        public RequestItem (int id, string name, string strength, string form, Nullable<decimal> quantity, string notes, Nullable<int> trackingId)
         {
             this.id = id;
             this.name = name;
             this.quantity = quantity;
             this.notes = notes;
-            this.notes = strength;
-            this.notes = form;
+            this.strength = strength;
+            this.form = form;
             this.trackingId = trackingId;
         }
 
         public override string ToString()
         {
-            string returnString = Util.TrimTrailingZeros(quantity.ToString()) + " x " + name + " " + strength + " " + form;
+            string returnString = name + " " + strength + " " + form;
+            if (quantity.HasValue) returnString += " (" + Util.TrimTrailingZeros(quantity.Value.ToString()) + ")";
             if (notes != null) returnString += " - " + notes;
             return returnString;
         }

@@ -18,6 +18,9 @@ namespace PharmApp.src
             if (decimalStr.EndsWith(".000"))
                 return decimalStr.Substring(0, decimalStr.Length - 4);
 
+            if (decimalStr.EndsWith(".500"))
+                return decimalStr.Substring(0, decimalStr.Length - 2);
+
             return decimalStr;
         }
 
