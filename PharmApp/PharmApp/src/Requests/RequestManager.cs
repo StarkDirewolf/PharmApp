@@ -96,14 +96,21 @@ namespace PharmApp.src.Requests
 
             requestingPats.ForEach(p => {
 
+                bool newRowTag = true;
+
                 int totalItemNo = p.GetTotalNumberOfRequestingItems();
 
-                // CANT GET THE STYLING RIGHT GAAH
                 body += "\n<tr style='border-top: thin solid black;'>";
                 body += "\n<td rowspan =\"" + totalItemNo + "\"><pre>" + p.ToString() + "</pre></td>";
 
                 p.GetRequests().ForEach(r =>
                 {
+                    if (!newRowTag)
+                    {
+                        body += "\n<tr style='border-top: thin solid black;'>";
+                        newRowTag = true;
+                    }
+
                     List<RequestItem> items = r.Items;
 
                     body += "\n<td rowspan =\"" + items.Count + "\">" + r.DateCreated.ToString(DATEFORMAT) + "</td>";
@@ -115,9 +122,23 @@ namespace PharmApp.src.Requests
 
                     items.ForEach(i =>
                     {
+                        if (!newRowTag)
+                        {
+                            if (items.First() == i)
+                            {
+                                body += "\n<tr style='border-top: thin solid black;'>";
+                            } else
+                            {
+                                body += "\n<tr>";
+                            }
+                            newRowTag = true;
+                        }
+
                         body += "\n<td>" + i.ToString() + "</td>";
 
                         body += "\n</tr>";
+
+                        newRowTag = false;
                     });
 
                 });
