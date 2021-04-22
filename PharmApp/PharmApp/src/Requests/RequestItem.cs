@@ -27,6 +27,11 @@ namespace PharmApp.src.Requests
             this.trackingId = trackingId;
         }
 
+        public int GetID()
+        {
+            return id;
+        }
+
         public override string ToString()
         {
             string returnString = name + " " + strength + " " + form;

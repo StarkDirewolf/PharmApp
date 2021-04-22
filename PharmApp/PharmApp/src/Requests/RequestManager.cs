@@ -56,33 +56,53 @@ namespace PharmApp.src.Requests
         {
         }
 
-        public void GenerateRequestEmail()
+        public void GenerateRequestEmail(bool onlyNewRequests)
         {
-            SQLQueryer.PopulateRequests();
 
-            Surgery surgeryWithNewRequests = surgeries.FirstOrDefault(s => s.HasNewRequests());
+            Surgery validSurgery;
 
-            if (surgeryWithNewRequests != default(Surgery))
+            if (onlyNewRequests)
+            {
+                validSurgery = surgeries.FirstOrDefault(s => s.HasNewRequests());
+            }
+            else
+            {
+                validSurgery = surgeries.FirstOrDefault();
+            }
+            
+
+            if (validSurgery != default(Surgery))
             {
                 EmailForm emailForm = new EmailForm();
                 emailForm.Visible = true;
 
-                List<Patient> newRequestPatients = surgeryWithNewRequests.GetPatientsWithNewRequests();
+                List<Patient> newRequestPatients = validSurgery.GetPatientsWithNewRequests();
 
                 // hard coding bower's mount wanting maximum of 10 at a time
-                if (surgeryWithNewRequests.GetName() == "Bower Mount Medical Practice" && newRequestPatients.Count > 10)
+                if (validSurgery.GetName() == "Bower Mount Medical Practice" && newRequestPatients.Count > 10)
                 {
                     newRequestPatients.RemoveRange(10, newRequestPatients.Count - 10);
                 }
 
-                if (surgeryWithNewRequests.HasEmailAddress()) emailForm.SetToText(surgeryWithNewRequests.GetEmail());
+                if (validSurgery.HasEmailAddress()) emailForm.SetToText(validSurgery.GetEmail());
 
-                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients));
+                List<Request> sentRequests;
+                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, out sentRequests));
+
+                if (validSurgery.GetEmail() == null)
+                {
+                    SurgeryEmailInput inputForm = new SurgeryEmailInput(validSurgery, emailForm.GetToBox());
+                    inputForm.Visible = true;
+                }
             }
+
+            
         }
 
-        private string GenerateRequestTable(List<Patient> requestingPats)
+        // out variable super clunky but should work for now
+        private string GenerateRequestTable(List<Patient> requestingPats, bool onlyNewRequests, out List<Request> requestsSent)
         {
+            List<Request> sendingRequests = new List<Request>();
 
             string body = @"
 <table style='border-collapse:collapse'>
@@ -98,13 +118,20 @@ namespace PharmApp.src.Requests
 
                 bool newRowTag = true;
 
-                int totalItemNo = p.GetTotalNumberOfRequestingItems();
+                int totalItemNo = p.GetTotalNumberOfRequestingItems(onlyNewRequests);
 
                 body += "\n<tr style='border-top: thin solid black;'>";
                 body += "\n<td rowspan =\"" + totalItemNo + "\"><pre>" + p.ToString() + "</pre></td>";
 
-                p.GetRequests().ForEach(r =>
+                foreach(Request r in p.GetRequests())
                 {
+                    if (onlyNewRequests && r.Status != Request.StatusType.TOBEREQUESTED)
+                    {
+                        continue;
+                    }
+
+                    sendingRequests.Add(r);
+
                     if (!newRowTag)
                     {
                         body += "\n<tr style='border-top: thin solid black;'>";
@@ -141,12 +168,14 @@ namespace PharmApp.src.Requests
                         newRowTag = false;
                     });
 
-                });
+                };
 
             });
 
             body += @"
 </table>";
+
+            requestsSent = sendingRequests;
 
             return body;
         }

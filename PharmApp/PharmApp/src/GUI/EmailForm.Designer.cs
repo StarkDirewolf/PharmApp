@@ -33,19 +33,21 @@
             this.bodyRichTextBox = new System.Windows.Forms.RichTextBox();
             this.htmlBox = new System.Windows.Forms.WebBrowser();
             this.bodyRichTextBox2 = new System.Windows.Forms.RichTextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // toTextBox
             // 
-            this.toTextBox.Location = new System.Drawing.Point(47, 43);
+            this.toTextBox.Location = new System.Drawing.Point(12, 27);
             this.toTextBox.Name = "toTextBox";
             this.toTextBox.Size = new System.Drawing.Size(288, 20);
             this.toTextBox.TabIndex = 1;
             // 
-            // button1
+            // sendButton
             // 
-            this.sendButton.Location = new System.Drawing.Point(232, 399);
-            this.sendButton.Name = "button1";
+            this.sendButton.Location = new System.Drawing.Point(252, 388);
+            this.sendButton.Name = "sendButton";
             this.sendButton.Size = new System.Drawing.Size(92, 33);
             this.sendButton.TabIndex = 2;
             this.sendButton.Text = "Send";
@@ -54,32 +56,54 @@
             // 
             // bodyRichTextBox
             // 
-            this.bodyRichTextBox.Location = new System.Drawing.Point(47, 87);
+            this.bodyRichTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.bodyRichTextBox.Location = new System.Drawing.Point(12, 70);
             this.bodyRichTextBox.Name = "bodyRichTextBox";
-            this.bodyRichTextBox.Size = new System.Drawing.Size(538, 91);
+            this.bodyRichTextBox.Size = new System.Drawing.Size(592, 61);
             this.bodyRichTextBox.TabIndex = 0;
             this.bodyRichTextBox.Text = "";
             // 
             // htmlBox
             // 
-            this.htmlBox.Location = new System.Drawing.Point(47, 188);
+            this.htmlBox.Location = new System.Drawing.Point(12, 127);
             this.htmlBox.Name = "htmlBox";
-            this.htmlBox.Size = new System.Drawing.Size(538, 110);
+            this.htmlBox.Size = new System.Drawing.Size(592, 194);
             this.htmlBox.TabIndex = 0;
             // 
             // bodyRichTextBox2
             // 
-            this.bodyRichTextBox2.Location = new System.Drawing.Point(47, 302);
+            this.bodyRichTextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.bodyRichTextBox2.Location = new System.Drawing.Point(13, 319);
             this.bodyRichTextBox2.Name = "bodyRichTextBox2";
-            this.bodyRichTextBox2.Size = new System.Drawing.Size(538, 91);
+            this.bodyRichTextBox2.Size = new System.Drawing.Size(592, 63);
             this.bodyRichTextBox2.TabIndex = 3;
             this.bodyRichTextBox2.Text = "";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(13, 8);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(76, 13);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "Email Address:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(13, 54);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(34, 13);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "Body:";
             // 
             // EmailForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(616, 444);
+            this.ClientSize = new System.Drawing.Size(616, 430);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.bodyRichTextBox2);
             this.Controls.Add(this.htmlBox);
             this.Controls.Add(this.sendButton);
@@ -98,5 +122,7 @@
         private System.Windows.Forms.RichTextBox bodyRichTextBox;
         private System.Windows.Forms.WebBrowser htmlBox;
         private System.Windows.Forms.RichTextBox bodyRichTextBox2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }

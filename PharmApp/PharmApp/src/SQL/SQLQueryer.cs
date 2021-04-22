@@ -1,5 +1,6 @@
 ﻿using PharmApp;
 using PharmApp.src;
+using PharmApp.src.GUI;
 using PharmApp.src.Product_Info;
 using PharmApp.src.Requests;
 using System;
@@ -50,24 +51,65 @@ namespace PharmApp
             }
         }
 
-        public static void PopulateRequests()
+        public static void SaveSurgeryEmail(Surgery surgery, string email)
         {
-            RequestManager requestManager = RequestManager.Get();
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.SAVESURGERYEMAIL);
+            query.SurgeryCode(surgery.id.ToString());
+            query.Email(email);
 
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public static void CleanRMS1()
+        {
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
                 connection.Open();
 
                 SqlCommand command = new SqlCommand(QueryConstructor.CLEAN_RMS_1, connection);
                 command.ExecuteNonQuery();
+            }
+        }
 
-                command = new SqlCommand(QueryConstructor.CLEAN_RMS_2, connection);
+        public static void CleanRMS2()
+        {
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(QueryConstructor.CLEAN_RMS_2, connection);
                 command.ExecuteNonQuery();
+            }
+        }
 
-                command = new SqlCommand(QueryConstructor.CLEAN_RMS_3, connection);
+        public static void CleanRMS3()
+        {
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(QueryConstructor.CLEAN_RMS_3, connection);
                 command.ExecuteNonQuery();
+            }
+        }
 
-                command = new SqlCommand(QueryConstructor.GETREQUESTS, connection);
+        public static void PopulateRequests()
+        {
+
+            RequestManager requestManager = RequestManager.Get();
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(QueryConstructor.GETREQUESTS, connection);
                 using (SqlDataReader reader = command.ExecuteReader())
                 {
 
@@ -100,20 +142,24 @@ namespace PharmApp
                         string itemNotes = null;
                         if (!reader.IsDBNull(21)) itemNotes = reader.GetString(21);
 
-                        bool isRequestNew = false;
+                        bool requestNeedsAdding = false;
 
                         Request request = requestManager.findRequestByID(requestId);
 
                         if (request == null)
                         {
                             request = new Request(requestId, (Request.StatusType)requestStatus, dateAdded, requestNotes, requestTrackingId);
-                            isRequestNew = true;
+                            requestNeedsAdding = true;
                             requestManager.AddRequest(request);
                         }
 
-                        RequestItem requestItem = new RequestItem(requestItemId, itemName, itemStrength, itemForm, itemQty, itemNotes, itemTrackingId);
+                        if (!request.ContainsItem(requestItemId))
+                        {
+                            RequestItem requestItem = new RequestItem(requestItemId, itemName, itemStrength, itemForm, itemQty, itemNotes, itemTrackingId);
 
-                        request.AddItem(requestItem);
+                            request.AddItem(requestItem);
+                        }
+                        
 
 
                         Surgery surgery = requestManager.findSurgeryByID(surgeryId);
@@ -134,11 +180,12 @@ namespace PharmApp
                             requestManager.AddPatient(patient);
                         }
 
-                        if (isRequestNew) patient.AddRequest(request);
+                        if (requestNeedsAdding) patient.AddRequest(request);
 
                     }
                 }
             }
+
         }
 
 

@@ -187,6 +187,10 @@ AS Y ON R.RequestId = Y.RequestId
 WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AND Y.Received = Y.Total AND R.Deleted = 0
 )";
 
+        private const string SAVESURGERYEMAIL = @"INSERT INTO App.dbo.SurgeryEmail (SurgeryCode, Email) VALUES ('";
+        private const string SAVESURGERYEMAIL_2 = @"', '";
+        private const string SAVESURGERYEMAIL_3 = @"');";
+
         private const string DELETEORDERINGNOTE = @"DELETE FROM App.dbo.CustomNotes";
 
         private const string GETORDERINGNOTE = @"SELECT OrderingNotes, RequiresAction FROM App.dbo.CustomNotes";
@@ -247,7 +251,8 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             DELETEORDERINGNOTE,
             GETORDERINGNOTE,
             PRODUCTPATIENTHISTORY,
-            SURGERYDETAILS
+            SURGERYDETAILS,
+            SAVESURGERYEMAIL
         }
 
         private enum Condition
@@ -269,7 +274,8 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             ORDERINGNOTE,
             REQUIRESACTION,
             SURGERYCODE,
-            SINCEDATE
+            SINCEDATE,
+            EMAIL
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -371,6 +377,12 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
         {
             RemoveCondition(Condition.SURGERYCODE);
             AddCondition(Condition.SURGERYCODE, code);
+        }
+
+        public void Email(string email)
+        {
+            RemoveCondition(Condition.EMAIL);
+            AddCondition(Condition.EMAIL, email);
         }
 
         public void SinceDate(DateTime date)
@@ -597,6 +609,15 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
 
                 case QueryType.SURGERYDETAILS:
                     str = SURGERYDETAILS;
+                    break;
+
+                case QueryType.SAVESURGERYEMAIL:
+                    str = SAVESURGERYEMAIL;
+                    str += conditions.FirstOrDefault(c => c.Key == Condition.SURGERYCODE).Value;
+                    str += SAVESURGERYEMAIL_2;
+                    str += conditions.FirstOrDefault(c => c.Key == Condition.EMAIL).Value;
+                    str += SAVESURGERYEMAIL_3;
+                    conditions.RemoveAll(c => true);
                     break;
 
             }

@@ -56,10 +56,15 @@ namespace PharmApp.src.Requests
             return str;
         }
 
-        public int GetTotalNumberOfRequestingItems()
+        public int GetTotalNumberOfRequestingItems(bool onlyNewRequests)
         {
             int number = 0;
-            requests.ForEach(r => number += r.Items.Count);
+            foreach (Request r in requests)
+            {
+                if (onlyNewRequests && r.Status != Request.StatusType.TOBEREQUESTED) continue;
+
+                number += r.Items.Count;
+            }
 
             return number;
         }

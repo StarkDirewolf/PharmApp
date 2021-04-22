@@ -126,6 +126,12 @@
       <DependentUpon>EmailForm.cs</DependentUpon>
     </Compile>
     <Compile Include="src\GUI\HotKey.cs" />
+    <Compile Include="src\GUI\LoadingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GUI\LoadingForm.Designer.cs">
+      <DependentUpon>LoadingForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\GUI\MultiFormContext.cs" />
     <Compile Include="src\GUI\OrderingCommentsDrawing.cs">
       <SubType>Form</SubType>
@@ -163,6 +169,12 @@
     <Compile Include="src\GUI\SelectedProductManager.cs" />
     <Compile Include="src\GUI\SelectedProductDrawing.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GUI\SurgeryEmailInput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="src\GUI\SurgeryEmailInput.Designer.cs">
+      <DependentUpon>SurgeryEmailInput.cs</DependentUpon>
     </Compile>
     <Compile Include="src\Product Info\OrderHistory.cs" />
     <Compile Include="src\Product Info\OrderHistoryLine.cs" />
@@ -409,11 +421,17 @@
     <EmbeddedResource Include="src\GUI\EmailForm.resx">
       <DependentUpon>EmailForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="src\GUI\LoadingForm.resx">
+      <DependentUpon>LoadingForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="src\GUI\OrderingNoteInputFOrm.resx">
       <DependentUpon>OrderingNoteInputForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="src\GUI\ProductInPatientHistory.resx">
       <DependentUpon>ProductInPatientHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="src\GUI\SurgeryEmailInput.resx">
+      <DependentUpon>SurgeryEmailInput.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

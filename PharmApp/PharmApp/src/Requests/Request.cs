@@ -70,5 +70,15 @@ namespace PharmApp.src.Requests
             if (notes == null) return false;
             return true;
         }
+
+        public bool ContainsItem(int requestItemId)
+        {
+            bool itemFound = false;
+            items.ForEach(i => {
+                if (i.GetID() == requestItemId) itemFound = true;
+            });
+
+            return itemFound;
+        }
     }
 }

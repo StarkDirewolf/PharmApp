@@ -34,8 +34,8 @@ namespace PharmApp.src.GUI
 
         public void RequestsEvent(object sender, EventArgs e)
         {
-            RequestManager requester = RequestManager.Get();
-            requester.GenerateRequestEmail();
+            LoadingForm loadingForm = new LoadingForm();
+
         }
     }
 }
