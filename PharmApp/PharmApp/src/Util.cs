@@ -30,5 +30,23 @@ namespace PharmApp.src
         {
             MessageBox.Show(str, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+
+        public static string MakePlural(string str, int qty)
+        {
+            if (qty != 1)
+            {
+                return str + "s";
+            }
+            else return str;
+        }
+
+        public static string PrefixToBe(int qty)
+        {
+            if (qty != 1)
+            {
+                return "are " + qty;
+            }
+            else return "is " + qty;
+        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace PharmApp.src.GUI
 {
-    partial class EmailForm
+    partial class Email
     {
         /// <summary>
         /// Required designer variable.
@@ -97,7 +97,7 @@
             this.label2.TabIndex = 5;
             this.label2.Text = "Body:";
             // 
-            // EmailForm
+            // Email
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -109,8 +109,8 @@
             this.Controls.Add(this.sendButton);
             this.Controls.Add(this.toTextBox);
             this.Controls.Add(this.bodyRichTextBox);
-            this.Name = "EmailForm";
-            this.Text = "EmailForm";
+            this.Name = "Email";
+            this.Text = "Email";
             this.ResumeLayout(false);
             this.PerformLayout();
 

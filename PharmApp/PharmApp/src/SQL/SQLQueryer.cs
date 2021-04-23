@@ -67,6 +67,36 @@ namespace PharmApp
             }
         }
 
+        public static void UpdateSentRequests(List<Request> requests, Surgery surgery, string id)
+        {
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(QueryConstructor.REQUEST_SENT, connection);
+                command.ID(id);
+                command.SurgeryCode(surgery.id);
+
+                foreach(Request request in requests)
+                {
+                    command.RequestID(request.ID);
+                    command.ExecuteNonQuery();
+
+                    if (request.Status == Request.StatusType.TOBEREQUESTED)
+                    {
+                        SqlCommand changeTrackStatus = new SqlCommand(QueryConstructor.CHANGE_REQUEST_STATUS, connection);
+
+                        changeTrackStatus.RequestID(request.ID);
+                        changeTrackStatus.TrackStatus(Request.StatusType.REQUESTED);
+                    }
+                }
+
+                
+
+                
+            }
+        }
+
         public static void CleanRMS1()
         {
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))

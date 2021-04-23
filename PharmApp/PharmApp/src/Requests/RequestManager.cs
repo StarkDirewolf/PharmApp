@@ -15,6 +15,21 @@ namespace PharmApp.src.Requests
         private List<Request> requests = new List<Request>();
         private List<Surgery> surgeries = new List<Surgery>();
         private const string DATEFORMAT = "dd/MM/yyyy";
+        public const string INTRO_1 = @"Dear ";
+        public const string INTRO_2 = @",
+
+Below ";
+        public const string INTRO_3_NEW = @" new repeat ";
+        public const string INTRO_4_VARIABLE = "request";
+        public const string INTRO_5_NEW = @":
+";
+        public const string INTRO_3_CHASE = @" repeat ";
+        public const string INTRO_5_CHASE = @" that we haven't had back yet:
+";
+        public const string END = @"
+Many thanks,
+
+Link Pharmacy";
 
         public static RequestManager Get()
         {
@@ -73,7 +88,7 @@ namespace PharmApp.src.Requests
 
             if (validSurgery != default(Surgery))
             {
-                EmailForm emailForm = new EmailForm();
+                GUI.Email emailForm = new GUI.Email();
                 emailForm.Visible = true;
 
                 List<Patient> newRequestPatients = validSurgery.GetPatientsWithNewRequests();
@@ -89,14 +104,43 @@ namespace PharmApp.src.Requests
                 List<Request> sentRequests;
                 emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, out sentRequests));
 
+                string introMsg = INTRO_1 + validSurgery + INTRO_2 + Util.PrefixToBe(sentRequests.Count);
+
+                if (onlyNewRequests)
+                {
+                    introMsg += INTRO_3_NEW + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_NEW;
+                }
+                else
+                {
+                    introMsg += INTRO_3_CHASE + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_CHASE;
+                }
+
+                emailForm.SetIntroText(introMsg);
+                emailForm.SetEndText(END);
+
                 if (validSurgery.GetEmail() == null)
                 {
                     SurgeryEmailInput inputForm = new SurgeryEmailInput(validSurgery, emailForm.GetToBox());
                     inputForm.Visible = true;
                 }
+
+                emailForm.SetRequests(requests);
+                emailForm.SetSurgery(validSurgery);
             }
 
             
+        }
+
+        internal void RemoveRequests(List<Request> requestsToRemove)
+        {
+            foreach (Request request in requestsToRemove)
+            {
+                requests.Remove(request); here
+                foreach (Patient patient in patients)
+                {
+                    patient.RemoveRequest(request);
+                }
+            }
         }
 
         // out variable super clunky but should work for now
@@ -104,13 +148,21 @@ namespace PharmApp.src.Requests
         {
             List<Request> sendingRequests = new List<Request>();
 
+            bool hasNotes = requestingPats.FirstOrDefault(p => p.GetRequests().FirstOrDefault(r => r.GetNotes() != "") != default(Request)) != default(Patient);
+
             string body = @"
-<table style='border-collapse:collapse'>
+<table style='width:100%;border-collapse:collapse'>
     <tr>
-        <th>Patient</th>
-        <th>Date</th>
-        <th>Notes</th>
-        <th>Items</th>
+        <th style='padding: 5px'>Patient</th>";
+
+            if (!onlyNewRequests) body += @"
+        <th style='padding: 5px'>Date</th>";
+
+            if (hasNotes) body += @"
+        <th style='padding: 5px'>Notes</th>";
+
+            body += @"
+        <th style='padding: 5px'>Items</th>
     </tr>
 ";
 
@@ -121,7 +173,7 @@ namespace PharmApp.src.Requests
                 int totalItemNo = p.GetTotalNumberOfRequestingItems(onlyNewRequests);
 
                 body += "\n<tr style='border-top: thin solid black;'>";
-                body += "\n<td rowspan =\"" + totalItemNo + "\"><pre>" + p.ToString() + "</pre></td>";
+                body += "\n<td style='padding: 5px' rowspan =\"" + totalItemNo + "\"><pre>" + p.ToString() + "</pre></td>";
 
                 foreach(Request r in p.GetRequests())
                 {
@@ -140,12 +192,18 @@ namespace PharmApp.src.Requests
 
                     List<RequestItem> items = r.Items;
 
-                    body += "\n<td rowspan =\"" + items.Count + "\">" + r.DateCreated.ToString(DATEFORMAT) + "</td>";
+                    if (!onlyNewRequests)
+                    {
+                        body += "\n<td style='padding: 5px' rowspan =\"" + items.Count + "\">" + r.DateCreated.ToString(DATEFORMAT) + "</td>";
+                    }
 
-                    string notes = "";
-                    if (r.HasNotes()) notes = r.GetNotes();
+                    if (hasNotes)
+                    {
+                        string notes = "";
+                        if (r.HasNotes()) notes = r.GetNotes();
 
-                    body += "\n<td rowspan =\"" + items.Count + "\">" + notes + "</td>";
+                        body += "\n<td style='padding: 5px' rowspan =\"" + items.Count + "\">" + notes + "</td>";
+                    }
 
                     items.ForEach(i =>
                     {
@@ -161,7 +219,7 @@ namespace PharmApp.src.Requests
                             newRowTag = true;
                         }
 
-                        body += "\n<td>" + i.ToString() + "</td>";
+                        body += "\n<td style='padding: 5px'>" + i.ToString() + "</td>";
 
                         body += "\n</tr>";
 

@@ -13,12 +13,13 @@ using System.Windows.Forms;
 
 namespace PharmApp.src.GUI
 {
-    partial class EmailForm : Form
+    partial class Email : Form
     {
 
-        List<Request> requests;
+        private List<Request> requests;
+        private Surgery surgery;
 
-        public EmailForm()
+        public Email()
         {
             InitializeComponent();
         }
@@ -67,7 +68,16 @@ namespace PharmApp.src.GUI
                     client.Send(message);
                     client.Disconnect(true);
 
+                    SQLQueryer.UpdateSentRequests(requests, surgery, id);
+
+                    RequestManager requester = RequestManager.Get();
+                    requester.RemoveRequests(requests);
+
                     Cursor = Cursors.Default;
+
+                    this.Hide();
+                    requester.GenerateRequestEmail(true);
+
                 }
                 catch (Exception exc)
                 {
@@ -116,5 +126,11 @@ namespace PharmApp.src.GUI
         {
             this.requests = requests;
         }
+
+        public void SetSurgery(Surgery surgery)
+        {
+            this.surgery = surgery;
+        }
+
     }
 }

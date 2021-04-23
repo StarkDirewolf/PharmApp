@@ -73,5 +73,10 @@ namespace PharmApp.src.Requests
         {
             return requests;
         }
+
+        public void RemoveRequest(Request request)
+        {
+            requests.R
+        }
     }
 }
