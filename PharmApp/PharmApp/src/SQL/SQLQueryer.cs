@@ -20,7 +20,7 @@ namespace PharmApp
         public static bool FindSurgeryDetailsFromCode(int code, out string name, out string email)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.SURGERYDETAILS);
-            query.SurgeryCode(code.ToString());
+            query.SurgeryCode(code);
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -54,7 +54,7 @@ namespace PharmApp
         public static void SaveSurgeryEmail(Surgery surgery, string email)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.SAVESURGERYEMAIL);
-            query.SurgeryCode(surgery.id.ToString());
+            query.SurgeryCode(surgery.id);
             query.Email(email);
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
@@ -73,21 +73,27 @@ namespace PharmApp
             {
                 connection.Open();
 
-                SqlCommand command = new SqlCommand(QueryConstructor.REQUEST_SENT, connection);
-                command.ID(id);
-                command.SurgeryCode(surgery.id);
+                QueryConstructor insertSentEmail = new QueryConstructor(QueryConstructor.QueryType.RECORDSENTEMAIL);
+
+                insertSentEmail.EmailID(id);
+                insertSentEmail.SurgeryCode(surgery.id);
 
                 foreach(Request request in requests)
                 {
-                    command.RequestID(request.ID);
-                    command.ExecuteNonQuery();
+                    insertSentEmail.RequestID(request.ID);
+
+                    SqlCommand sentEmailCommand = new SqlCommand(insertSentEmail.ToString(), connection);
+                    sentEmailCommand.ExecuteNonQuery();
 
                     if (request.Status == Request.StatusType.TOBEREQUESTED)
                     {
-                        SqlCommand changeTrackStatus = new SqlCommand(QueryConstructor.CHANGE_REQUEST_STATUS, connection);
+                        QueryConstructor changeTrackStatus = new QueryConstructor(QueryConstructor.QueryType.CHANGEREQUESTSTATUS);
 
                         changeTrackStatus.RequestID(request.ID);
-                        changeTrackStatus.TrackStatus(Request.StatusType.REQUESTED);
+                        changeTrackStatus.RequestStatus(Request.StatusType.REQUESTED.ToString());
+
+                        SqlCommand statusCommand = new SqlCommand(changeTrackStatus.ToString(), connection);
+                        statusCommand.ExecuteNonQuery();
                     }
                 }
 

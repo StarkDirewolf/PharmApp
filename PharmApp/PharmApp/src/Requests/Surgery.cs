@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.Requests
 {
-    class Surgery
+    class Surgery : UniqueID
     {
 
         private string email, name;
@@ -20,7 +20,7 @@ namespace PharmApp.src.Requests
         //    if (!SQLQueryer.FindSurgeryDetailsFromCode(id, out name, out email)) Util.ShowError("Couldn't find surgery name for code " + id.ToString());
         //}
 
-        public Surgery(int id, string name, string email)
+        public Surgery(int id, string name, string email) : base(id)
         {
             this.id = id;
             this.name = name;

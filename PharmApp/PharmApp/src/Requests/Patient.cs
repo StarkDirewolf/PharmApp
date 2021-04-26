@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.Requests
 {
-    class Patient
+    class Patient : UniqueID
     {
         public readonly int id;
         private readonly string address;
@@ -17,7 +17,7 @@ namespace PharmApp.src.Requests
         private List<Request> requests;
         private const string DATEFORMAT = "dd/MM/yyyy";
 
-        public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth)
+        public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth) : base(id)
         {
             this.id = id;
             this.address = address;
@@ -76,7 +76,7 @@ namespace PharmApp.src.Requests
 
         public void RemoveRequest(Request request)
         {
-            requests.R
+            requests.Remove(request);
         }
     }
 }

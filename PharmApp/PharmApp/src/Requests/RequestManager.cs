@@ -135,7 +135,7 @@ Link Pharmacy";
         {
             foreach (Request request in requestsToRemove)
             {
-                requests.Remove(request); here
+                requests.Remove(request);
                 foreach (Patient patient in patients)
                 {
                     patient.RemoveRequest(request);

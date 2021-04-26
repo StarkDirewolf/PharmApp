@@ -187,9 +187,13 @@ AS Y ON R.RequestId = Y.RequestId
 WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AND Y.Received = Y.Total AND R.Deleted = 0
 )";
 
+        public const string UPDATE_REQUEST_STATUS = @"UPDATE ProScriptConnect.PTS.PrescriptionTracking SET PrescriptionTrackingStatusTypeId = ";
+
+        public const string RECORD_SENT_EMAIL = @"INSERT INTO App.dbo.SentEmails (DateSent, RequestID, EmailID, SurgeryCode) VALUES ('";
+
         private const string SAVESURGERYEMAIL = @"INSERT INTO App.dbo.SurgeryEmail (SurgeryCode, Email) VALUES ('";
-        private const string SAVESURGERYEMAIL_2 = @"', '";
-        private const string SAVESURGERYEMAIL_3 = @"');";
+        private const string INSERT_MIDDLE_VALUE = @"', '";
+        private const string INSERT_SUFFIX_LAST_VALUE = @"');";
 
         private const string DELETEORDERINGNOTE = @"DELETE FROM App.dbo.CustomNotes";
 
@@ -252,7 +256,10 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             GETORDERINGNOTE,
             PRODUCTPATIENTHISTORY,
             SURGERYDETAILS,
-            SAVESURGERYEMAIL
+            SAVESURGERYEMAIL,
+            REQUESTSENT,
+            RECORDSENTEMAIL,
+            CHANGEREQUESTSTATUS
         }
 
         private enum Condition
@@ -275,7 +282,10 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             REQUIRESACTION,
             SURGERYCODE,
             SINCEDATE,
-            EMAIL
+            EMAIL,
+            EMAILID,
+            REQUESTID,
+            REQUESTSTATUS
         }
 
         /// <summary>Creates an object to represent a string used for a query.</summary>
@@ -373,10 +383,10 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             AddCondition(Condition.REQUIRESACTION, requiresAction.ToString());
         }
 
-        public void SurgeryCode(string code)
+        public void SurgeryCode(int code)
         {
             RemoveCondition(Condition.SURGERYCODE);
-            AddCondition(Condition.SURGERYCODE, code);
+            AddCondition(Condition.SURGERYCODE, code.ToString());
         }
 
         public void Email(string email)
@@ -391,6 +401,24 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             RemoveCondition(Condition.DATE);
             RemoveCondition(Condition.BETWEEN_DATES);
             AddCondition(Condition.SINCEDATE, date.ToString(DATE_FORMAT));
+        }
+
+        public void EmailID(string id)
+        {
+            RemoveCondition(Condition.EMAILID);
+            AddCondition(Condition.EMAILID, id);
+        }
+
+        public void RequestID(int id)
+        {
+            RemoveCondition(Condition.REQUESTID);
+            AddCondition(Condition.REQUESTID, id.ToString());
+        }
+
+        public void RequestStatus(string statusID)
+        {
+            RemoveCondition(Condition.REQUESTSTATUS);
+            AddCondition(Condition.REQUESTSTATUS, statusID);
         }
 
         /// <summary>
@@ -614,12 +642,31 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
                 case QueryType.SAVESURGERYEMAIL:
                     str = SAVESURGERYEMAIL;
                     str += conditions.FirstOrDefault(c => c.Key == Condition.SURGERYCODE).Value;
-                    str += SAVESURGERYEMAIL_2;
+                    str += INSERT_MIDDLE_VALUE;
                     str += conditions.FirstOrDefault(c => c.Key == Condition.EMAIL).Value;
-                    str += SAVESURGERYEMAIL_3;
+                    str += INSERT_SUFFIX_LAST_VALUE;
                     conditions.RemoveAll(c => true);
                     break;
 
+                case QueryType.RECORDSENTEMAIL:
+                    str = RECORD_SENT_EMAIL;
+                    str += DateTime.Now.ToString("yyyyMMdd HH:mm:ss");
+                    str += INSERT_MIDDLE_VALUE;
+                    str += conditions.Find(c => c.Key == Condition.REQUESTID).Value;
+                    str += INSERT_MIDDLE_VALUE;
+                    str += conditions.Find(c => c.Key == Condition.EMAILID).Value;
+                    str += INSERT_MIDDLE_VALUE;
+                    str += conditions.Find(c => c.Key == Condition.SURGERYCODE).Value;
+                    str += INSERT_SUFFIX_LAST_VALUE;
+                    conditions.RemoveAll(c => true);
+                    break;
+
+                case QueryType.CHANGEREQUESTSTATUS:
+                    str = UPDATE_REQUEST_STATUS;
+                    str += conditions.Find(c => c.Key == Condition.REQUESTSTATUS).Value;
+                    str += UPDATE_REQUEST_STATUS_2;
+                    str += FILTER;
+                    str 
             }
 
             if (conditions.Count > 0)

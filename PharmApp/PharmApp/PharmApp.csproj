@@ -187,6 +187,7 @@
     <Compile Include="src\Requests\RequestItem.cs" />
     <Compile Include="src\Requests\RequestManager.cs" />
     <Compile Include="src\Requests\Surgery.cs" />
+    <Compile Include="src\Requests\UniqueID.cs" />
     <Compile Include="src\SQL\ProductLookup.cs" />
     <Compile Include="src\SQL\QueryConstructor.cs" />
     <Compile Include="src\GUI\ScreenDrawing.cs">

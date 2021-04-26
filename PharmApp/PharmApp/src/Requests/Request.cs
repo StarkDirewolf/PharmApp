@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.Requests
 {
-    class Request
+    class Request : UniqueID
     {
         private readonly int id;
         private readonly DateTime dateCreated;
@@ -16,7 +16,7 @@ namespace PharmApp.src.Requests
         private readonly int trackingId;
         private const string DATEFORMAT = "dd/MM/yyyy";
 
-        public Request(int id, StatusType status, DateTime dateCreated, string notes, int trackingId)
+        public Request(int id, StatusType status, DateTime dateCreated, string notes, int trackingId) : base(id)
         {
             this.id = id;
             this.status = status;

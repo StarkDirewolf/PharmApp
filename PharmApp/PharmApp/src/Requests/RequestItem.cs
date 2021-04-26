@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src.Requests
 {
-    class RequestItem
+    class RequestItem : UniqueID
     {
         private readonly int id;
         private readonly string name;
@@ -16,7 +16,7 @@ namespace PharmApp.src.Requests
         private readonly string strength;
         private readonly Nullable<int> trackingId;
 
-        public RequestItem (int id, string name, string strength, string form, Nullable<decimal> quantity, string notes, Nullable<int> trackingId)
+        public RequestItem (int id, string name, string strength, string form, Nullable<decimal> quantity, string notes, Nullable<int> trackingId) : base(id)
         {
             this.id = id;
             this.name = name;
