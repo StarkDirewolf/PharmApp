@@ -210,6 +210,22 @@ namespace PharmApp.src
             }
         }
 
+        private bool _viewingRMS = false;
+        public bool viewingRMS
+        {
+            get => _viewingRMS;
+            set
+            {
+                if (value != viewingRMS)
+                {
+                    if (value) _onStartViewingRMS();
+                    else _onStopViewingRMS();
+                }
+
+                _viewingRMS = value;
+            }
+        }
+
 
         public IntPtr GetProScriptHandle()
         {
@@ -309,6 +325,10 @@ namespace PharmApp.src
 
                     OCR.UpdateScreenshot();
                     Console.WriteLine("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+
+                    viewingRMS = OCR.IsViewingRMS();
+                    Console.WriteLine("Checking if RMS is being viewed took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
                     nhsNumber = OCR.GetNhsNoFromScreen();
@@ -432,6 +452,8 @@ namespace PharmApp.src
         public event ProcessHandler OnNoETPBatchFound;
         public event ProcessHandler OnStartViewingOrderPad;
         public event ProcessHandler OnStopViewingOrderPad;
+        public event ProcessHandler OnStartViewingRMS;
+        public event ProcessHandler OnStopViewingRMS;
 
         public delegate void OCRProcessHandler(object source, OCRResultEventArgs args);
         public event OCRProcessHandler OnNHSNumberChanged;
@@ -454,6 +476,8 @@ namespace PharmApp.src
         protected void _onETPBatchFound() => OnETPBatchFound?.Invoke(this, EventArgs.Empty);
         protected void _onStartViewingOrderPad() => OnStartViewingOrderPad?.Invoke(this, EventArgs.Empty);
         protected void _onStopViewingOrderPad() => OnStopViewingOrderPad?.Invoke(this, EventArgs.Empty);
+        protected void _onStartViewingRMS() => OnStartViewingRMS?.Invoke(this, EventArgs.Empty);
+        protected void _onStopViewingRMS() => OnStopViewingRMS?.Invoke(this, EventArgs.Empty);
 
     }
 }

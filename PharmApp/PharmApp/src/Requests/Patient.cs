@@ -36,7 +36,7 @@ namespace PharmApp.src.Requests
         public bool hasNewRequest()
         {
             Request request = requests.FirstOrDefault(r => r.Status == Request.StatusType.TOBEREQUESTED);
-            if (request == default(Request))
+            if (request == null)
             {
                 return false;
             }
@@ -78,5 +78,26 @@ namespace PharmApp.src.Requests
         {
             requests.Remove(request);
         }
+
+        public string GetName()
+        {
+            return firstName + " " + lastName;
+        }
+
+        public string GetAddress()
+        {
+            return address;
+        }
+
+        public string GetDob()
+        {
+            return dateOfBirth.ToString(DATEFORMAT);
+        }
+
+        public string GetPostcode()
+        {
+            return postcode;
+        }
+        
     }
 }

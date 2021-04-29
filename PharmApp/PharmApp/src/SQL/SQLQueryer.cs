@@ -90,7 +90,7 @@ namespace PharmApp
                         QueryConstructor changeTrackStatus = new QueryConstructor(QueryConstructor.QueryType.CHANGEREQUESTSTATUS);
 
                         changeTrackStatus.RequestID(request.ID);
-                        changeTrackStatus.RequestStatus(Request.StatusType.REQUESTED.ToString());
+                        changeTrackStatus.RequestStatus(((int)Request.StatusType.REQUESTED).ToString());
 
                         SqlCommand statusCommand = new SqlCommand(changeTrackStatus.ToString(), connection);
                         statusCommand.ExecuteNonQuery();
@@ -140,6 +140,8 @@ namespace PharmApp
         {
 
             RequestManager requestManager = RequestManager.Get();
+
+            requestManager.ClearData();
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {

@@ -40,7 +40,7 @@ namespace PharmApp.src.Requests
 
         public bool HasNewRequests()
         {
-            if (patients.FirstOrDefault(p => p.hasNewRequest()) == default(Patient))
+            if (patients.FirstOrDefault(p => p.hasNewRequest()) == null)
             {
                 return false;
             }

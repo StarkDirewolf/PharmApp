@@ -22,7 +22,6 @@ namespace PharmApp.src.GUI
         private ScreenProcessor processor;
         private List<ScreenDrawing> forms = new List<ScreenDrawing>();
         private static SelectedProductManager productManager;
-        private bool hotkeyState = true;
 
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -39,6 +38,7 @@ namespace PharmApp.src.GUI
             AddForm(new NewETPDrawing());
             AddForm(new NewETPBatch());
             AddForm(new OrderingCommentsDrawing());
+            AddForm(new RequestsButtonDrawing());
 
             PharmTrayIcon icon = new PharmTrayIcon();
             
@@ -98,6 +98,12 @@ namespace PharmApp.src.GUI
             processor.OnOrderPadCommentsChanged += form.OnOrderPadCommentsChanged;
             processor.OnStartViewingOrderPad += form.OnStartViewingOrderPad;
             processor.OnStopViewingOrderPad += form.OnStopViewingOrderPad;
+
+            if (form is RequestsButtonDrawing)
+            {
+                processor.OnStartViewingRMS += ((RequestsButtonDrawing)form).OnStartViewingRMS;
+                processor.OnStopViewingRMS += ((RequestsButtonDrawing)form).OnStopViewingRMS;
+            }
 
             //BringProscriptToFront();
         }

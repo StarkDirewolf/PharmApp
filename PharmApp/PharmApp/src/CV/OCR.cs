@@ -225,6 +225,12 @@ namespace PharmApp
         return null;
         }
 
+        public static bool IsViewingRMS()
+        {
+            if (IsEveryColour(screen[149, 140], 195) && IsEveryColour(screen[149, 146], 0) && IsEveryColour(screen[149, 191], 195)) return true;
+            return false;
+        }
+
         public static List<OCRResult> GetSelectedProduct()
         {
             //List<Rectangle> colouredRects = GetSelectedProductRects(screen);

@@ -188,6 +188,9 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
 )";
 
         public const string UPDATE_REQUEST_STATUS = @"UPDATE ProScriptConnect.PTS.PrescriptionTracking SET PrescriptionTrackingStatusTypeId = ";
+        public const string UPDATE_REQUEST_STATUS_2 = @"WHERE PrescriptionTrackingId = (SELECT PrescriptionTrackingId FROM ProScriptConnect.RMS.Request WHERE RequestId = ";
+
+        private const string UPDATE_REQUEST_STATUS_3 = ")";
 
         public const string RECORD_SENT_EMAIL = @"INSERT INTO App.dbo.SentEmails (DateSent, RequestID, EmailID, SurgeryCode) VALUES ('";
 
@@ -665,8 +668,10 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
                     str = UPDATE_REQUEST_STATUS;
                     str += conditions.Find(c => c.Key == Condition.REQUESTSTATUS).Value;
                     str += UPDATE_REQUEST_STATUS_2;
-                    str += FILTER;
-                    str 
+                    str += conditions.Find(c => c.Key == Condition.REQUESTID).Value;
+                    str += UPDATE_REQUEST_STATUS_3;
+                    conditions.RemoveAll(c => true);
+                    break;
             }
 
             if (conditions.Count > 0)

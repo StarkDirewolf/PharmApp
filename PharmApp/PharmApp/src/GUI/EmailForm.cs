@@ -18,6 +18,7 @@ namespace PharmApp.src.GUI
 
         private List<Request> requests;
         private Surgery surgery;
+        private List<string> attachmentFileNames = new List<string>();
 
         public Email()
         {
@@ -31,30 +32,36 @@ namespace PharmApp.src.GUI
 
             var message = new MimeMessage();
 
-            TextPart body = new TextPart("html");
+            string body = "";
             foreach (string line in bodyRichTextBox.Lines)
             {
-                body.Text += line + "<br>";
+                body += line + "<br>";
             }
 
-            body.Text += htmlBox.DocumentText + "<br>";
+            body += htmlBox.DocumentText + "<br>";
 
             foreach (string line in bodyRichTextBox2.Lines)
             {
-                body.Text += line + "<br>";
+                body += line + "<br>";
             }
 
             string ID_FORMAT = "ddMMyyHHmmss";
             string id = DateTime.Now.ToString(ID_FORMAT);
 
-            body.Text += "<br><br>" + id;
+            body += "<br><br><small>" + id + "</small>";
 
             message.From.Add(new MailboxAddress("Link Pharmacy", "linkpharmacy.kingstmaidstone@nhs.net"));
             message.To.Add(new MailboxAddress("Surgery", toTextBox.Text));
             message.Subject = "Repeat Requests";
-            message.Body = body;
-            
-            
+            BodyBuilder builder = new BodyBuilder();
+            builder.HtmlBody = body;
+
+            foreach (string attachment in attachmentFileNames)
+            {
+                builder.Attachments.Add(attachment);
+            }
+
+            message.Body = builder.ToMessageBody();
 
             using (var client = new SmtpClient())
             {
@@ -68,7 +75,7 @@ namespace PharmApp.src.GUI
                     client.Send(message);
                     client.Disconnect(true);
 
-                    SQLQueryer.UpdateSentRequests(requests, surgery, id);
+                    if (GlobalSettings.UPDATE_RMS) SQLQueryer.UpdateSentRequests(requests, surgery, id);
 
                     RequestManager requester = RequestManager.Get();
                     requester.RemoveRequests(requests);
@@ -132,5 +139,9 @@ namespace PharmApp.src.GUI
             this.surgery = surgery;
         }
 
+        public void AddAttachment(string fileName)
+        {
+            attachmentFileNames.Add(fileName);
+        }
     }
 }
