@@ -179,6 +179,8 @@ namespace PharmApp
                         string itemForm = reader.GetString(20);
                         string itemNotes = null;
                         if (!reader.IsDBNull(21)) itemNotes = reader.GetString(21);
+                        string nhsNumber = "";
+                        if (!reader.IsDBNull(22)) nhsNumber = reader.GetString(22);
 
                         bool requestNeedsAdding = false;
 
@@ -213,7 +215,7 @@ namespace PharmApp
 
                         if (patient == null)
                         {
-                            patient = new Patient(patientId, addressNumber + " " + addressLine1, addressPostcode, patientFirstName, patientLastName, patientDob);
+                            patient = new Patient(patientId, addressNumber + " " + addressLine1, addressPostcode, patientFirstName, patientLastName, patientDob, nhsNumber);
                             surgery.AddPatient(patient);
                             requestManager.AddPatient(patient);
                         }

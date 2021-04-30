@@ -16,8 +16,9 @@ namespace PharmApp.src.Requests
         private readonly DateTime dateOfBirth;
         private List<Request> requests;
         private const string DATEFORMAT = "dd/MM/yyyy";
+        private readonly string nhsNumber;
 
-        public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth) : base(id)
+        public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth, string nhsNumber) : base(id)
         {
             this.id = id;
             this.address = address;
@@ -26,6 +27,7 @@ namespace PharmApp.src.Requests
             this.lastName = lastName;
             this.dateOfBirth = dateOfBirth;
             requests = new List<Request>();
+            this.nhsNumber = nhsNumber;
         }
 
         public void AddRequest(Request request)
@@ -47,6 +49,8 @@ namespace PharmApp.src.Requests
         public override string ToString()
         {
             string str = firstName + " " + lastName;
+            str += "\n";
+            str += nhsNumber;
             str += "\n";
             str += dateOfBirth.ToString(DATEFORMAT);
             str += "\n";
@@ -97,6 +101,11 @@ namespace PharmApp.src.Requests
         public string GetPostcode()
         {
             return postcode;
+        }
+
+        public string GetNHSNumber()
+        {
+            return nhsNumber;
         }
         
     }

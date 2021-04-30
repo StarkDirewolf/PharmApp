@@ -219,6 +219,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="Resources\RMS Request Repeatable.docx" />
     <None Include="Resources\tessdata\afr.traineddata" />
     <None Include="Resources\tessdata\amh.traineddata" />
     <None Include="Resources\tessdata\ara.traineddata" />
@@ -398,6 +399,10 @@
     <Content Include="Resources\Link_icon.ico" />
     <Content Include="Resources\Red_circle.png" />
     <Content Include="Resources\Red_circle_ast.png" />
+    <Content Include="Resources\RMS Checkbox.png" />
+    <Content Include="Resources\RMS Empty.png" />
+    <Content Include="Resources\RMS Request Repeatable.tif" />
+    <Content Include="Resources\RMS Signoff.png" />
     <Content Include="Resources\tessdata\.gitmodules" />
     <Content Include="Resources\Test images\mickey_mouse.jpg" />
     <Content Include="Resources\Test images\Mickey_Mouse_PMR.bmp" />

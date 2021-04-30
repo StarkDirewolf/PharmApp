@@ -32,6 +32,14 @@ Please let us know if there are any issues.
         public const string INTRO_3_CHASE = @" repeat ";
         public const string INTRO_5_CHASE = @" that we haven't had back yet:
 ";
+
+        public const string INTRO_1_ALBION = @"Dear Albion,
+
+Please find the attached <b>";
+
+        public const string INTRO_2_ALBION = @"</b> repeat requests.
+";
+
         public const string END = @"
 Many thanks,
 
@@ -39,7 +47,10 @@ Link Pharmacy";
 
         public readonly XFont patientDetailsFont = new XFont("Verdana", 16, XFontStyle.Bold);
         public readonly XFont itemFont = new XFont("Verdana", 16);
-        public const string PDF_FILENAME = "requests.pdf";
+
+        public readonly XFont albionNormalFont = new XFont("Times New Roman", 10);
+
+        public const string PDF_FILENAME = "Repeat Requests.pdf";
         public const double PDF_PADDING = 10;
 
         public static RequestManager Get()
@@ -106,6 +117,8 @@ Link Pharmacy";
 
             if (validSurgery != null)
             {
+                bool isAlbion = validSurgery.GetName() == "Albion Place Medical Practice";
+
                 GUI.Email emailForm = new GUI.Email();
                 emailForm.Visible = true;
 
@@ -120,13 +133,25 @@ Link Pharmacy";
                 if (validSurgery.HasEmailAddress()) emailForm.SetToText(validSurgery.GetEmail());
 
                 List<Request> sentRequests;
-                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, out sentRequests));
+ 
+                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, isAlbion, out sentRequests));
+                
 
                 emailForm.AddAttachment(PDF_FILENAME);
 
-                string introMsg = INTRO_1 + validSurgery + INTRO_2 + Util.PrefixToBe(sentRequests.Count);
+                string introMsg = "";
 
-                if (onlyNewRequests)
+                if (isAlbion)
+                {
+                    introMsg = INTRO_1_ALBION + sentRequests.Count + INTRO_2_ALBION;
+                }
+                else
+                {
+                    introMsg = INTRO_1 + validSurgery + INTRO_2 + Util.PrefixToBe(sentRequests.Count);
+                }
+                    
+
+                if (!isAlbion && onlyNewRequests)
                 {
                     introMsg += INTRO_3_NEW + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_NEW;
                 }
@@ -164,7 +189,7 @@ Link Pharmacy";
         }
 
         // out variable super clunky but should work for now
-        private string GenerateRequestTable(List<Patient> requestingPats, bool onlyNewRequests, out List<Request> requestsSent)
+        private string GenerateRequestTable(List<Patient> requestingPats, bool onlyNewRequests, bool isAlbion, out List<Request> requestsSent)
         {
             PdfDocument pdfDoc = new PdfDocument();
             
@@ -195,7 +220,16 @@ Link Pharmacy";
                 XGraphics pdfGfx = XGraphics.FromPdfPage(pdfPage);
                 XTextFormatter textFormatter = new XTextFormatter(pdfGfx);
 
-                textFormatter.DrawString(p.ToString(), patientDetailsFont, XBrushes.Black, new XRect(PDF_PADDING, PDF_PADDING, pdfPage.Width, pdfPage.Height/6));
+
+                if (!isAlbion) textFormatter.DrawString(p.ToString(), patientDetailsFont, XBrushes.Black, new XRect(PDF_PADDING, PDF_PADDING, pdfPage.Width, pdfPage.Height/6));
+                else
+                {
+                    // import image
+                    pdfGfx.DrawImage(XImage.FromFile("C:/Users/Careway LINK/Documents/Robb/RMS Empty.png"), new XPoint(0, 0));
+                    // top-right date
+                    textFormatter.DrawString(DateTime.Now.ToString("dd MMMM yyyy"), albionNormalFont, XBrushes.Black, new XRect(675, 42, 100, 25));
+                }
+
                 string itemListString = "";
 
                 bool newRowTag = true;
@@ -263,7 +297,7 @@ Link Pharmacy";
 
                 };
 
-                textFormatter.DrawString(itemListString, itemFont, XBrushes.Black, new XRect(PDF_PADDING, pdfPage.Height/6, pdfPage.Width, (pdfPage.Height/6)*5));
+                if (!isAlbion) textFormatter.DrawString(itemListString, itemFont, XBrushes.Black, new XRect(PDF_PADDING, pdfPage.Height/6, pdfPage.Width, (pdfPage.Height/6)*5));
 
             });
 
@@ -274,6 +308,7 @@ Link Pharmacy";
 
             requestsSent = sendingRequests;
 
+            if (isAlbion) return "";
             return body;
         }
 
