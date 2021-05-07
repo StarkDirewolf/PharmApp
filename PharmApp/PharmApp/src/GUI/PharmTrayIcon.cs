@@ -16,7 +16,7 @@ namespace PharmApp.src.GUI
         public PharmTrayIcon()
         {
             icon = new NotifyIcon();
-            icon.Icon = new Icon(ResourceManager.linkIcon);
+            icon.Icon = new Icon(ResourceManager.PATH_LINK_ICON);
             icon.Visible = true;
 
             MenuItem exit = new MenuItem("Exit", ExitEvent);

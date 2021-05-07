@@ -18,12 +18,15 @@ namespace PharmApp.src.GUI
             InitializeComponent();
 
             backgroundWorker1.DoWork += (object sender, DoWorkEventArgs e) => {
-                SQLQueryer.CleanRMS1();
-                backgroundWorker1.ReportProgress(1);
-                SQLQueryer.CleanRMS2();
-                backgroundWorker1.ReportProgress(1);
-                SQLQueryer.CleanRMS3();
-                backgroundWorker1.ReportProgress(1);
+                if (GlobalSettings.CLEAN_RMS)
+                {
+                    SQLQueryer.CleanRMS1();
+                    backgroundWorker1.ReportProgress(1);
+                    SQLQueryer.CleanRMS2();
+                    backgroundWorker1.ReportProgress(1);
+                    SQLQueryer.CleanRMS3();
+                    backgroundWorker1.ReportProgress(1);
+                }
                 SQLQueryer.PopulateRequests();
             };
 

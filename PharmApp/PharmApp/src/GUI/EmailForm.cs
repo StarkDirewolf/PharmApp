@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -142,6 +143,14 @@ namespace PharmApp.src.GUI
         public void AddAttachment(string fileName)
         {
             attachmentFileNames.Add(fileName);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            foreach (string filename in attachmentFileNames)
+            {
+                Process.Start(filename);
+            }
         }
     }
 }

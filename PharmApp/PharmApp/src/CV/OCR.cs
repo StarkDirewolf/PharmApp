@@ -22,7 +22,7 @@ namespace PharmApp
     static class OCR
     {
 
-        private static readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.tessData, "eng", OcrEngineMode.TesseractLstmCombined);
+        private static readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
 
         // Settings for testing purposes
         private const bool SHOW_PATIENT_DETAILS_RECTS = false,
@@ -741,7 +741,7 @@ namespace PharmApp
         {
             if (USE_EXAMPLE_PMR)
             {
-                 return new Image<Bgr, byte>(ResourceManager.robertPrydePMR);
+                 return new Image<Bgr, byte>(ResourceManager.PATH_ROBERT_PRYDE_PMR);
             }
 
             Rectangle bounds = Screen.GetBounds(Point.Empty);

@@ -118,6 +118,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="src\CV\OCRResultListEventArgs.cs" />
     <Compile Include="src\Email\NHSClient.cs" />
     <Compile Include="src\GUI\EmailForm.cs">
@@ -219,7 +224,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="Resources\RMS Request Repeatable.docx" />
     <None Include="Resources\tessdata\afr.traineddata" />
     <None Include="Resources\tessdata\amh.traineddata" />
     <None Include="Resources\tessdata\ara.traineddata" />
@@ -428,6 +432,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="src\GUI\EmailForm.resx">
       <DependentUpon>EmailForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -101,7 +101,7 @@ VALUES (source.PipCode, source.OrderingNotes, Source.RequiresAction);";
         // Ignore all requests before march 2021
         private const string EARLIESTDATE = @"03/01/2021";
 
-        public const string GETREQUESTS = @"SELECT R.DateAdded, R.RequestId, I.RequestItemId, Pt.PrescriptionTrackingId, I.PrescriptionTrackingId, O.PrescribingOrganisationId, Pt.PrescriptionTrackingStatusTypeId, O.Name, E.Email, P.PatientId, P.GivenName, P.Surname, P.DateOfBirth, A.HouseNameFlatNumber, A.NumberAndStreet, A.Postcode, R.Notes, Prep.ApprovedName, Prep.Strength, I.Quantity, Prep.DrugForm, I.Notes FROM ProScriptConnect.RMS.RequestItem I
+        public const string GETREQUESTS = @"SELECT R.DateAdded, R.RequestId, I.RequestItemId, Pt.PrescriptionTrackingId, I.PrescriptionTrackingId, O.PrescribingOrganisationId, Pt.PrescriptionTrackingStatusTypeId, O.Name, E.Email, P.PatientId, P.GivenName, P.Surname, P.DateOfBirth, A.HouseNameFlatNumber, A.NumberAndStreet, A.Postcode, R.Notes, Prep.ApprovedName, Prep.Strength, I.Quantity, Prep.DrugForm, I.Notes, Id.Value FROM ProScriptConnect.RMS.RequestItem I
 LEFT JOIN ProScriptConnect.RMS.Request R ON I.RequestId = R.RequestId
 LEFT JOIN ProScriptConnect.dbo.Patient P ON R.PatientId = P.PatientId
 LEFT JOIN ProScriptConnect.PTS.PrescriptionTracking Pt ON R.PrescriptionTrackingId = Pt.PrescriptionTrackingId
@@ -109,7 +109,8 @@ LEFT JOIN ProScriptConnect.dbo.PrescribingOrganisation O ON R.PrescribingOrganis
 LEFT JOIN PKBRuntime.Pharmacy.Preparation Prep ON Prep.PreparationCodeId = I.PreparationCodeId
 LEFT JOIN App.dbo.SurgeryEmail E ON O.PrescribingOrganisationId = E.SurgeryCode
 LEFT JOIN ProScriptConnect.dbo.Address A ON A.AddressId = P.AddressId
-WHERE (Pt.PrescriptionTrackingStatusTypeId = 2 OR Pt.PrescriptionTrackingStatusTypeId = 3 OR (Pt.PrescriptionTrackingStatusTypeId = 12 AND I.PrescriptionTrackingId IS NULL)) AND P.DateOfDeath IS NULL AND R.Deleted = 0 AND R.DateAdded > '" + EARLIESTDATE + "'";
+LEFT JOIN ProScriptConnect.dbo.PatientIdentifier Id ON Id.PatientId = P.PatientId
+WHERE (Pt.PrescriptionTrackingStatusTypeId = 2 OR Pt.PrescriptionTrackingStatusTypeId = 3 OR (Pt.PrescriptionTrackingStatusTypeId = 12 AND I.PrescriptionTrackingId IS NULL)) AND P.DateOfDeath IS NULL AND R.Deleted = 0 AND Id.PatientIdentifierTypeId = 1 AND R.DateAdded > '" + EARLIESTDATE + "'";
 
         // Any requested requests containing items that have since come back are changed to partially dispensed
         public const string CLEAN_RMS_1 = @"UPDATE T

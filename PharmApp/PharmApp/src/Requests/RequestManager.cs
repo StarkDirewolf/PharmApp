@@ -45,10 +45,10 @@ Many thanks,
 
 Link Pharmacy";
 
-        public readonly XFont patientDetailsFont = new XFont("Verdana", 16, XFontStyle.Bold);
-        public readonly XFont itemFont = new XFont("Verdana", 16);
+        public readonly XFont patientDetailsFont = new XFont("Arial", 11, XFontStyle.Bold);
+        public readonly XFont itemFont = new XFont("Arial", 10, XFontStyle.Bold);
 
-        public readonly XFont albionNormalFont = new XFont("Times New Roman", 10);
+        public readonly XFont albionNormalFont = new XFont("Arial", 10);
 
         public const string PDF_FILENAME = "Repeat Requests.pdf";
         public const double PDF_PADDING = 10;
@@ -225,9 +225,10 @@ Link Pharmacy";
                 else
                 {
                     // import image
-                    pdfGfx.DrawImage(XImage.FromFile("C:/Users/Careway LINK/Documents/Robb/RMS Empty.png"), new XPoint(0, 0));
+                    pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_SHEET), new XPoint(0, 0));
                     // top-right date
-                    textFormatter.DrawString(DateTime.Now.ToString("dd MMMM yyyy"), albionNormalFont, XBrushes.Black, new XRect(675, 42, 100, 25));
+                    textFormatter.DrawString(DateTime.Now.ToString("dd MMMM yyyy"), albionNormalFont, XBrushes.Black, new XRect(500, 22, 100, 25));
+                    textFormatter.DrawString(p.GetAlbionStyleName(), patientDetailsFont, XBrushes.Black, new XRect(100, 172, 300, 25));
                 }
 
                 string itemListString = "";

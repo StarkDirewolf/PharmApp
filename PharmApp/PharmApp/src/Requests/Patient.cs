@@ -107,6 +107,11 @@ namespace PharmApp.src.Requests
         {
             return nhsNumber;
         }
+
+        public string GetAlbionStyleName()
+        {
+            return lastName.ToUpper() + ", " + firstName;
+        }
         
     }
 }

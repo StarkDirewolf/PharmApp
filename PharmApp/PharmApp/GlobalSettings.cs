@@ -9,5 +9,6 @@ namespace PharmApp
     class GlobalSettings
     {
         public const bool UPDATE_RMS = true;
+        public const bool CLEAN_RMS = false;
     }
 }

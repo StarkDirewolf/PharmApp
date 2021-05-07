@@ -31,7 +31,7 @@ namespace PharmApp.src.GUI
                 Name = "Indicator",
                 Size = new Size(25, 25),
                 Location = new Point(0, 0),
-                Image = Image.FromFile(ResourceManager.redCircle)
+                Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE)
             };
             this.Controls.Add(img);
             
@@ -63,7 +63,7 @@ namespace PharmApp.src.GUI
             tooltip_timer.Start();
             if (product.genericID == "0")
             {
-                img.Image = Image.FromFile(ResourceManager.blueCircle);
+                img.Image = Image.FromFile(ResourceManager.PATH_BLUE_CIRCLE);
             }
             else
             {
@@ -71,11 +71,11 @@ namespace PharmApp.src.GUI
                 {
                     if (product.orderingNote != null)
                     {
-                        img.Image = Image.FromFile(ResourceManager.greenAstCircle);
+                        img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE_AST);
                     }
                     else
                     {
-                        img.Image = Image.FromFile(ResourceManager.greenCircle);
+                        img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE);
                     }
                     
                     
@@ -84,11 +84,11 @@ namespace PharmApp.src.GUI
                 {
                     if (product.orderingNote != null)
                     {
-                        img.Image = Image.FromFile(ResourceManager.redAstCircle);
+                        img.Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE_AST);
                     }
                     else
                     {
-                        img.Image = Image.FromFile(ResourceManager.redCircle);
+                        img.Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE);
                     }
                     
                 }
