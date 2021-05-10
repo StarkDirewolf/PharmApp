@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PharmApp.src.Requests
 {
@@ -49,6 +50,7 @@ Link Pharmacy";
         public readonly XFont itemFont = new XFont("Arial", 10, XFontStyle.Bold);
 
         public readonly XFont albionNormalFont = new XFont("Arial", 10);
+        public readonly XFont albionSmallDateFont = new XFont("Arial", 8);
 
         public const string PDF_FILENAME = "Repeat Requests.pdf";
         public const double PDF_PADDING = 10;
@@ -107,6 +109,8 @@ Link Pharmacy";
 
             if (onlyNewRequests)
             {
+                // EDIT this line when albion is supported
+                //validSurgery = surgeries.FirstOrDefault(s => s.HasNewRequests() && s.GetName() != "Albion Place Medical Practice");
                 validSurgery = surgeries.FirstOrDefault(s => s.HasNewRequests());
             }
             else
@@ -148,17 +152,17 @@ Link Pharmacy";
                 else
                 {
                     introMsg = INTRO_1 + validSurgery + INTRO_2 + Util.PrefixToBe(sentRequests.Count);
-                }
-                    
 
-                if (!isAlbion && onlyNewRequests)
-                {
-                    introMsg += INTRO_3_NEW + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_NEW;
+                    if (onlyNewRequests)
+                    {
+                        introMsg += INTRO_3_NEW + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_NEW;
+                    }
+                    else
+                    {
+                        introMsg += INTRO_3_CHASE + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_CHASE;
+                    }
                 }
-                else
-                {
-                    introMsg += INTRO_3_CHASE + Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_5_CHASE;
-                }
+                
 
                 emailForm.SetIntroText(introMsg);
                 emailForm.SetEndText(END);
@@ -191,6 +195,8 @@ Link Pharmacy";
         // out variable super clunky but should work for now
         private string GenerateRequestTable(List<Patient> requestingPats, bool onlyNewRequests, bool isAlbion, out List<Request> requestsSent)
         {
+            List<Patient> albionProblemPatients = new List<Patient>();
+
             PdfDocument pdfDoc = new PdfDocument();
             
 
@@ -220,6 +226,8 @@ Link Pharmacy";
                 XGraphics pdfGfx = XGraphics.FromPdfPage(pdfPage);
                 XTextFormatter textFormatter = new XTextFormatter(pdfGfx);
 
+                double itemYPos = 240;
+                int problemCounter = 0;
 
                 if (!isAlbion) textFormatter.DrawString(p.ToString(), patientDetailsFont, XBrushes.Black, new XRect(PDF_PADDING, PDF_PADDING, pdfPage.Width, pdfPage.Height/6));
                 else
@@ -229,7 +237,13 @@ Link Pharmacy";
                     // top-right date
                     textFormatter.DrawString(DateTime.Now.ToString("dd MMMM yyyy"), albionNormalFont, XBrushes.Black, new XRect(500, 22, 100, 25));
                     textFormatter.DrawString(p.GetAlbionStyleName(), patientDetailsFont, XBrushes.Black, new XRect(100, 172, 300, 25));
+                    textFormatter.DrawString(p.GetNHSNumber(), albionNormalFont, XBrushes.Black, new XRect(100, 187, 300, 25));
+                    textFormatter.DrawString(p.GetAlbionDob(), albionNormalFont, XBrushes.Black, new XRect(100, 202, 300, 25));
+                    textFormatter.DrawString(p.GetAddress(), albionNormalFont, XBrushes.Black, new XRect(100, 214, 300, 25));
+                    textFormatter.DrawString(p.GetPostcode(), albionNormalFont, XBrushes.Black, new XRect(100, 226, 300, 25));
+                    textFormatter.DrawString(DateTime.Now.ToString("dd MMMM yyyy HH:mm"), albionSmallDateFont, XBrushes.Black, new XRect(28, 800, 100, 25));
                 }
+
 
                 string itemListString = "";
 
@@ -267,10 +281,27 @@ Link Pharmacy";
                     if (hasNotes)
                     {
                         string notes = "";
-                        if (r.HasNotes()) notes = r.GetNotes();
+                        if (r.HasNotes())
+                        {
+                            notes = r.GetNotes();
+
+                            if (isAlbion)
+                            {
+                                textFormatter.DrawString(notes, albionNormalFont, XBrushes.Black, new XRect(28, itemYPos + 15, 570, 30));
+                                itemYPos += 40;
+
+                                if (notes.Split('\n').Count() > 2 || notes.Length > 110)
+                                {
+                                    albionProblemPatients.Add(p);
+                                }
+                                problemCounter += 2;
+                            }
+                        }
 
                         itemListString += "\n" + notes + "\n";
                         body += "\n<td style='padding: 5px' rowspan =\"" + items.Count + "\">" + notes + "</td>";
+
+                        
                     }
 
                     items.ForEach(i =>
@@ -294,11 +325,38 @@ Link Pharmacy";
                         body += "\n</tr>";
 
                         newRowTag = false;
+
+                        if (isAlbion)
+                        {
+                            pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_CHECKBOX), new XPoint(28, itemYPos - 4));
+
+                            textFormatter.DrawString(i.ToString(), itemFont, XBrushes.Black, new XRect(100, itemYPos, 500, 25));
+
+                            itemYPos += 25;
+
+                            if (i.ToString().Split('\n').Count() > 2 || i.ToString().Length > 110)
+                            {
+                                if (!albionProblemPatients.Contains(p)) albionProblemPatients.Add(p);
+                                
+                            }
+
+                            problemCounter += 1;
+                        }
                     });
 
                 };
 
                 if (!isAlbion) textFormatter.DrawString(itemListString, itemFont, XBrushes.Black, new XRect(PDF_PADDING, pdfPage.Height/6, pdfPage.Width, (pdfPage.Height/6)*5));
+                else
+                {
+                    pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_SIGNOFF), new XPoint(28, itemYPos + 10));
+
+                    if (problemCounter > 20)
+                    {
+                        if (!albionProblemPatients.Contains(p)) albionProblemPatients.Add(p);
+                    }
+                }
+
 
             });
 
@@ -308,6 +366,16 @@ Link Pharmacy";
             pdfDoc.Save(PDF_FILENAME);
 
             requestsSent = sendingRequests;
+
+            if (albionProblemPatients.Count > 0)
+            {
+                string msg = "The following patients had long notes or too many requests that may not be entirely visible. Please review before sending:";
+                foreach (Patient patient in albionProblemPatients)
+                {
+                    msg += "\n" + patient.GetName();
+                }
+                MessageBox.Show(msg, "Long requests", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
 
             if (isAlbion) return "";
             return body;

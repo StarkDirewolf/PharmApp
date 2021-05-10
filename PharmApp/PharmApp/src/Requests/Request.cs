@@ -67,7 +67,7 @@ namespace PharmApp.src.Requests
 
         public bool HasNotes()
         {
-            if (notes == null) return false;
+            if (notes == "" || notes == null) return false;
             return true;
         }
 

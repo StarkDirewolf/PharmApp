@@ -71,7 +71,7 @@ namespace PharmApp.src.GUI
                     client.Connect("localhost", 2025, false);
 
                     // Note: only needed if the SMTP server requires authentication
-                    client.Authenticate("linkpharmacy.kingstmaidstone@nhs.net", "Fuller19634");
+                    client.Authenticate("linkpharmacy.kingstmaidstone@nhs.net", "BootsSucks99");
 
                     client.Send(message);
                     client.Disconnect(true);

@@ -16,6 +16,7 @@ namespace PharmApp.src.Requests
         private readonly DateTime dateOfBirth;
         private List<Request> requests;
         private const string DATEFORMAT = "dd/MM/yyyy";
+        private const string DATEFORMAT_ALBION = "dd MMMM yyyy";
         private readonly string nhsNumber;
 
         public Patient(int id, string address, string postcode, string firstName, string lastName, DateTime dateOfBirth, string nhsNumber) : base(id)
@@ -96,6 +97,11 @@ namespace PharmApp.src.Requests
         public string GetDob()
         {
             return dateOfBirth.ToString(DATEFORMAT);
+        }
+
+        public string GetAlbionDob()
+        {
+            return dateOfBirth.ToString(DATEFORMAT_ALBION);
         }
 
         public string GetPostcode()
