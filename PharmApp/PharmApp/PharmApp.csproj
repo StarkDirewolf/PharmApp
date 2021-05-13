@@ -129,6 +129,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="src\CV\OCRResultListEventArgs.cs" />
+    <Compile Include="src\CV\Screens\ScreenGoodsIn.cs" />
+    <Compile Include="src\CV\Screens\ScreenIdentifier.cs" />
+    <Compile Include="src\CV\Screens\ScreenNone.cs" />
+    <Compile Include="src\CV\Screens\ScreenPMR.cs" />
+    <Compile Include="src\CV\Screens\ScreenProScript.cs" />
+    <Compile Include="src\CV\Screens\ScreenRMS.cs" />
+    <Compile Include="src\CV\Screens\ScreenOrderPad.cs" />
     <Compile Include="src\Email\NHSClient.cs" />
     <Compile Include="src\GUI\EmailForm.cs">
       <SubType>Form</SubType>
@@ -412,6 +419,7 @@
     <Content Include="Resources\Red_circle.png" />
     <Content Include="Resources\Red_circle_ast.png" />
     <Content Include="Resources\RMS Checkbox.png" />
+    <Content Include="Resources\RMS Empty Brewer.png" />
     <Content Include="Resources\RMS Empty.png" />
     <Content Include="Resources\RMS Request Repeatable.tif" />
     <Content Include="Resources\RMS Signoff.png" />

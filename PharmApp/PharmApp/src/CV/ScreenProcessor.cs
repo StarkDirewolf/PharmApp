@@ -226,6 +226,8 @@ namespace PharmApp.src
             }
         }
 
+        public bool viewingPMR = false;
+
 
         public IntPtr GetProScriptHandle()
         {
@@ -327,9 +329,17 @@ namespace PharmApp.src
                     Console.WriteLine("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
+                    viewingPMR = OCR.IsViewingPMR();
+                    if (!viewingPMR)
+                    {
+
+                    }
+
                     viewingRMS = OCR.IsViewingRMS();
                     Console.WriteLine("Checking if RMS is being viewed took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
+
+                    
 
                     nhsNumber = OCR.GetNhsNoFromScreen();
                     Console.WriteLine("NHS number processing took " + stopwatch.ElapsedMilliseconds + "ms");

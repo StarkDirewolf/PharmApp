@@ -16,21 +16,14 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using PharmApp.src;
 using Emgu.CV.CvEnum;
+using log4net;
 
 namespace PharmApp
 {
-    static class OCR
+    class OCR
     {
 
         private static readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
-
-        // Settings for testing purposes
-        private const bool SHOW_PATIENT_DETAILS_RECTS = false,
-            USE_EXAMPLE_PMR = false,
-            SHOW_OCR_IMAGE = false,
-            SHOW_INDIVIDUAL_OCR_RECT = false,
-            SHOW_BOUNDING_RECTS = false;
-
 
         // CV settings
         private const int GRAY_THRESHOLD = 200,
@@ -48,7 +41,7 @@ namespace PharmApp
             BLUE_PRODUCT_SELECTED_BGR = new Bgr(215, 120, 0),
             GREY_PRODUCT_SELECTED_BGR = new Bgr(240, 240, 240);
 
-        private const int PATIENT_DETAILS_MIN_WIDTH = 20,
+        public const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
             PATIENT_DETAILS_MIN_RATIO = 2,
             PRODUCT_MIN_WIDTH = 60,
@@ -69,7 +62,7 @@ namespace PharmApp
             GOODS_IN_HEIGHT = 450,
             PMR_PRODUCT_X = 150,
             PMR_PRODUCT_MIN_Y = 420,
-            PMR_PRODUCT_MAX_Y = 800,
+            PMR_PRODUCT_MAX_Y = 830,
             PMR_PRODUCT_WIDTH = 780,
             PMR_PRODUCT_TABS_HEIGHT = 35,
             PIPCODE_MIN_HEIGHT = 12,
@@ -202,12 +195,15 @@ namespace PharmApp
         //    }
         //}
 
+        //public static bool IsViewingPMR()
+        //{
+        //    // If this pixel isn't blue, we're not looking at patient records
+        //    if (Math.Abs(screen[100, 140].Blue - 250.0) >= 2.0) return false;
+        //    return true;
+        //}
+
         public static OCRResult GetNhsNoFromScreen()
         {
-
- 
-            // If this pixel isn't blue, we're not looking at patient records
-            if (Math.Abs(screen[100, 140].Blue - 250.0) >= 2.0) return null;
 
             List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
                 
@@ -225,11 +221,11 @@ namespace PharmApp
         return null;
         }
 
-        public static bool IsViewingRMS()
-        {
-            if (IsEveryColour(screen[149, 140], 195) && IsEveryColour(screen[149, 146], 0) && IsEveryColour(screen[149, 191], 195)) return true;
-            return false;
-        }
+        //public static bool IsViewingRMS()
+        //{
+        //    if (IsEveryColour(screen[149, 140], 195) && IsEveryColour(screen[149, 146], 0) && IsEveryColour(screen[149, 191], 195)) return true;
+        //    return false;
+        //}
 
         public static List<OCRResult> GetSelectedProduct()
         {
@@ -267,8 +263,12 @@ namespace PharmApp
             return OCRImage(image, area, Size.Empty, Size.Empty);
         }
 
-        private static List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
+        public List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
         {
+
+            if (image.Width < (area.X + area.Width)) throw new ArgumentException("Area to be analysed goes beyond image width");
+            if (image.Height < (area.Y + area.Height)) throw new ArgumentException("Area to be analysed goes beyond image height");
+
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
             {
@@ -301,7 +301,7 @@ namespace PharmApp
             return patientDetails;
         }
 
-        private static List<OCRResult> GetText(Image<Bgr, byte> image, Size minSize, Size maxSize)
+        public List<OCRResult> GetText(Image<Bgr, byte> image, Size minSize, Size maxSize)
         {
             using (Image<Gray, byte> optImg = GetOptImage(image))
             {
@@ -540,14 +540,15 @@ namespace PharmApp
                     {
                         Rectangle resultRect = result.GetRectangle();
                         returnRect = new Rectangle(resultRect.X, resultRect.Y + resultRect.Height, 80, 300);
-                        Console.WriteLine("Order pad detected and pipcode column found in " + timer.ElapsedMilliseconds + "ms");
+                        LogManager.GetLogger(typeof(Program)).Debug("Order pad detected and pipcode column found in " + timer.ElapsedMilliseconds + "ms");
                         timer.Stop();
                         return returnRect;
                     }
 
                     returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
-                    Console.WriteLine("Order pad detected but pipcode column could not be found in " + timer.ElapsedMilliseconds + "ms");
+                    LogManager.GetLogger(typeof(Program)).Debug("Order pad detected but pipcode column could not be found in " + timer.ElapsedMilliseconds + "ms");
                     timer.Stop();
+                    LogManager.GetLogger(typeof(Program)).Debug("Returning dimensions X:" + returnRect.X + " Y:" + returnRect.Y + " H:" + returnRect.Height + " W:" + returnRect.Width);
                     return returnRect;
                 }
 
@@ -560,14 +561,14 @@ namespace PharmApp
                     if (edgePos != 0)
                     {
                         returnRect = new Rectangle(edgePos, GOODS_IN_Y, GOODS_IN_WIDTH, GOODS_IN_HEIGHT);
-                        Console.WriteLine("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
+                        LogManager.GetLogger(typeof(Program)).Debug("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
                         timer.Stop();
                         return returnRect;
                     }
                 }
 
                 returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
-                Console.WriteLine("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
+                LogManager.GetLogger(typeof(Program)).Debug("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
                 timer.Stop();
                 return returnRect;
             }
@@ -602,6 +603,11 @@ namespace PharmApp
                     int bottomOfRect = resultRect.Y + resultRect.Height;
                     returnRect = new Rectangle(resultRect.X, bottomOfRect, resultRect.Width, PMR_PRODUCT_MAX_Y - bottomOfRect);
                     Console.WriteLine("Pipcode column found in " + timer.ElapsedMilliseconds + "ms");
+                    if (returnRect.Height < 15)
+                    {
+                        Console.WriteLine("Pipcodes go off screen so can't be read");
+                        return Rectangle.Empty;
+                    }
                     timer.Stop();
                     return returnRect;
                 }
@@ -657,7 +663,7 @@ namespace PharmApp
             return 0;
         }
 
-        private static bool IsEveryColour(Bgr bgr, int value)
+        public static bool IsEveryColour(Bgr bgr, int value)
         {
             if (bgr.Blue == value && bgr.Red == value && bgr.Green == value) return true;
             return false;

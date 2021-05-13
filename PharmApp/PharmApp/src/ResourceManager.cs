@@ -21,6 +21,6 @@ namespace PharmApp
         public const string PATH_RMS_SHEET = @"../../Resources/RMS Empty.png";
         public const string PATH_RMS_CHECKBOX = @"../../Resources/RMS Checkbox.png";
         public const string PATH_RMS_SIGNOFF = @"../../Resources/RMS Signoff.png";
-
+        public const string PATH_RMS_SHEET_BREWER = @"../../Resources/RMS Empty Brewer.png";
     }
 }

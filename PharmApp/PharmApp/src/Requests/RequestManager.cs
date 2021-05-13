@@ -34,11 +34,13 @@ Please let us know if there are any issues.
         public const string INTRO_5_CHASE = @" that we haven't had back yet:
 ";
 
-        public const string INTRO_1_ALBION = @"Dear Albion,
+        public const string INTRO_1_ALBION = @"Dear ";
+
+        public const string INTRO_2_ALBION = @",
 
 Please find the attached <b>";
 
-        public const string INTRO_2_ALBION = @"</b> repeat requests.
+        public const string INTRO_3_ALBION = @"</b> repeat requests.
 ";
 
         public const string END = @"
@@ -121,7 +123,9 @@ Link Pharmacy";
 
             if (validSurgery != null)
             {
-                bool isAlbion = validSurgery.GetName() == "Albion Place Medical Practice";
+                // this is an awful quick fix
+                bool isSpecial = validSurgery.GetName() == "Albion Place Medical Practice" || validSurgery.GetName() == "Drs Johnson, Garrett & Mitchell" || validSurgery.GetName() == "Brewer Street Surgery";
+                bool isBrewer = validSurgery.GetName() == "Drs Johnson, Garrett & Mitchell" || validSurgery.GetName() == "Brewer Street Surgery";
 
                 GUI.Email emailForm = new GUI.Email();
                 emailForm.Visible = true;
@@ -138,16 +142,16 @@ Link Pharmacy";
 
                 List<Request> sentRequests;
  
-                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, isAlbion, out sentRequests));
+                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, isSpecial, isBrewer, out sentRequests));
                 
 
                 emailForm.AddAttachment(PDF_FILENAME);
 
                 string introMsg = "";
 
-                if (isAlbion)
+                if (isSpecial)
                 {
-                    introMsg = INTRO_1_ALBION + sentRequests.Count + INTRO_2_ALBION;
+                    introMsg = INTRO_1_ALBION + validSurgery.GetName() + INTRO_2_ALBION + sentRequests.Count + INTRO_3_ALBION;
                 }
                 else
                 {
@@ -193,7 +197,7 @@ Link Pharmacy";
         }
 
         // out variable super clunky but should work for now
-        private string GenerateRequestTable(List<Patient> requestingPats, bool onlyNewRequests, bool isAlbion, out List<Request> requestsSent)
+        private string GenerateRequestTable(List<Patient> requestingPats, bool onlyNewRequests, bool isSpecial, bool isBrewer, out List<Request> requestsSent)
         {
             List<Patient> albionProblemPatients = new List<Patient>();
 
@@ -229,11 +233,12 @@ Link Pharmacy";
                 double itemYPos = 240;
                 int problemCounter = 0;
 
-                if (!isAlbion) textFormatter.DrawString(p.ToString(), patientDetailsFont, XBrushes.Black, new XRect(PDF_PADDING, PDF_PADDING, pdfPage.Width, pdfPage.Height/6));
+                if (!isSpecial) textFormatter.DrawString(p.ToString(), patientDetailsFont, XBrushes.Black, new XRect(PDF_PADDING, PDF_PADDING, pdfPage.Width, pdfPage.Height/6));
                 else
                 {
                     // import image
-                    pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_SHEET), new XPoint(0, 0));
+                    if (isBrewer) pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_SHEET_BREWER), new XPoint(0, 0));
+                    else pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_SHEET), new XPoint(0, 0));
                     // top-right date
                     textFormatter.DrawString(DateTime.Now.ToString("dd MMMM yyyy"), albionNormalFont, XBrushes.Black, new XRect(500, 22, 100, 25));
                     textFormatter.DrawString(p.GetAlbionStyleName(), patientDetailsFont, XBrushes.Black, new XRect(100, 172, 300, 25));
@@ -285,7 +290,7 @@ Link Pharmacy";
                         {
                             notes = r.GetNotes();
 
-                            if (isAlbion)
+                            if (isSpecial)
                             {
                                 textFormatter.DrawString(notes, albionNormalFont, XBrushes.Black, new XRect(28, itemYPos + 15, 570, 30));
                                 itemYPos += 40;
@@ -326,7 +331,7 @@ Link Pharmacy";
 
                         newRowTag = false;
 
-                        if (isAlbion)
+                        if (isSpecial)
                         {
                             pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_CHECKBOX), new XPoint(28, itemYPos - 4));
 
@@ -346,7 +351,7 @@ Link Pharmacy";
 
                 };
 
-                if (!isAlbion) textFormatter.DrawString(itemListString, itemFont, XBrushes.Black, new XRect(PDF_PADDING, pdfPage.Height/6, pdfPage.Width, (pdfPage.Height/6)*5));
+                if (!isSpecial) textFormatter.DrawString(itemListString, itemFont, XBrushes.Black, new XRect(PDF_PADDING, pdfPage.Height/6, pdfPage.Width, (pdfPage.Height/6)*5));
                 else
                 {
                     pdfGfx.DrawImage(XImage.FromFile(ResourceManager.PATH_RMS_SIGNOFF), new XPoint(28, itemYPos + 10));
@@ -377,7 +382,7 @@ Link Pharmacy";
                 MessageBox.Show(msg, "Long requests", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
-            if (isAlbion) return "";
+            if (isSpecial) return "";
             return body;
         }
 
