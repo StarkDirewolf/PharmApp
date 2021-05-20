@@ -23,15 +23,30 @@ namespace PharmApp.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int lastDispensedPrescriptionItemID {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SHOW_OCR_IMAGE {
             get {
-                return ((int)(this["lastDispensedPrescriptionItemID"]));
+                return ((bool)(this["SHOW_OCR_IMAGE"]));
             }
-            set {
-                this["lastDispensedPrescriptionItemID"] = value;
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SHOW_BOUNDING_RECTS {
+            get {
+                return ((bool)(this["SHOW_BOUNDING_RECTS"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SHOW_INDIVIDUAL_OCR_RECT {
+            get {
+                return ((bool)(this["SHOW_INDIVIDUAL_OCR_RECT"]));
             }
         }
     }

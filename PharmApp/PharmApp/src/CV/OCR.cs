@@ -17,13 +17,16 @@ using System.Text.RegularExpressions;
 using PharmApp.src;
 using Emgu.CV.CvEnum;
 using log4net;
+using PharmApp.Properties;
 
 namespace PharmApp
 {
     class OCR
     {
 
-        private static readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
+        private static OCR obj;
+
+        private readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
 
         // CV settings
         private const int GRAY_THRESHOLD = 200,
@@ -72,7 +75,6 @@ namespace PharmApp
 
         private const double BGR_BUFFER = 2;
 
-        private const int NHS_X = 340, NHS_Y = 100, NHS_WIDTH = 990, NHS_HEIGHT = 25;
         // Orderpad height can be 318 to cut off around 100ms but it wont span all of goods in screen
         private const int ORDERPAD_X = 140, ORDERPAD_Y = 362, ORDERPAD_WIDTH = 1435, ORDERPAD_HEIGHT = 460;
 
@@ -80,9 +82,6 @@ namespace PharmApp
 
         private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
             PIP_MASK = new Regex("[0-9]{7}");
-
-        // Updating screenshot at the start of each processing cycle
-        private static Image<Bgr, byte> screen;
 
 
         //public void Test()
@@ -202,10 +201,25 @@ namespace PharmApp
         //    return true;
         //}
 
-        public static OCRResult GetNhsNoFromScreen()
+
+        private OCR()
         {
 
-            List<OCRResult> patientDetails = OCRImage(screen, GetNHSNumberRect());
+        }
+
+        public static OCR Get()
+        {
+            if (obj == null)
+            {
+                obj = new OCR();
+            }
+            return obj;
+        }
+
+        public OCRResult GetNhsNoFromScreen(Image<Bgr, byte> screen, Rectangle nhsRect)
+        {
+
+            List<OCRResult> patientDetails = OCRImage(screen, nhsRect);
                 
             foreach (OCRResult detail in patientDetails)
             {
@@ -227,7 +241,7 @@ namespace PharmApp
         //    return false;
         //}
 
-        public static List<OCRResult> GetSelectedProduct()
+        public List<OCRResult> GetSelectedProduct(Image<Bgr, byte> screen, Rectangle searchArea)
         {
             //List<Rectangle> colouredRects = GetSelectedProductRects(screen);
             //List<OCRResult> results = new List<OCRResult>();
@@ -236,7 +250,7 @@ namespace PharmApp
             //    results.AddRange(OCRImage(screen, rect));
             //}
 
-            List<OCRResult> results = OCRImage(screen, GetProductRect(screen), new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
+            List<OCRResult> results = OCRImage(screen, searchArea, new Size(PRODUCT_MIN_WIDTH, PRODUCT_MIN_HEIGHT), new Size(PRODUCT_MAX_WIDTH, PRODUCT_MAX_HEIGHT));
 
             List<OCRResult> validResults = new List<OCRResult>();
 
@@ -258,7 +272,7 @@ namespace PharmApp
             return validResults;
         }
 
-        private static List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
+        private List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area)
         {
             return OCRImage(image, area, Size.Empty, Size.Empty);
         }
@@ -266,8 +280,8 @@ namespace PharmApp
         public List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
         {
 
-            if (image.Width < (area.X + area.Width)) throw new ArgumentException("Area to be analysed goes beyond image width");
-            if (image.Height < (area.Y + area.Height)) throw new ArgumentException("Area to be analysed goes beyond image height");
+            if (image.Width < (area.X + area.Width)) throw new ArgumentException("Area to be analysed goes beyond image width (X:" + area.X + " W:" + area.Width + " Image:" + image.Width);
+            if (image.Height < (area.Y + area.Height)) throw new ArgumentException("Area to be analysed goes beyond image height (Y:" + area.Y + " H:" + area.Height + " Image:" + image.Height);
 
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
@@ -285,7 +299,7 @@ namespace PharmApp
 
                 List<OCRResult> results = GetText(imageForOcr, minSize, maxSize);
 
-                if (SHOW_OCR_IMAGE)
+                if (Settings.Default.SHOW_OCR_IMAGE)
                 {
                     foreach (OCRResult result in results)
                     {
@@ -307,7 +321,7 @@ namespace PharmApp
             {
                 List<Rectangle> patRects = GetBoundingRectangles(optImg, minSize, maxSize);
 
-                if (SHOW_BOUNDING_RECTS)
+                if (Settings.Default.SHOW_BOUNDING_RECTS)
                 {
                     Image<Bgr, byte> imageToShow = image.Copy();
                     foreach (Rectangle rect in patRects)
@@ -370,7 +384,7 @@ namespace PharmApp
                     Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
                     //ImageViewer.Show(correctedImage);
 
-                    if (SHOW_INDIVIDUAL_OCR_RECT)
+                    if (Settings.Default.SHOW_INDIVIDUAL_OCR_RECT)
                     {
                         ImageViewer.Show(finalImage);
                     }
@@ -386,7 +400,7 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">captured image for processing</param>
         /// <returns>optimised image for contour detection</returns>
-        private static Image<Gray, byte> GetOptImage(Image<Bgr, byte> img)
+        private Image<Gray, byte> GetOptImage(Image<Bgr, byte> img)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -420,7 +434,7 @@ namespace PharmApp
         /// <param name="img">optimised image for contour detection</param>
         /// <param name="textRects">if true then it filters out rectangles that are inappropriately sized for containing standard text</param>
         /// <returns>a list of rectangles that contain the contours of the image</returns>
-        private static List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, Size minSize, Size maxSize)
+        private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, Size minSize, Size maxSize)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -466,57 +480,60 @@ namespace PharmApp
         /// </summary>
         /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
         /// <returns>a rectangle of the patient details area. Empty if the method has failed</returns>
-        private static Rectangle GetPatientDetailsRect(Image<Bgr, byte> img)
-        {
-                List<Rectangle> rects = GetRectsOfColour(img, BLUE_PATIENT_DETAILS_BGR);
+        //private Rectangle GetPatientDetailsRect(Image<Bgr, byte> img)
+        //{
+        //        List<Rectangle> rects = GetRectsOfColour(img, BLUE_PATIENT_DETAILS_BGR);
 
-                // Filter out rectangles that clearly aren't the right size
-                List<Rectangle> filteredRects = rects.Where(x => x.Width > PATIENT_DETAILS_MIN_WIDTH)
-                    .Where(x => x.Height > PATIENT_DETAILS_MIN_HEIGHT)
-                    .Where(x => (x.Width / x.Height) > PATIENT_DETAILS_MIN_RATIO)
-                    .ToList();
+        //        // Filter out rectangles that clearly aren't the right size
+        //        List<Rectangle> filteredRects = rects.Where(x => x.Width > PATIENT_DETAILS_MIN_WIDTH)
+        //            .Where(x => x.Height > PATIENT_DETAILS_MIN_HEIGHT)
+        //            .Where(x => (x.Width / x.Height) > PATIENT_DETAILS_MIN_RATIO)
+        //            .ToList();
 
-                if (filteredRects.Count != 1)
-                {
-                    return Rectangle.Empty;
-                }
+        //        if (filteredRects.Count != 1)
+        //        {
+        //            return Rectangle.Empty;
+        //        }
 
-                return filteredRects.First();
-        }
+        //        return filteredRects.First();
+        //}
 
-        // Based on GetPatientDetailsRect method for using colour detection but used to find selected product
-        private static List<Rectangle> GetSelectedProductRects(Image<Bgr, byte> img)
-        {
-            List<Rectangle> rects = GetRectsOfColour(img, BLUE_PRODUCT_SELECTED_BGR);
-            //rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
+        //// Based on GetPatientDetailsRect method for using colour detection but used to find selected product
+        //private List<Rectangle> GetSelectedProductRects(Image<Bgr, byte> img)
+        //{
+        //    List<Rectangle> rects = GetRectsOfColour(img, BLUE_PRODUCT_SELECTED_BGR);
+        //    //rects.AddRange(GetRectsOfColour(img, GREY_PRODUCT_SELECTED_BGR));
 
             
-            // Filter out rectangles that clearly aren't the right size, or are too high
-            List<Rectangle> filteredRects = rects.Where(x => PRODUCT_MAX_WIDTH > x.Width && x.Width > PRODUCT_MIN_WIDTH)
-                .Where(x => PRODUCT_MAX_HEIGHT > x.Height  && x.Height > PRODUCT_MIN_HEIGHT)
-                .ToList();
+        //    // Filter out rectangles that clearly aren't the right size, or are too high
+        //    List<Rectangle> filteredRects = rects.Where(x => PRODUCT_MAX_WIDTH > x.Width && x.Width > PRODUCT_MIN_WIDTH)
+        //        .Where(x => PRODUCT_MAX_HEIGHT > x.Height  && x.Height > PRODUCT_MIN_HEIGHT)
+        //        .ToList();
 
-            //foreach (Rectangle rect in filteredRects)
-            //{
-            //    img.Draw(rect, new Bgr(0, 0, 0));
-            //}
-            //ImageViewer.Show(img);
+        //    //foreach (Rectangle rect in filteredRects)
+        //    //{
+        //    //    img.Draw(rect, new Bgr(0, 0, 0));
+        //    //}
+        //    //ImageViewer.Show(img);
 
-            return filteredRects;
+        //    return filteredRects;
+        //}
+
+        public OCRResult FindFirstText(Image<Bgr, byte> screen, Rectangle searchArea, string text, Size minSize, Size maxSize)
+        {
+            // Find "Order Code" tab
+            List<OCRResult> results = OCRImage(screen, searchArea, minSize, maxSize);
+
+            return results.Find(r => r.GetText().Equals(text));
         }
 
-        /// <summary>
-        /// New method for getting NHS number based on normal position
-        /// </summary>
-        /// <param name="img">image of the PMR</param>
-        /// <returns>a rectangle of the NHS number</returns>
-        private static Rectangle GetNHSNumberRect()
+        public OCRResult FindFirstText(Image<Bgr, byte> screen, Rectangle searchArea, string text)
         {
-            return new Rectangle(NHS_X, NHS_Y, NHS_WIDTH, NHS_HEIGHT);
+            return FindFirstText(screen, searchArea, text, Size.Empty, Size.Empty);
         }
 
         // Tries to guess which screen user is on and returns appropriate rectangle for OCR
-        private static Rectangle GetProductRect(Image<Bgr, byte> screen)
+        private Rectangle GetProductRect(Image<Bgr, byte> screen)
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -531,6 +548,7 @@ namespace PharmApp
                     // Order pad selected
                     ScreenProcessor.GetScreenProcessor().viewingOrderPad = true;
 
+                    [ made general method for this, need to replace code (maybe move into screens)
                     // Find "Order Code" tab
                     List<OCRResult> results = OCRImage(screen, new Rectangle(ORDERCOLUMNS_X, ORDERCOLUMNS_Y, ORDERCOLUMNS_WIDTH, ORDERCOLUMNS_HEIGHT),
                         new Size(ORDERCODE_MIN_WIDTH, ORDERCODE_MIN_HEIGHT), new Size(ORDERCODE_MAX_WIDTH, ORDERCODE_MAX_HEIGHT));

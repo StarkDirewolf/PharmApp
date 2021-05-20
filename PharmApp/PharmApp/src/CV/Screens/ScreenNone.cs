@@ -10,14 +10,10 @@ namespace PharmApp.src.CV.Screens
 {
     class ScreenNone : ScreenProScript
     {
-        public bool IsBeingViewed(Image<Bgr, byte> screen)
+        public override bool IsBeingViewed(Image<Bgr, byte> screen)
         {
             return true;
         }
 
-        public void Process()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

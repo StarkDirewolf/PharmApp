@@ -10,14 +10,14 @@ namespace PharmApp.src.CV.Screens
 {
     class ScreenOrderPad : ScreenProScript
     {
-        public bool IsBeingViewed(Image<Bgr, byte> screen)
+        public override bool IsBeingViewed(Image<Bgr, byte> screen)
         {
             return OCR.IsEveryColour(screen[100, 240], 239) && OCR.IsEveryColour(screen[100, 140], 255);
         }
 
-        public void Process()
+        public override List<OCRResult> GetPipcodes(Image<Bgr, byte> screen)
         {
-            throw new NotImplementedException();
+
         }
     }
 }
