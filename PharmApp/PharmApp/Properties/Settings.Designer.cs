@@ -49,5 +49,38 @@ namespace PharmApp.Properties {
                 return ((bool)(this["SHOW_INDIVIDUAL_OCR_RECT"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool USE_EXAMPLE_PMR {
+            get {
+                return ((bool)(this["USE_EXAMPLE_PMR"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UPDATE_RMS {
+            get {
+                return ((bool)(this["UPDATE_RMS"]));
+            }
+            set {
+                this["UPDATE_RMS"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CLEAN_RMS {
+            get {
+                return ((bool)(this["CLEAN_RMS"]));
+            }
+            set {
+                this["CLEAN_RMS"] = value;
+            }
+        }
     }
 }

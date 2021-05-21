@@ -12,7 +12,7 @@ namespace PharmApp.src.SQL
 
         private string pipcode;
 
-        public SQLOrderingNote(string pipcode)
+        public SQLOrderingNote(string pipcode) : base()
         {
             this.pipcode = pipcode;
         }
@@ -54,6 +54,11 @@ namespace PharmApp.src.SQL
             }
             else if (GetData().requiresAction == requiresAction) return true;
             else return false;
+        }
+
+        protected override OrderingNote DefaultData()
+        {
+            return new OrderingNote("", false);
         }
     }
 }

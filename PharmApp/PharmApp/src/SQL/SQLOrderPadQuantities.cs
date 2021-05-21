@@ -11,9 +11,14 @@ namespace PharmApp.src.SQL
     {
         private string pip;
 
-        public SQLOrderPadQuantities(string pip)
+        public SQLOrderPadQuantities(string pip) : base()
         {
             this.pip = pip;
+        }
+
+        protected override OrderPadQuantities DefaultData()
+        {
+            return new OrderPadQuantities(0, 0);
         }
 
         protected override OrderPadQuantities QueryFunction()

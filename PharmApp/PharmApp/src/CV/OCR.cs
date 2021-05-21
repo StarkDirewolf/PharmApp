@@ -34,15 +34,11 @@ namespace PharmApp
             SOBEL_GRAY_THRESHOLD = 50,
             SOBEL_GRAY_MAX = 255,
             STRUCTURING_RECT_WIDTH = 10,
-            STRUCTURING_RECT_HEIGHT = 2,
-            TEXT_MIN_WIDTH = 5,
-            TEXT_MIN_HEIGHT = 5,
-            TEXT_MAX_HEIGHT = 100,
-            TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
-
-        private static readonly Bgr BLUE_PATIENT_DETAILS_BGR = new Bgr(250, 238, 211),
-            BLUE_PRODUCT_SELECTED_BGR = new Bgr(215, 120, 0),
-            GREY_PRODUCT_SELECTED_BGR = new Bgr(240, 240, 240);
+            STRUCTURING_RECT_HEIGHT = 2;
+            //TEXT_MIN_WIDTH = 5,
+            //TEXT_MIN_HEIGHT = 5,
+            //TEXT_MAX_HEIGHT = 100,
+            //TEXT_MIN_WIDTH_HEIGHT_RATIO = 2;
 
         public const int PATIENT_DETAILS_MIN_WIDTH = 20,
             PATIENT_DETAILS_MIN_HEIGHT = 5,
@@ -50,35 +46,10 @@ namespace PharmApp
             PRODUCT_MIN_WIDTH = 60,
             PRODUCT_MAX_WIDTH = 80,
             PRODUCT_MIN_HEIGHT = 10,
-            PRODUCT_MAX_HEIGHT = 15,
-            ORDERCODE_MIN_WIDTH = 80,
-            ORDERCODE_MAX_WIDTH = 90,
-            ORDERCODE_MIN_HEIGHT = 12,
-            ORDERCODE_MAX_HEIGHT = 20,
-            PMR_PAT_DET_BLUE = 250,
-            PMR_PAT_DET_RED = 211,
-            PMR_PAT_DET_GREEN = 238,
-            GOODS_IN_X_MIN = 138,
-            GOODS_IN_X_MAX = 1200,
-            GOODS_IN_Y = 372,
-            GOODS_IN_WIDTH = 80,
-            GOODS_IN_HEIGHT = 450,
-            PMR_PRODUCT_X = 150,
-            PMR_PRODUCT_MIN_Y = 420,
-            PMR_PRODUCT_MAX_Y = 830,
-            PMR_PRODUCT_WIDTH = 780,
-            PMR_PRODUCT_TABS_HEIGHT = 35,
-            PIPCODE_MIN_HEIGHT = 12,
-            PIPCODE_MAX_HEIGHT = 25,
-            PIPCODE_MIN_WIDTH = 55,
-            PIPCODE_MAX_WIDTH = 75;
+            PRODUCT_MAX_HEIGHT = 15;
 
-        private const double BGR_BUFFER = 2;
+        //private const double BGR_BUFFER = 2;
 
-        // Orderpad height can be 318 to cut off around 100ms but it wont span all of goods in screen
-        private const int ORDERPAD_X = 140, ORDERPAD_Y = 362, ORDERPAD_WIDTH = 1435, ORDERPAD_HEIGHT = 460;
-
-        private const int ORDERCOLUMNS_X = 140, ORDERCOLUMNS_Y = 340, ORDERCOLUMNS_WIDTH = 1430, ORDERCOLUMNS_HEIGHT = 25;
 
         private static readonly Regex NHS_NUM_MASK = new Regex("[0-9]{10}"),
             PIP_MASK = new Regex("[0-9]{7}");
@@ -241,7 +212,7 @@ namespace PharmApp
         //    return false;
         //}
 
-        public List<OCRResult> GetSelectedProduct(Image<Bgr, byte> screen, Rectangle searchArea)
+        public List<OCRResult> GetVisibleProducts(Image<Bgr, byte> screen, Rectangle searchArea)
         {
             //List<Rectangle> colouredRects = GetSelectedProductRects(screen);
             //List<OCRResult> results = new List<OCRResult>();
@@ -519,7 +490,7 @@ namespace PharmApp
         //    return filteredRects;
         //}
 
-        public OCRResult FindFirstText(Image<Bgr, byte> screen, Rectangle searchArea, string text, Size minSize, Size maxSize)
+        public OCRResult FindFirstText(Image<Bgr, byte> screen, string text, Rectangle searchArea, Size minSize, Size maxSize)
         {
             // Find "Order Code" tab
             List<OCRResult> results = OCRImage(screen, searchArea, minSize, maxSize);
@@ -527,119 +498,114 @@ namespace PharmApp
             return results.Find(r => r.GetText().Equals(text));
         }
 
-        public OCRResult FindFirstText(Image<Bgr, byte> screen, Rectangle searchArea, string text)
+        public OCRResult FindFirstText(Image<Bgr, byte> screen, string text, Rectangle searchArea)
         {
-            return FindFirstText(screen, searchArea, text, Size.Empty, Size.Empty);
+            return FindFirstText(screen, text, searchArea, Size.Empty, Size.Empty);
         }
 
         // Tries to guess which screen user is on and returns appropriate rectangle for OCR
-        private Rectangle GetProductRect(Image<Bgr, byte> screen)
-        {
-            Stopwatch timer = new Stopwatch();
-            timer.Start();
-            Rectangle returnRect;
+        // REPLACED with screen methods
+        //private Rectangle GetProductRect(Image<Bgr, byte> screen)
+        //{
+        //    Stopwatch timer = new Stopwatch();
+        //    timer.Start();
+        //    Rectangle returnRect;
 
-            if (IsEveryColour(screen[100, 240], 239))
-            {
-                // Should be on order screen
+        //    if (IsEveryColour(screen[100, 240], 239))
+        //    {
+        //        // Should be on order screen
 
-                if (IsEveryColour(screen[100, 140], 255))
-                {
-                    // Order pad selected
-                    ScreenProcessor.GetScreenProcessor().viewingOrderPad = true;
+        //        if (IsEveryColour(screen[100, 140], 255))
+        //        {
+        //            // Order pad selected
+        //            ScreenProcessor.GetScreenProcessor().viewingOrderPad = true;
 
-                    [ made general method for this, need to replace code (maybe move into screens)
-                    // Find "Order Code" tab
-                    List<OCRResult> results = OCRImage(screen, new Rectangle(ORDERCOLUMNS_X, ORDERCOLUMNS_Y, ORDERCOLUMNS_WIDTH, ORDERCOLUMNS_HEIGHT),
-                        new Size(ORDERCODE_MIN_WIDTH, ORDERCODE_MIN_HEIGHT), new Size(ORDERCODE_MAX_WIDTH, ORDERCODE_MAX_HEIGHT));
+        //            if (result != null)
+        //            {
+        //                Rectangle resultRect = result.GetRectangle();
+        //                returnRect = new Rectangle(resultRect.X, resultRect.Y + resultRect.Height, 80, 300);
+        //                LogManager.GetLogger(typeof(Program)).Debug("Order pad detected and pipcode column found in " + timer.ElapsedMilliseconds + "ms");
+        //                timer.Stop();
+        //                return returnRect;
+        //            }
 
-                    OCRResult result = results.Find(r => r.GetText().Equals("Order Code"));
-                    if (result != null)
-                    {
-                        Rectangle resultRect = result.GetRectangle();
-                        returnRect = new Rectangle(resultRect.X, resultRect.Y + resultRect.Height, 80, 300);
-                        LogManager.GetLogger(typeof(Program)).Debug("Order pad detected and pipcode column found in " + timer.ElapsedMilliseconds + "ms");
-                        timer.Stop();
-                        return returnRect;
-                    }
+        //            returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+        //            LogManager.GetLogger(typeof(Program)).Debug("Order pad detected but pipcode column could not be found in " + timer.ElapsedMilliseconds + "ms");
+        //            timer.Stop();
+        //            LogManager.GetLogger(typeof(Program)).Debug("Returning dimensions X:" + returnRect.X + " Y:" + returnRect.Y + " H:" + returnRect.Height + " W:" + returnRect.Width);
+        //            return returnRect;
+        //        }
 
-                    returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
-                    LogManager.GetLogger(typeof(Program)).Debug("Order pad detected but pipcode column could not be found in " + timer.ElapsedMilliseconds + "ms");
-                    timer.Stop();
-                    LogManager.GetLogger(typeof(Program)).Debug("Returning dimensions X:" + returnRect.X + " Y:" + returnRect.Y + " H:" + returnRect.Height + " W:" + returnRect.Width);
-                    return returnRect;
-                }
+        //        // Goods in tab
+        //        if (IsEveryColour(screen[100, 300], 255))
+        //        {
+        //            ScreenProcessor.GetScreenProcessor().viewingOrderPad = false;
 
-                // Goods in tab
-                if (IsEveryColour(screen[100, 300], 255))
-                {
-                    ScreenProcessor.GetScreenProcessor().viewingOrderPad = false;
+        //            int edgePos = FindAdjustableEdge(screen, GOODS_IN_X_MIN, GOODS_IN_X_MAX, GOODS_IN_Y);
+        //            if (edgePos != 0)
+        //            {
+        //                returnRect = new Rectangle(edgePos, GOODS_IN_Y, GOODS_IN_WIDTH, GOODS_IN_HEIGHT);
+        //                LogManager.GetLogger(typeof(Program)).Debug("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
+        //                timer.Stop();
+        //                return returnRect;
+        //            }
+        //        }
 
-                    int edgePos = FindAdjustableEdge(screen, GOODS_IN_X_MIN, GOODS_IN_X_MAX, GOODS_IN_Y);
-                    if (edgePos != 0)
-                    {
-                        returnRect = new Rectangle(edgePos, GOODS_IN_Y, GOODS_IN_WIDTH, GOODS_IN_HEIGHT);
-                        LogManager.GetLogger(typeof(Program)).Debug("Goods in detected and rect obtained in " + timer.ElapsedMilliseconds + "ms");
-                        timer.Stop();
-                        return returnRect;
-                    }
-                }
-
-                returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
-                LogManager.GetLogger(typeof(Program)).Debug("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
-                timer.Stop();
-                return returnRect;
-            }
-            else
-            {
-                // Not on order screen
-                ScreenProcessor.GetScreenProcessor().viewingOrderPad = false;
-            }
+        //        returnRect = new Rectangle(ORDERPAD_X, ORDERPAD_Y, ORDERPAD_WIDTH, ORDERPAD_HEIGHT);
+        //        LogManager.GetLogger(typeof(Program)).Debug("Order screen detected but unknown tab, which took " + timer.ElapsedMilliseconds + "ms");
+        //        timer.Stop();
+        //        return returnRect;
+        //    }
+        //    else
+        //    {
+        //        // Not on order screen
+        //        ScreenProcessor.GetScreenProcessor().viewingOrderPad = false;
+        //    }
 
             
 
-            if (screen[100, 150].Blue == PMR_PAT_DET_BLUE && screen[100, 150].Red == PMR_PAT_DET_RED && screen[100, 150].Green == PMR_PAT_DET_GREEN)
-            {
-                // PMR selected
+        //    if (screen[100, 150].Blue == PMR_PAT_DET_BLUE && screen[100, 150].Red == PMR_PAT_DET_RED && screen[100, 150].Green == PMR_PAT_DET_GREEN)
+        //    {
+        //        // PMR selected
 
-                int edgePos = FindAdjustableEdge(screen, PMR_PRODUCT_MIN_Y, PMR_PRODUCT_MAX_Y, PMR_PRODUCT_X, false);
+        //        int edgePos = FindAdjustableEdge(screen, PMR_PRODUCT_MIN_Y, PMR_PRODUCT_MAX_Y, PMR_PRODUCT_X, false);
 
-                Rectangle prodTabsRect = new Rectangle(PMR_PRODUCT_X, edgePos, PMR_PRODUCT_WIDTH, PMR_PRODUCT_TABS_HEIGHT);
+        //        Rectangle prodTabsRect = new Rectangle(PMR_PRODUCT_X, edgePos, PMR_PRODUCT_WIDTH, PMR_PRODUCT_TABS_HEIGHT);
 
-                Console.WriteLine("PMR detected and product selection found in " + timer.ElapsedMilliseconds + "ms");
-                timer.Restart();
+        //        Console.WriteLine("PMR detected and product selection found in " + timer.ElapsedMilliseconds + "ms");
+        //        timer.Restart();
 
-                // Find pipcode tab
-                List<OCRResult> results = OCRImage(screen, prodTabsRect,
-                        new Size(PIPCODE_MIN_WIDTH, PIPCODE_MIN_HEIGHT), new Size(PIPCODE_MAX_WIDTH, PIPCODE_MAX_HEIGHT));
+        //        // Find pipcode tab
+        //        List<OCRResult> results = OCRImage(screen, prodTabsRect,
+        //                new Size(PIPCODE_MIN_WIDTH, PIPCODE_MIN_HEIGHT), new Size(PIPCODE_MAX_WIDTH, PIPCODE_MAX_HEIGHT));
 
-                OCRResult result = results.Find(r => r.GetText().Equals("Pip Code"));
-                if (result != null)
-                {
-                    Rectangle resultRect = result.GetRectangle();
+        //        OCRResult result = results.Find(r => r.GetText().Equals("Pip Code"));
+        //        if (result != null)
+        //        {
+        //            Rectangle resultRect = result.GetRectangle();
 
-                    int bottomOfRect = resultRect.Y + resultRect.Height;
-                    returnRect = new Rectangle(resultRect.X, bottomOfRect, resultRect.Width, PMR_PRODUCT_MAX_Y - bottomOfRect);
-                    Console.WriteLine("Pipcode column found in " + timer.ElapsedMilliseconds + "ms");
-                    if (returnRect.Height < 15)
-                    {
-                        Console.WriteLine("Pipcodes go off screen so can't be read");
-                        return Rectangle.Empty;
-                    }
-                    timer.Stop();
-                    return returnRect;
-                }
+        //            int bottomOfRect = resultRect.Y + resultRect.Height;
+        //            returnRect = new Rectangle(resultRect.X, bottomOfRect, resultRect.Width, PMR_PRODUCT_MAX_Y - bottomOfRect);
+        //            Console.WriteLine("Pipcode column found in " + timer.ElapsedMilliseconds + "ms");
+        //            if (returnRect.Height < 15)
+        //            {
+        //                Console.WriteLine("Pipcodes go off screen so can't be read");
+        //                return Rectangle.Empty;
+        //            }
+        //            timer.Stop();
+        //            return returnRect;
+        //        }
 
-                // Return whole product selection window if tab not found
-                prodTabsRect.Height = PMR_PRODUCT_MAX_Y - prodTabsRect.Y;
-                Console.WriteLine("Pipcode column NOT found in " + timer.ElapsedMilliseconds + "ms");
-                timer.Stop();
-                return prodTabsRect;
-            }
+        //        // Return whole product selection window if tab not found
+        //        prodTabsRect.Height = PMR_PRODUCT_MAX_Y - prodTabsRect.Y;
+        //        Console.WriteLine("Pipcode column NOT found in " + timer.ElapsedMilliseconds + "ms");
+        //        timer.Stop();
+        //        return prodTabsRect;
+        //    }
 
-            timer.Stop();
-            return Rectangle.Empty;
-        }
+        //    timer.Stop();
+        //    return Rectangle.Empty;
+        //}
 
         /// <summary>
         /// Scans through pixels and finds pattern for resizable borders
@@ -649,7 +615,7 @@ namespace PharmApp
         /// <param name="constPos">the position on the axis to keep constant</param>
         /// <param name="checkHorizontal">set to false if looking vertically</param>
         /// <returns>Position just after the pattern (right-most for horizontal, bottom-most for vertical). Returns 0 if not found</returns>
-        private static int FindAdjustableEdge(Image<Bgr, byte> screen, int startPos, int endPos, int constPos, bool checkHorizontal = true)
+        public int FindAdjustableEdge(Image<Bgr, byte> screen, int startPos, int endPos, int constPos, bool checkHorizontal = true)
         {
 
             if (checkHorizontal)
@@ -695,33 +661,33 @@ namespace PharmApp
         /// <param name="img">the image, usually a screenshot, of the patient's PMR</param>
         /// <param name="colour">the colour to be found - the method adds a small buffer</param>
         /// <returns>a List of Rectangles of the coloured areas</returns>
-        private static List<Rectangle> GetRectsOfColour(Image<Bgr, byte> img, Bgr colour)
-        {
-            // Image filtered to only show areas that are the specified colour
-            using (Image<Gray, byte> blue = img.InRange(new Bgr(colour.Blue - BGR_BUFFER, colour.Green - BGR_BUFFER, colour.Red - BGR_BUFFER), new Bgr(colour.Blue + BGR_BUFFER, colour.Green + BGR_BUFFER, colour.Red + BGR_BUFFER)))
-            {
+//        private List<Rectangle> GetRectsOfColour(Image<Bgr, byte> img, Bgr colour)
+//        {
+//            // Image filtered to only show areas that are the specified colour
+//            using (Image<Gray, byte> blue = img.InRange(new Bgr(colour.Blue - BGR_BUFFER, colour.Green - BGR_BUFFER, colour.Red - BGR_BUFFER), new Bgr(colour.Blue + BGR_BUFFER, colour.Green + BGR_BUFFER, colour.Red + BGR_BUFFER)))
+//            {
 
-                List<Rectangle> rects = GetBoundingRectangles(blue, Size.Empty, Size.Empty);
+//                List<Rectangle> rects = GetBoundingRectangles(blue, Size.Empty, Size.Empty);
 
-                // Show results if debugging setting is on
-                if (SHOW_PATIENT_DETAILS_RECTS)
-                {
-#pragma warning disable CS0162 // Unreachable code detected
-                    using (Image<Bgr, byte> showImage = blue.Convert<Bgr, byte>())
-#pragma warning restore CS0162 // Unreachable code detected
-                    {
-                        foreach (Rectangle rect in rects)
-                        {
-                            showImage.Draw(rect, new Bgr(Color.Red));
-                        }
+//                // Show results if debugging setting is on
+//                if (SHOW_PATIENT_DETAILS_RECTS)
+//                {
+//#pragma warning disable CS0162 // Unreachable code detected
+//                    using (Image<Bgr, byte> showImage = blue.Convert<Bgr, byte>())
+//#pragma warning restore CS0162 // Unreachable code detected
+//                    {
+//                        foreach (Rectangle rect in rects)
+//                        {
+//                            showImage.Draw(rect, new Bgr(Color.Red));
+//                        }
 
-                        ImageViewer.Show(showImage, rects.Count.ToString());
-                    }
-                }
+//                        ImageViewer.Show(showImage, rects.Count.ToString());
+//                    }
+//                }
 
-                return rects;
-            }
-        }
+//                return rects;
+//            }
+//        }
 
         //public List<Image<Bgr, byte>> getText(Image<Bgr, byte> img)
         //{
@@ -761,9 +727,9 @@ namespace PharmApp
         //}
 
         // Cached image lasts for 450ms - process frequency is 500ms at time of writing
-        private static Image<Bgr, byte> GetScreen(Rectangle screenArea)
+        public Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
-            if (USE_EXAMPLE_PMR)
+            if (Settings.Default.USE_EXAMPLE_PMR)
             {
                  return new Image<Bgr, byte>(ResourceManager.PATH_ROBERT_PRYDE_PMR);
             }
@@ -778,29 +744,31 @@ namespace PharmApp
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics g = Graphics.FromImage(bitmap))
             {
-                // EXCEPTION: Handle is invalid - when ctrl alt del
-                g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
-                Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
+                try
+                {
+                    g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
+                    Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
 
-                return screenCap;
+                    return screenCap;
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLogger(typeof(Program)).Debug("Exception on screencap: " + e.Message);
+                    return null;
+                }
             }
 
         }
 
-        private static Image<Bgr, byte> GetScreen()
+        public Image<Bgr, byte> GetScreen()
         {
             return GetScreen(Rectangle.Empty);
         }
 
-        public static void UpdateScreenshot()
-        {
-            screen = GetScreen(Rectangle.Empty);
-        }
-
-        public static bool IsResultStillVisible(OCRResult toCompare)
+        public bool IsResultStillVisible(OCRResult toCompare)
         {
             Image<Bgr, byte> screen = GetScreen(toCompare.GetRectangle());
-            //ImageViewer.Show(screen.ConcateHorizontal(toCompare.GetImage()));
+            if (screen == null) return false;
             return toCompare.GetImage().Equals(screen);
         }
     }

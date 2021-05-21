@@ -10,6 +10,15 @@ namespace PharmApp.src.SQL
     class SQLOrderPadPIPs : SQLLookUp<List<string>>
     {
 
+        public SQLOrderPadPIPs() : base()
+        {
+        }
+
+        protected override List<string> DefaultData()
+        {
+            return new List<string>();
+        }
+
         protected override List<string> QueryFunction()
         {
             return SQLQueryer.GetOrderPadPIPs();

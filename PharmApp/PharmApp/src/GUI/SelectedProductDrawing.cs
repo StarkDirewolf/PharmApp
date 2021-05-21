@@ -17,7 +17,7 @@ namespace PharmApp.src.GUI
         private PictureBox img;
         private Product product = new Product();
         protected ToolTip tooltip = new ToolTip();
-        private const int TOOLTIP_MIN_REFRESH_DELAY = 5000, TOOLTIP_SHOW_DURATION = 15000;
+        private const int TOOLTIP_MIN_REFRESH_DELAY = 10000, TOOLTIP_SHOW_DURATION = 15000;
         private Stopwatch tooltip_timer = new Stopwatch();
 
         private TextBox text;
@@ -69,26 +69,27 @@ namespace PharmApp.src.GUI
             {
                 if (product.IsOrdering())
                 {
-                    if (product.orderingNote != null)
+                    if (product.orderingNote == null || product.orderingNote.note == "")
                     {
-                        img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE_AST);
+                        img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE);
                     }
                     else
                     {
-                        img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE);
+                        img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE_AST);
                     }
                     
                     
                 }
                 else
                 {
-                    if (product.orderingNote != null)
+                    if (product.orderingNote == null || product.orderingNote.note == "")
                     {
-                        img.Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE_AST);
+                        img.Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE);
                     }
                     else
                     {
-                        img.Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE);
+                        img.Image = Image.FromFile(ResourceManager.PATH_RED_CIRCLE_AST);
+                        
                     }
                     
                 }
