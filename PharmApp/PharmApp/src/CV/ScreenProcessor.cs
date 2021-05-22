@@ -12,6 +12,10 @@ using PharmApp.src.GUI;
 using System.Diagnostics;
 using ConsoleHotKey;
 using PharmApp.src.Product_Info;
+using Emgu.CV;
+using Emgu.CV.Structure;
+using PharmApp.src.CV.Screens;
+using log4net;
 
 namespace PharmApp.src
 {
@@ -312,43 +316,40 @@ namespace PharmApp.src
                 if (IsProgramFocused)
                 {
 
-                    Console.WriteLine("");
-                    Console.WriteLine("");
-                    Console.WriteLine("----------------------------------------------------");
-                    Console.WriteLine("Processing loop starting at " + DateTime.Now.ToString());
+                    LogManager.GetLogger(typeof(Program)).Debug("");
+                    LogManager.GetLogger(typeof(Program)).Debug("");
+                    LogManager.GetLogger(typeof(Program)).Debug("----------------------------------------------------");
+                    LogManager.GetLogger(typeof(Program)).Debug("Processing loop starting at " + DateTime.Now.ToString());
 
 
                     Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
 
                     UpdateOrderpadProductList();
-                    Console.WriteLine("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
+                    LogManager.GetLogger(typeof(Program)).Debug("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    OCR.UpdateScreenshot();
-                    Console.WriteLine("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
+                    Image<Bgr, byte> screenshot = OCR.Get().GetScreen();
+                    LogManager.GetLogger(typeof(Program)).Debug("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    viewingPMR = OCR.IsViewingPMR();
-                    if (!viewingPMR)
-                    {
 
-                    }
-
-                    viewingRMS = OCR.IsViewingRMS();
-                    Console.WriteLine("Checking if RMS is being viewed took " + stopwatch.ElapsedMilliseconds + "ms");
+                    ScreenIdentifier identifier = ScreenIdentifier.Get();
+                    ScreenProScript screen = identifier.Identify(screenshot);
+                    LogManager.GetLogger(typeof(Program)).Debug("Identifying screen took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    
 
-                    nhsNumber = OCR.GetNhsNoFromScreen();
-                    Console.WriteLine("NHS number processing took " + stopwatch.ElapsedMilliseconds + "ms");
+                    viewingPMR = screen is ScreenPMR;
+                    viewingRMS = screen is ScreenRMS;
+
+                    nhsNumber = screen.GetNhsNumber(screenshot);
+                    if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    
-
-                    selectedProducts = OCR.GetSelectedProduct();
-                    Console.WriteLine("PIP codes analysed in " + stopwatch.ElapsedMilliseconds + "ms");
+                    selectedProducts = screen.GetPipcodes(screenshot);
+                    if (selectedProducts != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
                 }
             }
             

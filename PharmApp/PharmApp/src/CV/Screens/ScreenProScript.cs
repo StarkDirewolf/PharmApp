@@ -9,11 +9,19 @@ using PharmApp.src.CV;
 
 namespace PharmApp.src.CV.Screens
 {
-    interface ScreenProScript
+    abstract class ScreenProScript
     {
 
-        void Process();
+        abstract public bool IsBeingViewed(Image<Bgr, byte> screen);
 
-        bool IsBeingViewed(Image<Bgr, byte> screen);
+        public virtual OCRResult GetNhsNumber(Image<Bgr, byte> screen)
+        {
+            return null;
+        }
+
+        public virtual List<OCRResult> GetPipcodes(Image<Bgr, byte> screen)
+        {
+            return null;
+        }
     }
 }

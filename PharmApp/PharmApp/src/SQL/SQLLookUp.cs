@@ -11,7 +11,7 @@ namespace PharmApp.src.SQL
     {
         private T data;
         private Stopwatch timer;
-        private const int CACHE_TIME_MS = 10000;
+        private const int CACHE_TIME_MS = 3000;
 
         public T GetData()
         {
@@ -23,6 +23,7 @@ namespace PharmApp.src.SQL
             }
             else if (timer.ElapsedMilliseconds > CACHE_TIME_MS)
             {
+                //UpdateDataAsync();
                 data = QueryFunction();
                 timer.Restart();
             }
@@ -30,7 +31,18 @@ namespace PharmApp.src.SQL
             return data;
         }
 
+        public SQLLookUp()
+        {
+            //data = DefaultData();
+        }
+
+        private async void UpdateDataAsync()
+        {
+            data = await Task.Run(() => QueryFunction());
+        }
+
         abstract protected T QueryFunction();
+        abstract protected T DefaultData();
 
         public override string ToString()
         {

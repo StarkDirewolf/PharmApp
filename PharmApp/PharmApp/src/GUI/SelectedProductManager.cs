@@ -31,7 +31,7 @@ namespace PharmApp.src.GUI
         public void OnSelectedProductChanged(object source, OCRResultListEventArgs args)
         {
 
-            if (args.OCRResults.Count == 0)
+            if (args == null || args.OCRResults == null || args.OCRResults.Count == 0)
             {
                 foreach (SelectedProductDrawing form in availableForms)
                 {

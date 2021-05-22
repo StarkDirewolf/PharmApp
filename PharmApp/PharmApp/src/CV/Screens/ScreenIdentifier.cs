@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +19,19 @@ namespace PharmApp.src.CV.Screens
         new ScreenGoodsIn()
         };
 
-        private ScreenIdentifier obj;
+        private static ScreenIdentifier obj;
 
         public ScreenProScript Identify(Image<Bgr, byte> screen)
         {
+            if (screen == null) return new ScreenNone();
+
             foreach (ScreenProScript proscriptScreen in proscriptsScreens)
             {
-                if (proscriptScreen.IsBeingViewed(screen)) return proscriptScreen;
+                if (proscriptScreen.IsBeingViewed(screen))
+                {
+                    LogManager.GetLogger(typeof(Program)).Debug("Current screen is " + proscriptScreen.GetType());
+                    return proscriptScreen;
+                }
             }
             return new ScreenNone();
         }
@@ -33,7 +40,7 @@ namespace PharmApp.src.CV.Screens
         {
         }
 
-        public ScreenIdentifier Get()
+        public static ScreenIdentifier Get()
         {
             if (obj == null)
             {

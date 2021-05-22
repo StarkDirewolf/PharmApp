@@ -1,4 +1,5 @@
-﻿using PharmApp.src.Requests;
+﻿using PharmApp.Properties;
+using PharmApp.src.Requests;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,7 +19,7 @@ namespace PharmApp.src.GUI
             InitializeComponent();
 
             backgroundWorker1.DoWork += (object sender, DoWorkEventArgs e) => {
-                if (GlobalSettings.CLEAN_RMS)
+                if (Settings.Default.CLEAN_RMS)
                 {
                     SQLQueryer.CleanRMS1();
                     backgroundWorker1.ReportProgress(1);

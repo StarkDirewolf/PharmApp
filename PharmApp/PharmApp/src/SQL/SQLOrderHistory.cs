@@ -13,7 +13,7 @@ namespace PharmApp.src.SQL
         public DateTime fromDate, endDate;
         private bool byGenericID;
 
-        public SQLOrderHistory(string pip, DateTime fromDate, DateTime endDate, bool byGenericID)
+        public SQLOrderHistory(string pip, DateTime fromDate, DateTime endDate, bool byGenericID) : base()
         {
             this.pip = pip;
             this.fromDate = fromDate;
@@ -24,6 +24,11 @@ namespace PharmApp.src.SQL
         protected override OrderHistory QueryFunction()
         {
             return SQLQueryer.GetOrderHistory(pip, fromDate, endDate, byGenericID);
+        }
+
+        protected override OrderHistory DefaultData()
+        {
+            return new OrderHistory();
         }
     }
 }

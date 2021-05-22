@@ -23,15 +23,63 @@ namespace PharmApp.Properties {
             }
         }
         
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SHOW_OCR_IMAGE {
+            get {
+                return ((bool)(this["SHOW_OCR_IMAGE"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SHOW_BOUNDING_RECTS {
+            get {
+                return ((bool)(this["SHOW_BOUNDING_RECTS"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SHOW_INDIVIDUAL_OCR_RECT {
+            get {
+                return ((bool)(this["SHOW_INDIVIDUAL_OCR_RECT"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool USE_EXAMPLE_PMR {
+            get {
+                return ((bool)(this["USE_EXAMPLE_PMR"]));
+            }
+        }
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int lastDispensedPrescriptionItemID {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UPDATE_RMS {
             get {
-                return ((int)(this["lastDispensedPrescriptionItemID"]));
+                return ((bool)(this["UPDATE_RMS"]));
             }
             set {
-                this["lastDispensedPrescriptionItemID"] = value;
+                this["UPDATE_RMS"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CLEAN_RMS {
+            get {
+                return ((bool)(this["CLEAN_RMS"]));
+            }
+            set {
+                this["CLEAN_RMS"] = value;
             }
         }
     }

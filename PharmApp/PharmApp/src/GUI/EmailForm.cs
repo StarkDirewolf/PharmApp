@@ -1,5 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
+using PharmApp.Properties;
 using PharmApp.src.Requests;
 using System;
 using System.Collections.Generic;
@@ -76,7 +77,7 @@ namespace PharmApp.src.GUI
                     client.Send(message);
                     client.Disconnect(true);
 
-                    if (GlobalSettings.UPDATE_RMS) SQLQueryer.UpdateSentRequests(requests, surgery, id);
+                    if (Settings.Default.UPDATE_RMS) SQLQueryer.UpdateSentRequests(requests, surgery, id);
 
                     RequestManager requester = RequestManager.Get();
                     requester.RemoveRequests(requests);
