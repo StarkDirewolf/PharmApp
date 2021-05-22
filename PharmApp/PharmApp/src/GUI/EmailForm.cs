@@ -76,7 +76,7 @@ namespace PharmApp.src.GUI
                     client.Send(message);
                     client.Disconnect(true);
 
-                    if (Properties.Settings.Default.UPDATE_RMS) SQLQueryer.UpdateSentRequests(requests, surgery, id);
+                    if (GlobalSettings.UPDATE_RMS) SQLQueryer.UpdateSentRequests(requests, surgery, id);
 
                     RequestManager requester = RequestManager.Get();
                     requester.RemoveRequests(requests);

@@ -18,7 +18,7 @@ namespace PharmApp.src.GUI
             InitializeComponent();
 
             backgroundWorker1.DoWork += (object sender, DoWorkEventArgs e) => {
-                if (Properties.Settings.Default.CLEAN_RMS)
+                if (GlobalSettings.CLEAN_RMS)
                 {
                     SQLQueryer.CleanRMS1();
                     backgroundWorker1.ReportProgress(1);
