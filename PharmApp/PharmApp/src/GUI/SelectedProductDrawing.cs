@@ -208,6 +208,7 @@ namespace PharmApp.src.GUI
             //cancelButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             //cancelButton.AutoSize = true;
             cancelButton.Click += CancelButton_Click;
+            popup.Disposed += DisposeEvent;
             //popup.Controls.Add(cancelButton);
             //popup.CancelButton = cancelButton;
             //popup.PerformLayout();
@@ -217,18 +218,25 @@ namespace PharmApp.src.GUI
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            if (product.orderingNote != null)
-            {
-                text.Text = product.orderingNote.note;
-                checkBox.Checked = product.orderingNote.requiresAction;
-            }
-            else
-            {
-                text.Text = "";
-                checkBox.Checked = false;
-            }
-            popup.Hide();
+            popup.Dispose();
+            //if (product.orderingNote != null)
+            //{
+            //    text.Text = product.orderingNote.note;
+            //    checkBox.Checked = product.orderingNote.requiresAction;
+            //}
+            //else
+            //{
+            //    text.Text = "";
+            //    checkBox.Checked = false;
+            //}
+            //popup.Hide();
         }
+
+        private void DisposeEvent(object sender, EventArgs e)
+        {
+            SetOverridePopup();
+        }
+         
 
         private void SaveButton_Click(object sender, EventArgs e)
         {

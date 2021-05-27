@@ -299,6 +299,7 @@ namespace PharmApp.src
         {
             while(true)
             {
+                // This should maybe be changed to use threads on a timer, but needs a lot of rejigging to not overlap processing
                 Thread.Sleep(500);
 
 
@@ -342,6 +343,7 @@ namespace PharmApp.src
 
                     viewingPMR = screen is ScreenPMR;
                     viewingRMS = screen is ScreenRMS;
+                    viewingOrderPad = screen is ScreenOrderPad;
 
                     nhsNumber = screen.GetNhsNumber(screenshot);
                     if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");

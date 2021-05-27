@@ -54,7 +54,7 @@ namespace PharmApp.src.GUI
             text.Text = "";
             foreach (Product product in orderPadCommentProducts)
             {
-                text.Text += product.GetCurrentOrders().GetECass() + " X " + product.ToString() + " - " + product.orderingNote + "\n";
+                text.Text += Util.TrimTrailingZeros((product.GetCurrentOrders().GetECass() + product.GetCurrentOrders().GetAAH()).ToString()) + " X " + product.ToString() + " - " + product.orderingNote + "\n";
             }
 
             text.AutoSize = true;
