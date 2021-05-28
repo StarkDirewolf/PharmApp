@@ -95,7 +95,7 @@ namespace PharmApp.src.GUI
             processor.OnNoNewETPFound += form.OnNoNewETPFound;
             processor.OnNoETPBatchFound += form.OnNoETPBatchFound;
             processor.OnETPBatchFound += form.OnETPBatchFound;
-            processor.OnOrderPadCommentsChanged += form.OnOrderPadCommentsChanged;
+            processor.OnOrderPadActionableCommentsChanged += form.OnOrderPadCommentsChanged;
             processor.OnStartViewingOrderPad += form.OnStartViewingOrderPad;
             processor.OnStopViewingOrderPad += form.OnStopViewingOrderPad;
 

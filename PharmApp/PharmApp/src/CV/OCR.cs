@@ -250,9 +250,23 @@ namespace PharmApp
 
         public List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
         {
+            ILog log = LogManager.GetLogger(typeof(Program)); //Log4NET
 
-            if (image.Width < (area.X + area.Width)) throw new ArgumentException("Area to be analysed goes beyond image width (X:" + area.X + " W:" + area.Width + " Image:" + image.Width);
-            if (image.Height < (area.Y + area.Height)) throw new ArgumentException("Area to be analysed goes beyond image height (Y:" + area.Y + " H:" + area.Height + " Image:" + image.Height);
+            //if (image.Width < (area.X + area.Width)) throw new ArgumentException("Area to be analysed goes beyond image width (X:" + area.X + " W:" + area.Width + " Image:" + image.Width);
+            //if (image.Height < (area.Y + area.Height)) throw new ArgumentException("Area to be analysed goes beyond image height (Y:" + area.Y + " H:" + area.Height + " Image:" + image.Height);
+
+            if (image.Width < (area.X + area.Width))
+            {
+                log.Info("Area to be analysed goes beyond image width (X:" + area.X + " W:" + area.Width + " Image:" + image.Width);
+                area.Width = image.Width - area.X;
+                log.Info("Truncating width to " + area.Width);
+            }
+            if (image.Height < (area.Y + area.Height))
+            {
+                log.Info("Area to be analysed goes beyond image height (Y:" + area.Y + " H:" + area.Height + " Image:" + image.Height);
+                area.Width = image.Height - area.Y;
+                log.Info("Truncating height to " + area.Height);
+            }
 
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)

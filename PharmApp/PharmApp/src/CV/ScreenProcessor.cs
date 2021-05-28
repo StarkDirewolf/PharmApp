@@ -179,20 +179,20 @@ namespace PharmApp.src
             }
         }
 
-        private List<Product> _orderPadComments = new List<Product>();
+        private List<Product> _orderPadActionableComments = new List<Product>();
         
-        private List<Product> orderPadComments
+        private List<Product> orderPadActionableComments
         {
-            get => _orderPadComments;
+            get => _orderPadActionableComments;
             set
             {
-                List<Product> newItems = value.Except(_orderPadComments).ToList();
-                List<Product> deletedItems = _orderPadComments.Except(value).ToList();
+                List<Product> newItems = value.Except(_orderPadActionableComments).ToList();
+                List<Product> deletedItems = _orderPadActionableComments.Except(value).ToList();
 
                 if (newItems.Count != 0 || deletedItems.Count != 0)
                 {
-                    _orderPadComments = value;
-                    OnOrderPadCommentsChanged(this, newItems, deletedItems);
+                    _orderPadActionableComments = value;
+                    OnOrderPadActionableCommentsChanged(this, newItems, deletedItems);
                 }
             }
         }
@@ -406,7 +406,7 @@ namespace PharmApp.src
 
         private void UpdateOrderpadProductList()
         {
-            orderPadComments = OrderPad.Get().GetProductsWithNotes();
+            orderPadActionableComments = OrderPad.Get().GetProductsRequiringAction();
         }
 
         private void CheckProgramIsInFocus()
@@ -475,7 +475,7 @@ namespace PharmApp.src
         public event OCRListProcessHandler OnProductsChanged;
 
         public delegate void OrderPadProcessHandler(object source, List<Product> newItems, List<Product> deletedItems);
-        public event OrderPadProcessHandler OnOrderPadCommentsChanged;
+        public event OrderPadProcessHandler OnOrderPadActionableCommentsChanged;
 
         protected void _onProgramFocus() => OnProgramFocus?.Invoke(this, EventArgs.Empty);
         protected void _onProgramUnfocus() => OnProgramUnfocus?.Invoke(this, EventArgs.Empty);
