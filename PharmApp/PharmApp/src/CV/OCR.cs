@@ -740,7 +740,7 @@ namespace PharmApp
         //    return textImages;
         //}
 
-        // Cached image lasts for 450ms - process frequency is 500ms at time of writing
+        // Pretty sure this isn't cached but check if weird errors as it used to be
         public Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
             if (Settings.Default.USE_EXAMPLE_PMR)
@@ -779,11 +779,11 @@ namespace PharmApp
             return GetScreen(Rectangle.Empty);
         }
 
-        public bool IsResultStillVisible(OCRResult toCompare)
-        {
-            Image<Bgr, byte> screen = GetScreen(toCompare.GetRectangle());
-            if (screen == null) return false;
-            return toCompare.GetImage().Equals(screen);
-        }
+        //public bool IsResultStillVisible(OCRResult toCompare)
+        //{
+        //    Image<Bgr, byte> screen = GetScreen(toCompare.GetRectangle());
+        //    if (screen == null) return false;
+        //    return toCompare.GetImage().Equals(screen);
+        //}
     }
 }
