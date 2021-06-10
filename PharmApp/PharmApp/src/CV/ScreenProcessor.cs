@@ -297,7 +297,22 @@ namespace PharmApp.src
 
         public void Process()
         {
-            while(true)
+
+            LogManager.GetLogger(typeof(Program)).Debug("");
+            LogManager.GetLogger(typeof(Program)).Debug("");
+            LogManager.GetLogger(typeof(Program)).Debug("----------------------------------------------------");
+            LogManager.GetLogger(typeof(Program)).Debug("Initialising at " + DateTime.Now.ToString());
+
+            // Initialising stuff that needs to run early while gui is hidden - if this method is improved to use timer threads, this will need moving
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            UpdateOrderpadProductList();
+            LogManager.GetLogger(typeof(Program)).Debug("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
+            stopwatch.Reset();
+
+
+            while (true)
             {
                 // This should maybe be changed to use threads on a timer, but needs a lot of rejigging to not overlap processing
                 Thread.Sleep(500);
@@ -323,7 +338,6 @@ namespace PharmApp.src
                     LogManager.GetLogger(typeof(Program)).Debug("Processing loop starting at " + DateTime.Now.ToString());
 
 
-                    Stopwatch stopwatch = new Stopwatch();
                     stopwatch.Start();
 
                     UpdateOrderpadProductList();
