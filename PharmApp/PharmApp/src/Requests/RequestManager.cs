@@ -124,7 +124,7 @@ Link Pharmacy";
             if (validSurgery != null)
             {
                 // this is an awful quick fix
-                bool isSpecial = validSurgery.GetName() == "Albion Place Medical Practice" || validSurgery.GetName() == "Drs Johnson, Garrett & Mitchell" || validSurgery.GetName() == "Brewer Street Surgery";
+                bool isSpecial = validSurgery.GetName() == "Albion Place Medical Practice" || validSurgery.GetName() == "Drs Johnson, Garrett & Mitchell" || validSurgery.GetName() == "Brewer Street Surgery" || validSurgery.GetName() == "Albion Place Medical Centre";
                 bool isBrewer = validSurgery.GetName() == "Drs Johnson, Garrett & Mitchell" || validSurgery.GetName() == "Brewer Street Surgery";
 
                 GUI.Email emailForm = new GUI.Email();
