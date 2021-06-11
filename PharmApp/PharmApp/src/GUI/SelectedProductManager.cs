@@ -1,4 +1,6 @@
-﻿using PharmApp.src.SQL;
+﻿using Emgu.CV;
+using Emgu.CV.Structure;
+using PharmApp.src.SQL;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,7 +15,8 @@ namespace PharmApp.src.GUI
     class SelectedProductManager
     {
 
-        List<SelectedProductDrawing> availableForms = new List<SelectedProductDrawing>();
+        private List<SelectedProductDrawing> availableForms = new List<SelectedProductDrawing>();
+        private Image<Bgr, byte> lastScreen;
 
         public void InitializeForms()
         {
@@ -93,6 +96,14 @@ namespace PharmApp.src.GUI
                 //}
 
         }
+
+        //public void PruneForms(Image<Bgr, byte> screen)
+        //{
+        //    foreach (SelectedProductDrawing form in availableForms)
+        //    {
+        //        Rectangle rect = form.get
+        //    }
+        //}
 
     }
 }

@@ -16,6 +16,7 @@ namespace PharmApp.src.Product_Info
         private SQLOrderPadPIPs query = new SQLOrderPadPIPs();
         private const int UPDATE_PERIOD = 5000;
         private Timer updateTimer;
+        private volatile bool isRunning = false;
 
         private OrderPad()
         {
@@ -33,6 +34,9 @@ namespace PharmApp.src.Product_Info
 
         private void UpdateTimerTick(object state)
         {
+            if (isRunning) return;
+            isRunning = true;
+
             Stopwatch tickTime = new Stopwatch();
             tickTime.Start();
 
@@ -90,6 +94,7 @@ namespace PharmApp.src.Product_Info
             //}
 
             LogManager.GetLogger(typeof(Program)).Debug("Orderpad update tick took: " + tickTime.ElapsedMilliseconds + "ms");
+            isRunning = false;
         }
 
         // Adds a product to the list so long as a product with the same pip isn't already on there
