@@ -16,6 +16,8 @@ using Emgu.CV;
 using Emgu.CV.Structure;
 using PharmApp.src.CV.Screens;
 using log4net;
+using System.Drawing;
+using Emgu.CV.UI;
 
 namespace PharmApp.src
 {
@@ -34,12 +36,18 @@ namespace PharmApp.src
 
         private static ScreenProcessor singleton;
 
+        private Image<Bgr, byte> lastScreen;
+
 
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
 
 
         private bool _isProgramFocused = false;
@@ -344,7 +352,7 @@ namespace PharmApp.src
                     LogManager.GetLogger(typeof(Program)).Debug("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    Image<Bgr, byte> screenshot = OCR.Get().GetScreen();
+                    Image<Bgr, byte> screenshot = GetWindowImage();
                     LogManager.GetLogger(typeof(Program)).Debug("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
@@ -452,6 +460,31 @@ namespace PharmApp.src
                 return Buff.ToString();
             }
             return null;
+        }
+
+        public Image<Bgr, byte> GetWindowImage()
+        {
+            int height = Screen.PrimaryScreen.WorkingArea.Height+10;
+            int width = Screen.PrimaryScreen.WorkingArea.Width+10;
+            using (Bitmap bitmap = new Bitmap(width, height))
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                IntPtr hdc = g.GetHdc();
+                if (!PrintWindow(proscriptHandle, hdc, 0))
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    var exception = new System.ComponentModel.Win32Exception(error);
+                    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
+                }
+                g.ReleaseHdc(hdc);
+
+                g.DrawImage()
+
+                Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
+                ImageViewer.Show(screenCap);
+                return screenCap;
+            }
+
         }
 
         WinEventDelegate dele = null;

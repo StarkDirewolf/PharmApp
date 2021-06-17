@@ -15,8 +15,9 @@ namespace PharmApp.src.GUI
     class SelectedProductManager
     {
 
-        private List<SelectedProductDrawing> availableForms = new List<SelectedProductDrawing>();
-        private Image<Bgr, byte> lastScreen;
+        private Stack<SelectedProductDrawing> unusedForms = new Stack<SelectedProductDrawing>();
+        private List<SelectedProductDrawing> currentForms = new List<SelectedProductDrawing>();
+        private Image<Bgr, byte> lastPipsImage;
 
         public void InitializeForms()
         {
@@ -25,7 +26,7 @@ namespace PharmApp.src.GUI
                 MultiFormContext.disp.Invoke(new Action(() => {
                     SelectedProductDrawing form = new SelectedProductDrawing();
                     MultiFormContext.GetContext().AddForm(form);
-                    availableForms.Add(form);
+                    unusedForms.Push(form);
                 }));
 
             }
@@ -36,7 +37,7 @@ namespace PharmApp.src.GUI
 
             if (args == null || args.OCRResults == null || args.OCRResults.Count == 0)
             {
-                foreach (SelectedProductDrawing form in availableForms)
+                foreach (SelectedProductDrawing form in currentForms)
                 {
                     form.ShouldBeVisible = false;
                 }
@@ -44,19 +45,25 @@ namespace PharmApp.src.GUI
             }
 
             List<OCRResult> ocrResults = args.OCRResults;
+
             List<SelectedProductDrawing> keepForms = new List<SelectedProductDrawing>();
-            List<SelectedProductDrawing> lostForms = new List<SelectedProductDrawing>();
 
             foreach (OCRResult ocrResult in ocrResults)
             {
                 string pip = ocrResult.GetText();
-                SelectedProductDrawing foundForm = availableForms.Find(f => f.GetProduct().pipcode == pip);
+                SelectedProductDrawing foundForm = currentForms.Find(f => f.GetProduct().pipcode == pip);
                 if (foundForm != null) keepForms.Add(foundForm);
             }
 
-            foreach (SelectedProductDrawing iform in availableForms)
+            SelectedProductDrawing[] currentFormsArray = currentForms.ToArray();
+
+            foreach (SelectedProductDrawing iform in currentFormsArray)
             {
-                if (!keepForms.Contains(iform)) lostForms.Add(iform);
+                if (!keepForms.Contains(iform))
+                {
+                    FreeUpForm(iform);
+                }
+                
             }
 
             foreach (OCRResult ocrResult in ocrResults)
@@ -72,17 +79,8 @@ namespace PharmApp.src.GUI
                 }
                 else
                 {
-                    SelectedProductDrawing unusedForm = lostForms.First();
-                    lostForms.Remove(unusedForm);
-                    unusedForm.SetProduct(ProductLookup.Get().FindByPIP(pip));
-                    unusedForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
-                    unusedForm.ShouldBeVisible = true;
-                    unusedForm.SetOCRResut(ocrResult);
+                    UseFreeForm(ocrResult);
                 }
-            }
-
-            foreach (SelectedProductDrawing form in lostForms) {
-                form.ShouldBeVisible = false;
             }
 
                 //foreach (SelectedProductDrawing form in currentForms)
@@ -97,11 +95,45 @@ namespace PharmApp.src.GUI
 
         }
 
+        private void FreeUpForm(SelectedProductDrawing form)
+        {
+            currentForms.Remove(form);
+            unusedForms.Push(form);
+            form.ShouldBeVisible = false;
+        }
+
+        private SelectedProductDrawing UseFreeForm(OCRResult ocr)
+        {
+            SelectedProductDrawing freeForm = unusedForms.Pop();
+            currentForms.Add(freeForm);
+            freeForm.SetOCRResut(ocr);
+            freeForm.SetProduct(ProductLookup.Get().FindByPIP(ocr.GetText()));
+            freeForm.ChangeLocationByOCRRect(ocr.GetRectangle());
+            freeForm.ShouldBeVisible = true;
+
+            return freeForm;
+        }
+
         //public void PruneForms(Image<Bgr, byte> screen)
         //{
+        //    // If there isn't an image saved, save provided image and cancel method
+        //    if (lastPipsImage == null)
+        //    {
+        //        lastPipsImage = screen;
+        //        return;
+        //    }
+
         //    foreach (SelectedProductDrawing form in availableForms)
         //    {
         //        Rectangle rect = form.get
+        //    }
+        //}
+
+        //public Rectangle GetCurrentPipsRectangle()
+        //{
+        //    foreach (SelectedProductDrawing form in availableForms)
+        //    {
+        //        if (availableForms.pip)
         //    }
         //}
 

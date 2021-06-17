@@ -740,6 +740,7 @@ namespace PharmApp
         //    return textImages;
         //}
 
+        // Old method for grabbing whole screen but will include overlay
         // Pretty sure this isn't cached but check if weird errors as it used to be
         public Image<Bgr, byte> GetScreen(Rectangle screenArea)
         {
