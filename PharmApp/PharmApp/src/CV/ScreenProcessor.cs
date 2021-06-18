@@ -18,9 +18,11 @@ using PharmApp.src.CV.Screens;
 using log4net;
 using System.Drawing;
 using Emgu.CV.UI;
+using System.Drawing.Drawing2D;
 
 namespace PharmApp.src
 {
+
     class ScreenProcessor
     {
 
@@ -48,6 +50,9 @@ namespace PharmApp.src
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool PrintWindow(IntPtr hwnd, IntPtr hDC, uint nFlags);
+
+        [DllImport("user32.dll")]
+        internal static extern bool GetWindowRect(IntPtr hWnd, out Rectangle lpRect);
 
 
         private bool _isProgramFocused = false;
@@ -462,27 +467,106 @@ namespace PharmApp.src
             return null;
         }
 
+        private enum TernaryRasterOperations : uint
+        {
+            /// <summary>dest = source</summary>
+            SRCCOPY = 0x00CC0020,
+            /// <summary>dest = source OR dest</summary>
+            SRCPAINT = 0x00EE0086,
+            /// <summary>dest = source AND dest</summary>
+            SRCAND = 0x008800C6,
+            /// <summary>dest = source XOR dest</summary>
+            SRCINVERT = 0x00660046,
+            /// <summary>dest = source AND (NOT dest)</summary>
+            SRCERASE = 0x00440328,
+            /// <summary>dest = (NOT source)</summary>
+            NOTSRCCOPY = 0x00330008,
+            /// <summary>dest = (NOT src) AND (NOT dest)</summary>
+            NOTSRCERASE = 0x001100A6,
+            /// <summary>dest = (source AND pattern)</summary>
+            MERGECOPY = 0x00C000CA,
+            /// <summary>dest = (NOT source) OR dest</summary>
+            MERGEPAINT = 0x00BB0226,
+            /// <summary>dest = pattern</summary>
+            PATCOPY = 0x00F00021,
+            /// <summary>dest = DPSnoo</summary>
+            PATPAINT = 0x00FB0A09,
+            /// <summary>dest = pattern XOR dest</summary>
+            PATINVERT = 0x005A0049,
+            /// <summary>dest = (NOT dest)</summary>
+            DSTINVERT = 0x00550009,
+            /// <summary>dest = BLACK</summary>
+            BLACKNESS = 0x00000042,
+            /// <summary>dest = WHITE</summary>
+            WHITENESS = 0x00FF0062
+        }
+
+        [DllImport("gdi32.dll", ExactSpelling = true, PreserveSig = true, SetLastError = true)]
+        static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
+
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr CreateCompatibleBitmap(IntPtr hdc, int nWidth, int nHeight);
+
+        [DllImport("gdi32.dll", SetLastError = true)]
+        private static extern IntPtr CreateCompatibleDC(IntPtr hdc);
+        [DllImport("gdi32.dll")]
+        private static extern IntPtr CreateBitmap(int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, IntPtr lpvBits);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetDC(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+        [DllImport("gdi32.dll")]
+        private static extern bool BitBlt(IntPtr hdc, int nXDest, int nYDest, int nWidth, int nHeight, IntPtr hdcSrc, int nXSrc, int nYSrc, TernaryRasterOperations dwRop);
+        [DllImport("gdi32.dll")]
+        private static extern bool DeleteObject(IntPtr hObject);
+
+
+
         public Image<Bgr, byte> GetWindowImage()
         {
-            int height = Screen.PrimaryScreen.WorkingArea.Height+10;
-            int width = Screen.PrimaryScreen.WorkingArea.Width+10;
-            using (Bitmap bitmap = new Bitmap(width, height))
+            Rectangle rc;
+            GetWindowRect(proscriptHandle, out rc);
+            using (Bitmap bitmap = new Bitmap(Convert.ToInt32(rc.Width), Convert.ToInt32(rc.Height)))
             using (Graphics g = Graphics.FromImage(bitmap))
+            using (Bitmap croppedBitmap = new Bitmap(Convert.ToInt32(rc.Width) - 7, Convert.ToInt32(rc.Height) - 9))
+            using (Graphics croppedG = Graphics.FromImage(croppedBitmap))
             {
-                IntPtr hdc = g.GetHdc();
-                if (!PrintWindow(proscriptHandle, hdc, 0))
-                {
-                    int error = Marshal.GetLastWin32Error();
-                    var exception = new System.ComponentModel.Win32Exception(error);
-                    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
-                }
-                g.ReleaseHdc(hdc);
 
-                g.DrawImage()
+                IntPtr hWndDc = GetDC(proscriptHandle);
+                IntPtr hMemDc = CreateCompatibleDC(hWndDc);
+                IntPtr hBitmap = CreateCompatibleBitmap(hWndDc, rc.Width, rc.Height);
+                SelectObject(hMemDc, hBitmap);
 
-                Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
-                ImageViewer.Show(screenCap);
+                BitBlt(hMemDc, 0, 0, rc.Width, rc.Height, hWndDc, 0, 0, TernaryRasterOperations.SRCCOPY);
+                Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap);
+
+                DeleteObject(hBitmap);
+                ReleaseDC(proscriptHandle, hWndDc);
+                ReleaseDC(IntPtr.Zero, hMemDc);
+
+                Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
+                //ImageViewer.Show(screenCap);
+
                 return screenCap;
+
+
+                //IntPtr hdc = g.GetHdc();
+                //if (!PrintWindow(proscriptHandle, hdc, 0))
+                //{
+                //    int error = Marshal.GetLastWin32Error();
+                //    var exception = new System.ComponentModel.Win32Exception(error);
+                //    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
+                //}
+                //g.ReleaseHdc(hdc);
+
+                //croppedG.DrawImage(bitmap, -7, -9);
+
+                //Image<Bgr, byte> screenCap = new Image<Bgr, byte>(croppedBitmap);
+                ////ImageViewer.Show(screenCap);
+                //return screenCap;
             }
 
         }
