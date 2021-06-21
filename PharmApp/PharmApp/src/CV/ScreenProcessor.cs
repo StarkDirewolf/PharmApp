@@ -19,6 +19,7 @@ using log4net;
 using System.Drawing;
 using Emgu.CV.UI;
 using System.Drawing.Drawing2D;
+using Emgu.CV.ImgHash;
 
 namespace PharmApp.src
 {
@@ -39,6 +40,7 @@ namespace PharmApp.src
         private static ScreenProcessor singleton;
 
         private Image<Bgr, byte> lastScreen;
+        private Mat lastScreenHashCode;
 
 
         [DllImport("user32.dll")]
@@ -212,7 +214,7 @@ namespace PharmApp.src
 
         private bool _viewingOrderPad = false;
 
-        public bool viewingOrderPad
+        private bool viewingOrderPad
         {
             get => _viewingOrderPad;
             set
@@ -224,6 +226,23 @@ namespace PharmApp.src
                 }
 
                 _viewingOrderPad = value;
+            }
+        }
+
+        private bool _viewingGoodsIn = false;
+
+        private bool viewingGoodsIn
+        {
+            get => _viewingGoodsIn;
+            set
+            {
+                if (value != viewingGoodsIn)
+                {
+                    if (value) ; //_onStartViewingGoodsIn();
+                    else _onStopViewingGoodsIn();
+                }
+
+                _viewingGoodsIn = value;
             }
         }
 
@@ -321,14 +340,14 @@ namespace PharmApp.src
             stopwatch.Start();
 
             UpdateOrderpadProductList();
-            LogManager.GetLogger(typeof(Program)).Debug("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
+            LogManager.GetLogger(typeof(Program)).Debug("Initialising orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
             stopwatch.Reset();
 
 
             while (true)
             {
                 // This should maybe be changed to use threads on a timer, but needs a lot of rejigging to not overlap processing
-                Thread.Sleep(500);
+                Thread.Sleep(200);
 
 
                 if (proscriptHandle == IntPtr.Zero)
@@ -351,19 +370,20 @@ namespace PharmApp.src
                     LogManager.GetLogger(typeof(Program)).Debug("Processing loop starting at " + DateTime.Now.ToString());
 
 
-                    stopwatch.Start();
-
-                    UpdateOrderpadProductList();
-                    LogManager.GetLogger(typeof(Program)).Debug("Updating orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    Image<Bgr, byte> screenshot = GetWindowImage();
+                    UpdateOrderpadProductList();
+                    LogManager.GetLogger(typeof(Program)).Debug("Grabbing orderpad comments took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+
+                    bool screenHasChanged = UpdateWindowImage();
                     LogManager.GetLogger(typeof(Program)).Debug("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
+                    if (!screenHasChanged) continue;
 
                     ScreenIdentifier identifier = ScreenIdentifier.Get();
-                    ScreenProScript screen = identifier.Identify(screenshot);
+                    ScreenProScript screen = identifier.Identify(lastScreen);
                     LogManager.GetLogger(typeof(Program)).Debug("Identifying screen took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
@@ -371,12 +391,13 @@ namespace PharmApp.src
                     viewingPMR = screen is ScreenPMR;
                     viewingRMS = screen is ScreenRMS;
                     viewingOrderPad = screen is ScreenOrderPad;
+                    viewingGoodsIn = screen is ScreenGoodsIn;
 
-                    nhsNumber = screen.GetNhsNumber(screenshot);
+                    nhsNumber = screen.GetNhsNumber(lastScreen);
                     if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    selectedProducts = screen.GetPipcodes(screenshot);
+                    selectedProducts = screen.GetPipcodes(lastScreen);
                     if (selectedProducts != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
                 }
@@ -525,14 +546,10 @@ namespace PharmApp.src
 
 
 
-        public Image<Bgr, byte> GetWindowImage()
+        public bool UpdateWindowImage()
         {
             Rectangle rc;
             GetWindowRect(proscriptHandle, out rc);
-            using (Bitmap bitmap = new Bitmap(Convert.ToInt32(rc.Width), Convert.ToInt32(rc.Height)))
-            using (Graphics g = Graphics.FromImage(bitmap))
-            using (Bitmap croppedBitmap = new Bitmap(Convert.ToInt32(rc.Width) - 7, Convert.ToInt32(rc.Height) - 9))
-            using (Graphics croppedG = Graphics.FromImage(croppedBitmap))
             {
 
                 IntPtr hWndDc = GetDC(proscriptHandle);
@@ -540,7 +557,7 @@ namespace PharmApp.src
                 IntPtr hBitmap = CreateCompatibleBitmap(hWndDc, rc.Width, rc.Height);
                 SelectObject(hMemDc, hBitmap);
 
-                BitBlt(hMemDc, 0, 0, rc.Width, rc.Height, hWndDc, 0, 0, TernaryRasterOperations.SRCCOPY);
+                BitBlt(hMemDc, 0, 0, rc.Width, rc.Height, hWndDc, 8, 8, TernaryRasterOperations.SRCCOPY);
                 Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap);
 
                 DeleteObject(hBitmap);
@@ -548,9 +565,26 @@ namespace PharmApp.src
                 ReleaseDC(IntPtr.Zero, hMemDc);
 
                 Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
+
+                var thisScreenHashCode = new Mat();
+                PHash model = new PHash();
+                model.Compute(screenCap, thisScreenHashCode);
                 //ImageViewer.Show(screenCap);
 
-                return screenCap;
+                if (lastScreenHashCode != null)
+                {
+                    double score = model.Compare(lastScreenHashCode, thisScreenHashCode);
+                    if (score == 0)
+                    {
+                        LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
+                        return false;
+                    }
+                }
+
+                LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");
+                lastScreen = screenCap;
+                lastScreenHashCode = thisScreenHashCode;
+                return true;
 
 
                 //IntPtr hdc = g.GetHdc();
@@ -598,6 +632,7 @@ namespace PharmApp.src
         public event ProcessHandler OnStopViewingOrderPad;
         public event ProcessHandler OnStartViewingRMS;
         public event ProcessHandler OnStopViewingRMS;
+        public event ProcessHandler OnStopViewingGoodsIn;
 
         public delegate void OCRProcessHandler(object source, OCRResultEventArgs args);
         public event OCRProcessHandler OnNHSNumberChanged;
@@ -622,6 +657,7 @@ namespace PharmApp.src
         protected void _onStopViewingOrderPad() => OnStopViewingOrderPad?.Invoke(this, EventArgs.Empty);
         protected void _onStartViewingRMS() => OnStartViewingRMS?.Invoke(this, EventArgs.Empty);
         protected void _onStopViewingRMS() => OnStopViewingRMS?.Invoke(this, EventArgs.Empty);
+        protected void _onStopViewingGoodsIn() => OnStopViewingGoodsIn?.Invoke(this, EventArgs.Empty);
 
     }
 }

@@ -98,6 +98,7 @@ namespace PharmApp.src.GUI
             processor.OnOrderPadActionableCommentsChanged += form.OnOrderPadCommentsChanged;
             processor.OnStartViewingOrderPad += form.OnStartViewingOrderPad;
             processor.OnStopViewingOrderPad += form.OnStopViewingOrderPad;
+            processor.OnStopViewingGoodsIn += form.OnStopViewingGoodsIn;
 
             if (form is RequestsButtonDrawing)
             {

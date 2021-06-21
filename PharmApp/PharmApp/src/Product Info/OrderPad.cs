@@ -12,7 +12,8 @@ namespace PharmApp.src.Product_Info
     class OrderPad
     {
         private static OrderPad obj;
-        private SynchronizedCollection<Product> products = new SynchronizedCollection<Product>();
+        private ConcurrentDictionary<string, Product> products = new ConcurrentDictionary<string, Product>();
+        private List<Product> productsWithComments = new List<Product>();
         private SQLOrderPadPIPs query = new SQLOrderPadPIPs();
         private const int UPDATE_PERIOD = 5000;
         private Timer updateTimer;
@@ -52,24 +53,25 @@ namespace PharmApp.src.Product_Info
 
             //forDeleting.AsParallel().ForAll(prod => products.Remove(prod));
 
-            List<Product> forDeleting = new List<Product>();
+            List<string> forDeleting = new List<string>();
 
             // Delete absent pips
-            foreach (Product product in products)
+            foreach (string savedPip in products.Keys)
             {
-                if (pips.Contains(product.pipcode))
+                if (pips.Contains(savedPip))
                 {
-                    pips.Remove(product.pipcode);
+                    pips.Remove(savedPip);
                 }
                 else
                 {
-                    forDeleting.Add(product);
+                    forDeleting.Add(savedPip);
                 }
             }
 
-            foreach (Product product in forDeleting)
+            foreach (string pip in forDeleting)
             {
-                products.Remove(product);
+                Product removedProduct;
+                products.TryRemove(pip, out removedProduct);
             }
 
             foreach (string pip in pips)
@@ -93,6 +95,8 @@ namespace PharmApp.src.Product_Info
             //    AddProduct(pip);
             //}
 
+            UpdateProductsWithComments();
+
             LogManager.GetLogger(typeof(Program)).Debug("Orderpad update tick took: " + tickTime.ElapsedMilliseconds + "ms");
             isRunning = false;
         }
@@ -100,9 +104,10 @@ namespace PharmApp.src.Product_Info
         // Adds a product to the list so long as a product with the same pip isn't already on there
         public void AddProduct(string pip)
         {
-            if (!products.Any(prod => prod.pipcode.Equals(pip)))
+            if (!products.ContainsKey(pip))
             {
-                products.Add(ProductLookup.Get().FindByPIP(pip));
+
+                products.TryAdd(pip, ProductLookup.Get().FindByPIP(pip));
             }
 
             //int existingProductIndex = products.FindIndex(p => p.pipcode.Equals(pip));
@@ -114,16 +119,32 @@ namespace PharmApp.src.Product_Info
             
         }
 
-        public List<Product> GetProductsRequiringAction()
+        public void UpdateProductsWithComments()
         {
+            Stopwatch test = new Stopwatch();
+            test.Start();
             var parallelQuery =
                 from prod in products.AsParallel()
-                where prod.orderingNote != null && prod.orderingNote.requiresAction && prod.GetCurrentOrders().IsOnOrder()
-                select prod;
+                where prod.Value.orderingNote != null && prod.Value.orderingNote.requiresAction && prod.Value.GetCurrentOrders().IsOnOrder()
+                select prod.Value;
 
-            return parallelQuery.ToList();
+            productsWithComments = parallelQuery.ToList();
+            LogManager.GetLogger(typeof(Program)).Debug("Comment updating took: " + test.ElapsedMilliseconds + "ms");
+            
+        }
+
+        public List<Product> GetProductsRequiringAction()
+        {
+
+            //var parallelQuery =
+            //    from prod in products.AsParallel()
+            //    where prod.orderingNote != null && prod.orderingNote.requiresAction && prod.GetCurrentOrders().IsOnOrder()
+            //    select prod;
+
+            //return parallelQuery.ToList();
 
             //return products.FindAll(p => p.orderingNote != null && p.orderingNote.requiresAction && p.GetCurrentOrders().IsOnOrder());
+            return productsWithComments;
         }
     }
 }

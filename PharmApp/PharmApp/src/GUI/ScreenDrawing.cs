@@ -203,6 +203,11 @@ namespace PharmApp.src
         {
         }
 
+        public virtual void OnStopViewingGoodsIn(object source, EventArgs args)
+        {
+        }
+
+
         protected override CreateParams CreateParams
         {
             get

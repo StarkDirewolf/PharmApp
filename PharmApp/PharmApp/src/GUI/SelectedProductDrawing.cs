@@ -244,5 +244,20 @@ namespace PharmApp.src.GUI
             product.orderingNote = note;
             popup.Hide();
         }
+
+        public override void OnStopViewingOrderPad(object Source, EventArgs args)
+        {
+            ShouldBeVisible = false;
+        }
+
+        public override void OnStopViewingGoodsIn(object Source, EventArgs args)
+        {
+            ShouldBeVisible = false;
+        }
+
+        public override void OnNHSNumberChanged(object source, OCRResultEventArgs args)
+        {
+            ShouldBeVisible = false;
+        }
     }
 }
