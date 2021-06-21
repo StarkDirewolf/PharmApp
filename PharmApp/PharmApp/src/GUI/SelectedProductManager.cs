@@ -17,7 +17,18 @@ namespace PharmApp.src.GUI
 
         private Stack<SelectedProductDrawing> unusedForms = new Stack<SelectedProductDrawing>();
         private List<SelectedProductDrawing> currentForms = new List<SelectedProductDrawing>();
-        private Image<Bgr, byte> lastPipsImage;
+        private static SelectedProductManager manager;
+
+        private SelectedProductManager()
+        {
+            
+        }
+
+        public static SelectedProductManager Get()
+        {
+            if (manager == null) manager = new SelectedProductManager();
+            return manager;
+        }
 
         public void InitializeForms()
         {
@@ -106,7 +117,7 @@ namespace PharmApp.src.GUI
         {
             SelectedProductDrawing freeForm = unusedForms.Pop();
             currentForms.Add(freeForm);
-            freeForm.SetOCRResut(ocr);
+            freeForm.SetOCRResult(ocr);
             freeForm.SetProduct(ProductLookup.Get().FindByPIP(ocr.GetText()));
             freeForm.ChangeLocationByOCRRect(ocr.GetRectangle());
             freeForm.ShouldBeVisible = true;
@@ -136,6 +147,28 @@ namespace PharmApp.src.GUI
         //        if (availableForms.pip)
         //    }
         //}
+
+        public Image<Bgr, byte> SubtractCurrentPips(Image<Bgr, byte> screenShot)
+        {
+            List<SelectedProductDrawing> productsToDelete = new List<SelectedProductDrawing>();
+            foreach (SelectedProductDrawing drawing in currentForms)
+            {
+                OCRResult ocr = drawing.GetOCRResult();
+                if (ocr.IsInImage(screenShot))
+                {
+                    screenShot.Draw(ocr.GetRectangle(), new Bgr(Color.White), -1);
+                } else
+                {
+                    productsToDelete.Add(drawing);
+                }
+            }
+
+            foreach (var drawing in productsToDelete)
+            {
+                FreeUpForm(drawing);
+            }
+            return screenShot;
+        }
 
     }
 }

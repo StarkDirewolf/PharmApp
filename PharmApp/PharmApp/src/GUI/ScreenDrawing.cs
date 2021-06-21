@@ -28,12 +28,16 @@ namespace PharmApp.src
         protected OCRResult ocrResult;
         protected Form popup;
 
-        public void SetOCRResut(OCRResult image)
+        public void SetOCRResult(OCRResult image)
         {
             ocrResult = image;
             if (popup == null) SetDefaultPopup();
         }
         
+        public OCRResult GetOCRResult()
+        {
+            return ocrResult;
+        }
 
         protected bool ProscriptHasFocus
         {
@@ -107,7 +111,7 @@ namespace PharmApp.src
             if (popup != null) popup.Show();
         }
 
-        private void SetDefaultPopup()
+        protected void SetDefaultPopup()
         {
             popup = new Form();
             popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;

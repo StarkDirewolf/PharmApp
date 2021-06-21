@@ -23,6 +23,7 @@ namespace PharmApp.src.GUI
         private TextBox text;
         private CheckBox checkBox;
         private Button cancelButton, saveButton;
+        private OCRResult ocr;
 
         public SelectedProductDrawing() : base(new Rectangle(25, 25, WIDTH, HEIGHT), "", Color.White)
         {
@@ -59,6 +60,7 @@ namespace PharmApp.src.GUI
         public void SetProduct(Product product)
         {
             this.product = product;
+            product.SetOCRResult(ocr);
             SetTooltipToOrderHistory();
             tooltip_timer.Start();
             if (product.genericID == "0")
@@ -103,17 +105,31 @@ namespace PharmApp.src.GUI
         public void SetContextMenu()
         {
             ContextMenuStrip menu = new ContextMenuStrip();
-            ToolStripItem patients = new ToolStripButton();
             img.ContextMenuStrip = menu;
+            
+            ToolStripItem patients = new ToolStripButton();
 
             patients.Text = "Patients";
             patients.Click += OpenPatientHistory;
             menu.Items.Add(patients);
+
+
+            ToolStripItem ocrImage = new ToolStripButton();
+
+            ocrImage.Text = "OCR Image";
+            ocrImage.Click += OpenOCRImage;
+            menu.Items.Add(ocrImage);
         }
 
         private void OpenPatientHistory(object sender, EventArgs e)
         {
             ProductInPatientHistory popup = new ProductInPatientHistory(product);
+            popup.Show();
+        }
+
+        private void OpenOCRImage(object sender, EventArgs e)
+        {
+            SetDefaultPopup();
             popup.Show();
         }
 

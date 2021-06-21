@@ -1,5 +1,7 @@
 ﻿using Emgu.CV;
+using Emgu.CV.ImgHash;
 using Emgu.CV.Structure;
+using Emgu.CV.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,6 +19,7 @@ namespace PharmApp.src
         private readonly int OFFSET_Y = 0;
         private readonly Image<Bgr, byte> image;
         private readonly Mat ocrImage;
+        private readonly Mat hashCode = new Mat();
 
         public OCRResult(string text, Rectangle rect, Image<Bgr, byte> image, Mat ocrImage)
         {
@@ -24,6 +27,8 @@ namespace PharmApp.src
             this.rect = rect;
             this.image = image;
             this.ocrImage = ocrImage;
+            PHash model = new PHash();
+            model.Compute(image, hashCode);
         }
 
         public string GetText()
@@ -39,6 +44,19 @@ namespace PharmApp.src
         public Mat GetOCRImage()
         {
             return ocrImage;
+        }
+
+        public bool IsInImage(Image<Bgr, byte> screenshot)
+        {
+            PHash model = new PHash();
+            screenshot.ROI = GetRectangle();
+            Mat screenshotHash = new Mat();
+            model.Compute(screenshot, screenshotHash);
+
+            double hashCompare = model.Compare(screenshotHash, hashCode);
+            bool result = hashCompare < 1;
+            screenshot.ROI = Rectangle.Empty;
+            return result;
         }
 
         public Point GetOffsetPoint()

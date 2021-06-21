@@ -393,12 +393,19 @@ namespace PharmApp.src
                     viewingOrderPad = screen is ScreenOrderPad;
                     viewingGoodsIn = screen is ScreenGoodsIn;
 
+
+                    Image<Bgr, byte> subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
+                    LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+
+
                     nhsNumber = screen.GetNhsNumber(lastScreen);
                     if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
 
-                    selectedProducts = screen.GetPipcodes(lastScreen);
-                    if (selectedProducts != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
+                    //ImageViewer.Show(subtractedImage);
+                    selectedProducts = screen.GetPipcodes(subtractedImage);
+                    if (selectedProducts != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes with subtracted image took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
                 }
             }

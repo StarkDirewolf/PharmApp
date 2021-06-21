@@ -27,7 +27,7 @@ namespace PharmApp.src.GUI
             }
             else
             {
-                SetOCRResut(args.OCRResult);
+                SetOCRResult(args.OCRResult);
                 Rectangle nhsRect = ocrResult.GetRectangle();
                 ChangeLocation(nhsRect.X + nhsRect.Width + X_OFFSET, nhsRect.Y + Y_OFFSET);
 
