@@ -13,7 +13,7 @@ namespace PharmApp.src
 {
     class OCRResult
     {
-        private readonly Rectangle rect;
+        private Rectangle rect;
         private readonly string text;
         private readonly int OFFSET_X = 20;
         private readonly int OFFSET_Y = 0;
@@ -38,6 +38,11 @@ namespace PharmApp.src
         public Rectangle GetRectangle()
         {
             return rect;
+        }
+
+        public void UpdateRectangle(Rectangle rect)
+        {
+            this.rect = rect;
         }
 
         public Mat GetOCRImage()

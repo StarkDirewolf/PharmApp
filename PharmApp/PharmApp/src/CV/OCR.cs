@@ -19,6 +19,7 @@ using Emgu.CV.CvEnum;
 using log4net;
 using PharmApp.Properties;
 using Emgu.CV.ImgHash;
+using PharmApp.src.GUI;
 
 namespace PharmApp
 {
@@ -273,113 +274,133 @@ namespace PharmApp
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
             {
-                Image<Bgr, byte> imageForOcr = image.Copy();
-                imageForOcr.SetValue(new Bgr(0, 0, 0));
-
-                image.ROI = area;
-                Image<Bgr, byte> patientDetailsImage = image.Copy();
-                image.ROI = Rectangle.Empty;
-
-                imageForOcr.ROI = area;
-                patientDetailsImage.CopyTo(imageForOcr);
-                imageForOcr.ROI = Rectangle.Empty;
-
-                List<OCRResult> results = GetText(imageForOcr, minSize, maxSize);
-
-                if (Settings.Default.SHOW_OCR_IMAGE)
+                using (Image<Bgr, byte> imageForOcr = new Image<Bgr, byte>(image.Size))
                 {
-                    foreach (OCRResult result in results)
-                    {
-                        Console.WriteLine(result.GetText());
-                        imageForOcr.Draw(result.GetRectangle(), new Bgr(0, 0, 255));
-                    }
-                    ImageViewer.Show(imageForOcr);
-                }
+                    imageForOcr.SetValue(new Bgr(0, 0, 0));
 
-                patientDetails.AddRange(results);
-                
+                    image.ROI = area;
+                    Image<Bgr, byte> patientDetailsImage = image.Copy();
+                    image.ROI = Rectangle.Empty;
+
+                    imageForOcr.ROI = area;
+                    patientDetailsImage.CopyTo(imageForOcr);
+                    imageForOcr.ROI = Rectangle.Empty;
+
+                    List<Rectangle> rects = GetBoundingRectangles(imageForOcr, minSize, maxSize);
+
+                    FindInCaches(rects, imageForOcr);
+
+                    List<OCRResult> results = GetText(imageForOcr, rects);
+
+                    if (Settings.Default.SHOW_OCR_IMAGE)
+                    {
+                        foreach (OCRResult result in results)
+                        {
+                            Console.WriteLine(result.GetText());
+                            imageForOcr.Draw(result.GetRectangle(), new Bgr(0, 0, 255));
+                        }
+                        ImageViewer.Show(imageForOcr);
+                    }
+
+                    patientDetails.AddRange(results);
+
+                    patientDetailsImage.Dispose();
+                }
             }
             return patientDetails;
         }
 
-        public List<OCRResult> GetText(Image<Bgr, byte> image, Size minSize, Size maxSize)
+        public List<OCRResult> GetText(Image<Bgr, byte> image, List<Rectangle> ocrRects)
         {
-            using (Image<Gray, byte> optImg = GetOptImage(image))
+            
+            if (Settings.Default.SHOW_BOUNDING_RECTS)
             {
-                List<Rectangle> patRects = GetBoundingRectangles(optImg, minSize, maxSize);
-
-                if (Settings.Default.SHOW_BOUNDING_RECTS)
+                Image<Bgr, byte> imageToShow = image.Copy();
+                foreach (Rectangle rect in ocrRects)
                 {
-                    Image<Bgr, byte> imageToShow = image.Copy();
-                    foreach (Rectangle rect in patRects)
-                    {
-                        imageToShow.Draw(rect, new Bgr(0,255,0));
-                    }
-                    ImageViewer.Show(imageToShow);
+                    imageToShow.Draw(rect, new Bgr(0,255,0));
+                }
+                ImageViewer.Show(imageToShow);
+            }
+
+            List<OCRResult> textList = new List<OCRResult>();
+
+            foreach (Rectangle rect in ocrRects)
+            {
+                //image.Draw(rect, new Bgr(0,0,255), 1);
+                Rectangle newRect = rect; 
+                //newRect.X = rect.X - 1;
+                //newRect.Y = rect.Y - 1;
+                //newRect.Height = rect.Height + 2;
+                //newRect.Width = rect.Width + 2;
+                image.ROI = newRect;
+                    
+                Image<Bgr, byte> textImg = image.Copy();
+                //Mat bigImg = new Mat();
+
+                //Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
+                //CvInvoke.Resize(textImg, bigImg, newSize, 0, 0, Inter.Cubic);
+
+                Mat gray = new Mat();
+                //Mat colorBoost = new Mat();
+                CvInvoke.CvtColor(textImg, gray, ColorConversion.Bgr2Gray);
+
+
+
+                //CvInvoke.Decolor(bigImg, gray, colorBoost);
+
+                Mat correctedImage = gray;
+
+                double mean = CvInvoke.Mean(gray).V0;
+
+                if (mean < 150)
+                {
+                    CvInvoke.BitwiseNot(gray, correctedImage);
                 }
 
-                List<OCRResult> textList = new List<OCRResult>();
+                Mat finalImage2 = new Mat();
+                Size newSize = new Size(textImg.Width * 4, textImg.Height * 4);
+                CvInvoke.Resize(correctedImage, finalImage2, newSize, 0, 0, Inter.Cubic);
 
-                foreach (Rectangle rect in patRects)
+                Mat finalImage = new Mat();
+                CvInvoke.EdgePreservingFilter(finalImage2, finalImage);
+
+                //Mat blackwhite = new Mat();
+                //CvInvoke.Threshold(gray, blackwhite, 150, 255, ThresholdType.BinaryInv);
+
+                image.ROI = Rectangle.Empty;
+                OCR_PROVIDER.SetImage(finalImage);
+
+                textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg, finalImage));
+
+                //Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
+                //ImageViewer.Show(correctedImage);
+
+                if (Settings.Default.SHOW_INDIVIDUAL_OCR_RECT)
                 {
-                    //image.Draw(rect, new Bgr(0,0,255), 1);
-                    Rectangle newRect = rect; 
-                    //newRect.X = rect.X - 1;
-                    //newRect.Y = rect.Y - 1;
-                    //newRect.Height = rect.Height + 2;
-                    //newRect.Width = rect.Width + 2;
-                    image.ROI = newRect;
-                    
-                    Image<Bgr, byte> textImg = image.Copy();
-                    //Mat bigImg = new Mat();
-
-                    //Size newSize = new Size(textImg.Width * 2, textImg.Height * 2);
-                    //CvInvoke.Resize(textImg, bigImg, newSize, 0, 0, Inter.Cubic);
-
-                    Mat gray = new Mat();
-                    //Mat colorBoost = new Mat();
-                    CvInvoke.CvtColor(textImg, gray, ColorConversion.Bgr2Gray);
-
-
-
-                    //CvInvoke.Decolor(bigImg, gray, colorBoost);
-
-                    Mat correctedImage = gray;
-
-                    double mean = CvInvoke.Mean(gray).V0;
-
-                    if (mean < 150)
-                    {
-                        CvInvoke.BitwiseNot(gray, correctedImage);
-                    }
-
-                    Mat finalImage2 = new Mat();
-                    Size newSize = new Size(textImg.Width * 4, textImg.Height * 4);
-                    CvInvoke.Resize(correctedImage, finalImage2, newSize, 0, 0, Inter.Cubic);
-
-                    Mat finalImage = new Mat();
-                    CvInvoke.EdgePreservingFilter(finalImage2, finalImage);
-
-                    //Mat blackwhite = new Mat();
-                    //CvInvoke.Threshold(gray, blackwhite, 150, 255, ThresholdType.BinaryInv);
-
-                    image.ROI = Rectangle.Empty;
-                    OCR_PROVIDER.SetImage(finalImage);
-                    
-                    textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg, finalImage));
-                    
-                    Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
-                    //ImageViewer.Show(correctedImage);
-
-                    if (Settings.Default.SHOW_INDIVIDUAL_OCR_RECT)
-                    {
-                        ImageViewer.Show(finalImage);
-                    }
+                    ImageViewer.Show(finalImage);
                 }
+            }
                 
 
-                return textList;
+          return textList;
+        }
+
+        private void FindInCaches(List<Rectangle> rectangles, Image<Bgr, byte> image)
+        {
+            List<Rectangle> toRemove = new List<Rectangle>();
+            foreach (Rectangle rect in rectangles)
+            {
+                image.ROI = rect;
+                if (SelectedProductManager.Get().FindProductByPIPImage(image))
+                {
+                    toRemove.Add(rect);
+                }
             }
+
+            rectangles.RemoveAll(r => toRemove.Contains(r));
+
+            image.ROI = Rectangle.Empty;
         }
 
         /// <summary>
@@ -421,14 +442,16 @@ namespace PharmApp
         /// <param name="img">optimised image for contour detection</param>
         /// <param name="textRects">if true then it filters out rectangles that are inappropriately sized for containing standard text</param>
         /// <returns>a list of rectangles that contain the contours of the image</returns>
-        private List<Rectangle> GetBoundingRectangles(Image<Gray, byte> img, Size minSize, Size maxSize)
+        private List<Rectangle> GetBoundingRectangles(Image<Bgr, byte> img, Size minSize, Size maxSize)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
             Mat m = new Mat();
-            CvInvoke.FindContours(img, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
+            using (Image<Gray, byte> optImg = GetOptImage(img))
+                CvInvoke.FindContours(img, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
 
             List<Rectangle> list = new List<Rectangle>();
 

@@ -97,6 +97,26 @@ namespace PharmApp.src.GUI
             form.ShouldBeVisible = false;
         }
 
+        private SelectedProductDrawing UseFreeForm(Product product, OCRResult ocr)
+        {
+            if (unusedForms.Count == 0)
+            {
+                LogManager.GetLogger(typeof(Program)).Debug("No more available forms for pipcodes");
+                return null;
+            }
+            SelectedProductDrawing freeForm = unusedForms.Pop();
+            currentForms.Add(freeForm);
+            freeForm.SetOCRResult(ocr);
+
+            freeForm.SetProduct(product);
+            freeForm.ChangeLocationByOCRRect(ocr.GetRectangle());
+            freeForm.ShouldBeVisible = true;
+
+            productOCRCache[product] = ocr;
+
+            return freeForm;
+        }
+
         private SelectedProductDrawing UseFreeForm(OCRResult ocr)
         {
             if (unusedForms.Count == 0)
@@ -163,7 +183,7 @@ namespace PharmApp.src.GUI
             return screenShot;
         }
 
-        public Product FindProductByPIPImage(Image<Bgr, byte> image)
+        public bool FindProductByPIPImage(Image<Bgr, byte> image)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -173,13 +193,15 @@ namespace PharmApp.src.GUI
                 OCR ocr = OCR.Get();
                 if (ocr.HashcodesEqual(ocr.ComputeHashCode(image), kv.Value.GetImageHash()))
                 {
+                    kv.Value.UpdateRectangle(image.ROI);
+                    UseFreeForm(kv.Key, kv.Value);
                     LogManager.GetLogger(typeof(Program)).Debug("Found pipcode image hash after " + stopwatch.ElapsedMilliseconds + "ms");
-                    return kv.Key;
+                    return true;
                 }
             }
 
             LogManager.GetLogger(typeof(Program)).Debug("Searching for product using image hashcode failed after " + stopwatch.ElapsedMilliseconds + "ms");
-            return null;
+            return false;
         }
 
     }
