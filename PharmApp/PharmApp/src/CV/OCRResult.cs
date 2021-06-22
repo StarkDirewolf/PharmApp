@@ -55,7 +55,13 @@ namespace PharmApp.src
 
             double hashCompare = model.Compare(screenshotHash, hashCode);
             bool result = hashCompare < 1;
+
+            // testing
+            Image<Bgr, byte> testImage = screenshot.ConcateVertical(GetImage());
+            ImageViewer.Show(testImage, hashCompare.ToString());
+
             screenshot.ROI = Rectangle.Empty;
+
             return result;
         }
 
