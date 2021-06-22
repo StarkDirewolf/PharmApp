@@ -43,7 +43,7 @@ namespace PharmApp.src.GUI
             PharmTrayIcon icon = new PharmTrayIcon();
             
             productManager = SelectedProductManager.Get();
-            processor.OnProductsChanged += productManager.OnSelectedProductChanged;
+            //processor.OnProductsChanged += productManager.OnSelectedProductChanged;
 
             HotKeyManager.HotKeyPressed += new EventHandler<HotKeyEventArgs>(PharmHotKey.HotKeyPressed);
         }

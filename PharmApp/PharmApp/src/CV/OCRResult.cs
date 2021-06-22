@@ -27,8 +27,7 @@ namespace PharmApp.src
             this.rect = rect;
             this.image = image;
             this.ocrImage = ocrImage;
-            PHash model = new PHash();
-            model.Compute(image, hashCode);
+            hashCode = OCR.Get().ComputeHashCode(image);
         }
 
         public string GetText()
@@ -46,19 +45,22 @@ namespace PharmApp.src
             return ocrImage;
         }
 
+        public Mat GetImageHash()
+        {
+            return hashCode;
+        }
+
         public bool IsInImage(Image<Bgr, byte> screenshot)
         {
-            PHash model = new PHash();
             screenshot.ROI = GetRectangle();
-            Mat screenshotHash = new Mat();
-            model.Compute(screenshot, screenshotHash);
 
-            double hashCompare = model.Compare(screenshotHash, hashCode);
-            bool result = hashCompare < 1;
+            OCR ocr = OCR.Get();
+            bool result = ocr.HashcodesEqual(ocr.ComputeHashCode(screenshot), hashCode);
 
-            // testing
+            // For testing
             Image<Bgr, byte> testImage = screenshot.ConcateVertical(GetImage());
-            ImageViewer.Show(testImage, hashCompare.ToString());
+            ImageViewer.Show(testImage, result.ToString());
+
 
             screenshot.ROI = Rectangle.Empty;
 

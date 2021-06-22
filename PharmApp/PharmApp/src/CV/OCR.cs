@@ -18,6 +18,7 @@ using PharmApp.src;
 using Emgu.CV.CvEnum;
 using log4net;
 using PharmApp.Properties;
+using Emgu.CV.ImgHash;
 
 namespace PharmApp
 {
@@ -25,6 +26,7 @@ namespace PharmApp
     {
 
         private static OCR obj;
+        private PHash hashModel = new PHash();
 
         private readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
 
@@ -786,5 +788,21 @@ namespace PharmApp
         //    if (screen == null) return false;
         //    return toCompare.GetImage().Equals(screen);
         //}
+
+        public Mat ComputeHashCode(Image<Bgr, byte> image)
+        {
+            Mat hashcode = new Mat();
+
+            hashModel.Compute(image, hashcode);
+
+            return hashcode;
+        }
+
+        public bool HashcodesEqual(Mat hashCode1, Mat hashCode2)
+        {
+            double result = hashModel.Compare(hashCode1, hashCode2);
+
+            return (result < 1);
+        }
     }
 }

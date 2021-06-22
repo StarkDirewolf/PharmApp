@@ -1,8 +1,11 @@
 ﻿using Emgu.CV;
+using Emgu.CV.ImgHash;
 using Emgu.CV.Structure;
+using log4net;
 using PharmApp.src.SQL;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -18,6 +21,7 @@ namespace PharmApp.src.GUI
         private Stack<SelectedProductDrawing> unusedForms = new Stack<SelectedProductDrawing>();
         private List<SelectedProductDrawing> currentForms = new List<SelectedProductDrawing>();
         private static SelectedProductManager manager;
+        private Dictionary<Product, OCRResult> productOCRCache = new Dictionary<Product, OCRResult>();
 
         private SelectedProductManager()
         {
@@ -43,56 +47,36 @@ namespace PharmApp.src.GUI
             }
         }
 
-        public void OnSelectedProductChanged(object source, OCRResultListEventArgs args)
+        public void AddProductsFromOCRs(List<OCRResult> productOCRs)
         {
 
-            if (args == null || args.OCRResults == null || args.OCRResults.Count == 0)
+            if (productOCRs == null || productOCRs.Count == 0)
             {
-                foreach (SelectedProductDrawing form in currentForms)
-                {
-                    form.ShouldBeVisible = false;
-                }
                 return;
             }
 
-            List<OCRResult> ocrResults = args.OCRResults;
-
-            List<SelectedProductDrawing> keepForms = new List<SelectedProductDrawing>();
-
-            foreach (OCRResult ocrResult in ocrResults)
+            foreach (OCRResult ocrResult in productOCRs)
             {
-                string pip = ocrResult.GetText();
-                SelectedProductDrawing foundForm = currentForms.Find(f => f.GetProduct().pipcode == pip);
-                if (foundForm != null) keepForms.Add(foundForm);
+                UseFreeForm(ocrResult);
             }
 
-            SelectedProductDrawing[] currentFormsArray = currentForms.ToArray();
 
-            foreach (SelectedProductDrawing iform in currentFormsArray)
-            {
-                if (!keepForms.Contains(iform))
-                {
-                    FreeUpForm(iform);
-                }
-                
-            }
+            //foreach (OCRResult ocrResult in ocrResults)
+            //{
+            //    string pip = ocrResult.GetText();
+            //    SelectedProductDrawing foundForm = keepForms.Find(f => f.GetProduct().pipcode == pip);
+            //    //foundForm = keepForms.Count > 1 ? keepForms.Find(f => f.GetProduct().pipcode == pip) : null;
 
-            foreach (OCRResult ocrResult in ocrResults)
-            {
-                string pip = ocrResult.GetText();
-                SelectedProductDrawing foundForm = keepForms.Find(f => f.GetProduct().pipcode == pip);
-                //foundForm = keepForms.Count > 1 ? keepForms.Find(f => f.GetProduct().pipcode == pip) : null;
-
-                if (foundForm != null)
-                {
-                    foundForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
-                    foundForm.ShouldBeVisible = true;
-                }
-                else
-                {
-                    UseFreeForm(ocrResult);
-                }
-            }
+            //    if (foundForm != null)
+            //    {
+            //        foundForm.ChangeLocationByOCRRect(ocrResult.GetRectangle());
+            //        foundForm.ShouldBeVisible = true;
+            //    }
+            //    else
+            //    {
+            //        UseFreeForm(ocrResult);
+            //    }
+            //}
 
                 //foreach (SelectedProductDrawing form in currentForms)
                 //{
@@ -115,12 +99,21 @@ namespace PharmApp.src.GUI
 
         private SelectedProductDrawing UseFreeForm(OCRResult ocr)
         {
+            if (unusedForms.Count == 0)
+            {
+                LogManager.GetLogger(typeof(Program)).Debug("No more available forms for pipcodes");
+                return null;
+            }
             SelectedProductDrawing freeForm = unusedForms.Pop();
             currentForms.Add(freeForm);
             freeForm.SetOCRResult(ocr);
-            freeForm.SetProduct(ProductLookup.Get().FindByPIP(ocr.GetText()));
+            Product product = ProductLookup.Get().FindByPIP(ocr.GetText());
+            freeForm.SetProduct(product);
             freeForm.ChangeLocationByOCRRect(ocr.GetRectangle());
             freeForm.ShouldBeVisible = true;
+
+            // Adds entry or replaces existing entry
+            productOCRCache[product] = ocr;
 
             return freeForm;
         }
@@ -168,6 +161,25 @@ namespace PharmApp.src.GUI
                 FreeUpForm(drawing);
             }
             return screenShot;
+        }
+
+        public Product FindProductByPIPImage(Image<Bgr, byte> image)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            foreach (KeyValuePair<Product, OCRResult> kv in productOCRCache)
+            {
+                OCR ocr = OCR.Get();
+                if (ocr.HashcodesEqual(ocr.ComputeHashCode(image), kv.Value.GetImageHash()))
+                {
+                    LogManager.GetLogger(typeof(Program)).Debug("Found pipcode image hash after " + stopwatch.ElapsedMilliseconds + "ms");
+                    return kv.Key;
+                }
+            }
+
+            LogManager.GetLogger(typeof(Program)).Debug("Searching for product using image hashcode failed after " + stopwatch.ElapsedMilliseconds + "ms");
+            return null;
         }
 
     }

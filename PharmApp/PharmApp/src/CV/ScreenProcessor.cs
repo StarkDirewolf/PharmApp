@@ -106,31 +106,31 @@ namespace PharmApp.src
             }
         }
 
-        private List<OCRResult> _selectedProducts;
-        private List<OCRResult> selectedProducts
-        {
-            get => _selectedProducts;
-            set
-            {
-                if (value != _selectedProducts)
-                {
-                    if (OnProductsChanged == null) return;
+        //private List<OCRResult> _selectedProducts;
+        //private List<OCRResult> selectedProducts
+        //{
+        //    get => _selectedProducts;
+        //    set
+        //    {
+        //        if (value != _selectedProducts)
+        //        {
+        //            if (OnProductsChanged == null) return;
 
-                    _selectedProducts = value;
+        //            _selectedProducts = value;
 
-                    if (value == null)
-                    {
-                        OnProductsChanged(this, OCRResultListEventArgs.Empty);
-                    }
-                    else
-                    {
+        //            if (value == null)
+        //            {
+        //                OnProductsChanged(this, OCRResultListEventArgs.Empty);
+        //            }
+        //            else
+        //            {
 
-                        OnProductsChanged(this, new OCRResultListEventArgs(value));
+        //                OnProductsChanged(this, new OCRResultListEventArgs(value));
 
-                    }
-                }
-            }
-        }
+        //            }
+        //        }
+        //    }
+        //}
 
         private bool hasUnprintedETPs;
 
@@ -393,7 +393,6 @@ namespace PharmApp.src
                     viewingOrderPad = screen is ScreenOrderPad;
                     viewingGoodsIn = screen is ScreenGoodsIn;
 
-
                     Image<Bgr, byte> subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
                     LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
@@ -404,8 +403,9 @@ namespace PharmApp.src
                     stopwatch.Restart();
 
                     //ImageViewer.Show(subtractedImage);
-                    selectedProducts = screen.GetPipcodes(subtractedImage);
-                    if (selectedProducts != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes with subtracted image took " + stopwatch.ElapsedMilliseconds + "ms");
+                    List<OCRResult> visibleProductsOCRs = screen.GetPipcodes(subtractedImage);
+                    SelectedProductManager.Get().AddProductsFromOCRs(visibleProductsOCRs);
+                    if (visibleProductsOCRs != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
                     stopwatch.Restart();
                 }
             }
@@ -573,15 +573,12 @@ namespace PharmApp.src
 
                 Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
 
-                var thisScreenHashCode = new Mat();
-                PHash model = new PHash();
-                model.Compute(screenCap, thisScreenHashCode);
-                //ImageViewer.Show(screenCap);
+                OCR ocr = OCR.Get();
+                var thisScreenHashCode = ocr.ComputeHashCode(screenCap);
 
                 if (lastScreenHashCode != null)
                 {
-                    double score = model.Compare(lastScreenHashCode, thisScreenHashCode);
-                    if (score == 0)
+                    if (ocr.HashcodesEqual(thisScreenHashCode, lastScreenHashCode))
                     {
                         LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
                         return false;
@@ -644,8 +641,8 @@ namespace PharmApp.src
         public delegate void OCRProcessHandler(object source, OCRResultEventArgs args);
         public event OCRProcessHandler OnNHSNumberChanged;
 
-        public delegate void OCRListProcessHandler(object source, OCRResultListEventArgs args);
-        public event OCRListProcessHandler OnProductsChanged;
+        //public delegate void OCRListProcessHandler(object source, OCRResultListEventArgs args);
+        //public event OCRListProcessHandler OnProductsChanged;
 
         public delegate void OrderPadProcessHandler(object source, List<Product> newItems, List<Product> deletedItems);
         public event OrderPadProcessHandler OnOrderPadActionableCommentsChanged;

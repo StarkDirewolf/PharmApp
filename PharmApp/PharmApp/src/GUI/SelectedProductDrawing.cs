@@ -60,7 +60,6 @@ namespace PharmApp.src.GUI
         public void SetProduct(Product product)
         {
             this.product = product;
-            product.SetOCRResult(ocr);
             SetTooltipToOrderHistory();
             tooltip_timer.Start();
             if (product.genericID == "0")

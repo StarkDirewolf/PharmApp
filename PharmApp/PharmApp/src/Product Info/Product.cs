@@ -17,7 +17,6 @@ namespace PharmApp.src
         //public string preparationCode;
         public bool isGeneric = false;
         public string supplier = "NO SUPPLIER";
-        private OCRResult ocrResult;
         private SQLOrderHistory orders;
         public decimal dtPrice = 0.0M;
         private SQLOrderingNote _orderingNote;
@@ -102,16 +101,6 @@ namespace PharmApp.src
         public OrderHistory GetRecentOrders()
         {
             return GetPlacedOrders(DateTime.Today.AddDays(-5), DateTime.Today);
-        }
-
-        public void SetOCRResult(OCRResult ocr)
-        {
-            ocrResult = ocr;
-        }
-
-        public OCRResult GetOCRResult()
-        {
-            return ocrResult;
         }
 
         public override string ToString()
