@@ -565,33 +565,38 @@ namespace PharmApp.src
                 SelectObject(hMemDc, hBitmap);
 
                 BitBlt(hMemDc, 0, 0, rc.Width, rc.Height, hWndDc, 8, 8, TernaryRasterOperations.SRCCOPY);
-                Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap);
 
                 DeleteObject(hBitmap);
                 ReleaseDC(proscriptHandle, hWndDc);
                 ReleaseDC(IntPtr.Zero, hMemDc);
 
-                Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
-
-                var thisScreenHashCode = new Mat();
-                PHash model = new PHash();
-                model.Compute(screenCap, thisScreenHashCode);
-                //ImageViewer.Show(screenCap);
-
-                if (lastScreenHashCode != null)
+                using (Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap))
                 {
-                    double score = model.Compare(lastScreenHashCode, thisScreenHashCode);
-                    if (score == 0)
-                    {
-                        LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
-                        return false;
-                    }
-                }
+                    Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
 
-                LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");
-                lastScreen = screenCap;
-                lastScreenHashCode = thisScreenHashCode;
-                return true;
+                    var thisScreenHashCode = new Mat();
+                    PHash model = new PHash();
+                    model.Compute(screenCap, thisScreenHashCode);
+                    //ImageViewer.Show(screenCap);
+
+                    if (lastScreenHashCode != null)
+                    {
+                        double score = model.Compare(lastScreenHashCode, thisScreenHashCode);
+                        if (score == 0)
+                        {
+                            LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
+                            return false;
+                        }
+                        lastScreen.Dispose();
+                    }
+
+                    LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");
+
+
+                    lastScreen = screenCap;
+                    lastScreenHashCode = thisScreenHashCode;
+                    return true;
+                }
 
 
                 //IntPtr hdc = g.GetHdc();

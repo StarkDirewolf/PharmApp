@@ -40,7 +40,7 @@ namespace PharmApp.src.Requests
 
         public bool HasNewRequests()
         {
-            if (patients.FirstOrDefault(p => p.hasNewRequest()) == null)
+            if (patients.FirstOrDefault(p => p.HasNewRequest()) == null)
             {
                 return false;
             }
@@ -49,9 +49,25 @@ namespace PharmApp.src.Requests
 
         public List<Patient> GetPatientsWithNewRequests()
         {
-            List<Patient> newRequestPatients = patients.FindAll(p => p.hasNewRequest());
+            List<Patient> newRequestPatients = patients.FindAll(p => p.HasNewRequest());
 
             return newRequestPatients;
+        }
+
+        public List<Patient> GetPatientsWithRequestsToChase()
+        {
+            List<Patient> returnPatients = this.patients.FindAll(p => p.HasRequestsToChase());
+
+            return returnPatients;
+        }
+
+        public bool HasRequestsToChase()
+        {
+            if (patients.FirstOrDefault(p => p.HasRequestsToChase()) == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         public string GetName()

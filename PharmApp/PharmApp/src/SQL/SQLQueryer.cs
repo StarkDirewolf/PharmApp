@@ -73,13 +73,13 @@ namespace PharmApp
             {
                 connection.Open();
 
-                QueryConstructor insertSentEmail = new QueryConstructor(QueryConstructor.QueryType.RECORDSENTEMAIL);
-
-                insertSentEmail.EmailID(id);
-                insertSentEmail.SurgeryCode(surgery.id);
-
                 foreach(Request request in requests)
                 {
+                    QueryConstructor insertSentEmail = new QueryConstructor(QueryConstructor.QueryType.RECORDSENTEMAIL);
+
+                    insertSentEmail.EmailID(id);
+                    insertSentEmail.SurgeryCode(surgery.id);
+
                     insertSentEmail.RequestID(request.ID);
 
                     SqlCommand sentEmailCommand = new SqlCommand(insertSentEmail.ToString(), connection);

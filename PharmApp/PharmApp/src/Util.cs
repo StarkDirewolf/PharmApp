@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Nager.Date;
 
 namespace PharmApp.src
 {
@@ -47,6 +48,19 @@ namespace PharmApp.src
                 return "are " + qty;
             }
             else return "is " + qty;
+        }
+
+        public static DateTime WorkingDaysAgo(int daysToCount)
+        {
+            DateTime date = DateTime.Now;
+
+            while (daysToCount > 0)
+            {
+                if (!DateSystem.IsWeekend(date, CountryCode.GB) && !DateSystem.IsPublicHoliday(date, CountryCode.GB)) daysToCount -= 1;
+                date = date.AddDays(-1);
+            }
+
+            return date;
         }
     }
 }

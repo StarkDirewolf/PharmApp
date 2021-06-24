@@ -80,5 +80,12 @@ namespace PharmApp.src.Requests
 
             return itemFound;
         }
+
+        public bool IsEligibleForChasing()
+        {
+            return (Status == Request.StatusType.REQUESTED || Status == Request.StatusType.PARTIALLYDISPENSED)
+                && DateCreated < Util.WorkingDaysAgo(RequestManager.WORKING_DAYS_BEFORE_CHASE)
+                && DateCreated > Util.WorkingDaysAgo(RequestManager.MAXIMUM_AGE_TO_CHASE_IN_WORKING_DAYS);
+        }
     }
 }

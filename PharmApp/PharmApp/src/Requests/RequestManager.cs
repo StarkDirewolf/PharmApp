@@ -14,48 +14,56 @@ namespace PharmApp.src.Requests
 {
     class RequestManager
     {
+        public const int MAXIMUM_AGE_TO_CHASE_IN_WORKING_DAYS = 14;
+        public const int WORKING_DAYS_BEFORE_CHASE = 3;
 
         private static RequestManager obj;
         private List<Patient> patients = new List<Patient>();
         private List<Request> requests = new List<Request>();
         private List<Surgery> surgeries = new List<Surgery>();
         private const string DATEFORMAT = "dd/MM/yyyy";
-        public const string INTRO_1 = @"Dear ";
-        public const string INTRO_2 = @",
+        private const string INTRO_1 = @"Dear ";
+        private const string INTRO_2 = @",
 
 Below ";
-        public const string INTRO_3_NEW = @" new repeat ";
-        public const string INTRO_4_VARIABLE = "request";
-        public const string INTRO_5_NEW = @".
+        private const string INTRO_3_NEW = @" new repeat ";
+        private const string INTRO_4_VARIABLE = "request";
+        private const string INTRO_5_NEW = @".
 They have also been added as an attachment.
 Please let us know if there are any issues.
 ";
-        public const string INTRO_3_CHASE = @" repeat ";
-        public const string INTRO_5_CHASE = @" that we haven't had back yet:
+        private const string INTRO_3_CHASE = @" repeat ";
+        private const string INTRO_5_CHASE = @" that we <b>haven't had back yet.</b>
+They have also been added as an attachment.
+Please let us know if there are any issues.
 ";
 
-        public const string INTRO_1_ALBION = @"Dear ";
+        private const string INTRO_1_ALBION = @"Dear ";
 
-        public const string INTRO_2_ALBION = @",
+        private const string INTRO_2_ALBION = @",
 
 Please find the attached <b>";
 
-        public const string INTRO_3_ALBION = @"</b> repeat requests.
+        private const string INTRO_3_ALBION = @"</b> repeat ";
+        private const string INTRO_4_ALBION_CHASE = @" that <b>haven't come back yet.</b>
 ";
 
-        public const string END = @"
+        private const string INTRO_4_ALBION = @".
+";
+
+        private const string END = @"
 Many thanks,
 
 Link Pharmacy";
 
-        public readonly XFont patientDetailsFont = new XFont("Arial", 11, XFontStyle.Bold);
-        public readonly XFont itemFont = new XFont("Arial", 10, XFontStyle.Bold);
+        private readonly XFont patientDetailsFont = new XFont("Arial", 11, XFontStyle.Bold);
+        private readonly XFont itemFont = new XFont("Arial", 10, XFontStyle.Bold);
 
-        public readonly XFont albionNormalFont = new XFont("Arial", 10);
-        public readonly XFont albionSmallDateFont = new XFont("Arial", 8);
+        private readonly XFont albionNormalFont = new XFont("Arial", 10);
+        private readonly XFont albionSmallDateFont = new XFont("Arial", 8);
 
-        public const string PDF_FILENAME = "Repeat Requests.pdf";
-        public const double PDF_PADDING = 10;
+        private const string PDF_FILENAME = "Repeat Requests.pdf";
+        private const double PDF_PADDING = 10;
 
         public static RequestManager Get()
         {
@@ -117,9 +125,17 @@ Link Pharmacy";
             }
             else
             {
-                validSurgery = surgeries.FirstOrDefault();
+                validSurgery = surgeries.FirstOrDefault(s => s.HasRequestsToChase());
             }
             
+            if (validSurgery == null && onlyNewRequests)
+            {
+                DialogResult result = MessageBox.Show("Do you want to email overdue requests?", "Overdue Requests", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    GenerateRequestEmail(false);
+                }
+            }
 
             if (validSurgery != null)
             {
@@ -130,20 +146,23 @@ Link Pharmacy";
                 GUI.Email emailForm = new GUI.Email();
                 emailForm.Visible = true;
 
-                List<Patient> newRequestPatients = validSurgery.GetPatientsWithNewRequests();
+                List<Patient> requestPatients;
+                if (onlyNewRequests) requestPatients = validSurgery.GetPatientsWithNewRequests();
+                else requestPatients = validSurgery.GetPatientsWithRequestsToChase();
 
-                // hard coding bower's mount wanting maximum of 10 at a time
-                if (validSurgery.GetName() == "Bower Mount Medical Practice" && newRequestPatients.Count > 10)
+                // hard coding bower's wanting maximum of 10 at a time
+                if (validSurgery.GetName() == "Bower Mount Medical Practice" && requestPatients.Count > 10)
                 {
-                    newRequestPatients.RemoveRange(10, newRequestPatients.Count - 10);
+                    requestPatients.RemoveRange(10, requestPatients.Count - 10);
                 }
 
                 if (validSurgery.HasEmailAddress()) emailForm.SetToText(validSurgery.GetEmail());
 
                 List<Request> sentRequests;
  
-                emailForm.SetHTMLMessage(GenerateRequestTable(newRequestPatients, onlyNewRequests, isSpecial, isBrewer, out sentRequests));
-                
+                emailForm.SetHTMLMessage(GenerateRequestTable(requestPatients, onlyNewRequests, isSpecial, isBrewer, out sentRequests));
+
+                emailForm.SetNewRequestsBool(onlyNewRequests);
 
                 emailForm.AddAttachment(PDF_FILENAME);
 
@@ -151,7 +170,17 @@ Link Pharmacy";
 
                 if (isSpecial)
                 {
-                    introMsg = INTRO_1_ALBION + validSurgery.GetName() + INTRO_2_ALBION + sentRequests.Count + INTRO_3_ALBION;
+                    if (onlyNewRequests)
+                    {
+                        introMsg = INTRO_1_ALBION + validSurgery.GetName() + INTRO_2_ALBION + sentRequests.Count + INTRO_3_ALBION +
+                            Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_4_ALBION;
+                    }
+                    else
+                    {
+                        introMsg = INTRO_1_ALBION + validSurgery.GetName() + INTRO_2_ALBION + sentRequests.Count + INTRO_3_ALBION +
+                            Util.MakePlural(INTRO_4_VARIABLE, sentRequests.Count) + INTRO_4_ALBION_CHASE;
+                    }
+                    
                 }
                 else
                 {
@@ -214,7 +243,7 @@ Link Pharmacy";
         <th style='padding: 5px'>Patient</th>";
 
             if (!onlyNewRequests) body += @"
-        <th style='padding: 5px'>Date</th>";
+        <th style='padding: 5px'>Original Date</th>";
 
             if (hasNotes) body += @"
         <th style='padding: 5px'>Notes</th>";
@@ -252,27 +281,31 @@ Link Pharmacy";
 
                 string itemListString = "";
 
-                bool newRowTag = true;
+                bool newRequestFormattingTag = true;
 
-                // Add 1 row because of padding row
-                int totalItemNo = p.GetTotalNumberOfRequestingItems(onlyNewRequests) + 1;
+                List<Request> requests;
+                if (onlyNewRequests) requests = p.GetRequests().FindAll(r => r.Status == Request.StatusType.TOBEREQUESTED);
+                else requests = p.GetRequests().FindAll(r => r.Status != Request.StatusType.TOBEREQUESTED);
 
-                body += "\n<tr height='20px'></tr><tr style='border-top: thin solid black;'>";
+                // Adds 1 row per request due to padding rows
+                int totalItemNo = p.GetTotalNumberOfRequestingItems(onlyNewRequests) + requests.Count - 1;
+
+                body += "\n<tr height='40px'></tr><tr style='border-top: thin solid black;'>";
                 body += "\n<td style='padding: 5px' rowspan =\"" + totalItemNo + "\"><pre>" + p.ToString() + "</pre></td>";
 
-                foreach(Request r in p.GetRequests())
+                foreach(Request r in requests)
                 {
-                    if (onlyNewRequests && r.Status != Request.StatusType.TOBEREQUESTED)
+                    if ((onlyNewRequests && r.Status != Request.StatusType.TOBEREQUESTED) || (!onlyNewRequests && r.Status == Request.StatusType.TOBEREQUESTED))
                     {
                         continue;
                     }
 
                     sendingRequests.Add(r);
 
-                    if (!newRowTag)
+                    if (!newRequestFormattingTag)
                     {
                         body += "\n<tr height='20px'></tr><tr style='border-top: thin solid black;'>";
-                        newRowTag = true;
+                        newRequestFormattingTag = true;
                     }
 
                     List<RequestItem> items = r.Items;
@@ -280,7 +313,12 @@ Link Pharmacy";
                     if (!onlyNewRequests)
                     {
                         itemListString += "\nRequested " + r.DateCreated.ToString(DATEFORMAT) + ":\n";
-                        body += "\n<td style='padding: 5px' rowspan =\"" + items.Count + "\">" + r.DateCreated.ToString(DATEFORMAT) + "</td>";
+                        body += "\n<td style='padding: 5px' rowspan =\"" + (items.Count + 1) + "\">" + r.DateCreated.ToString(DATEFORMAT) + "</td>";
+
+                        if (isSpecial)
+                        {
+                            textFormatter.DrawString("Original request: " + r.DateCreated.ToString(DATEFORMAT), albionNormalFont, XBrushes.Black, new XRect(28, itemYPos + 15, 570, 30));
+                        }
                     }
 
                     if (hasNotes)
@@ -313,7 +351,7 @@ Link Pharmacy";
                     {
                         itemListString += "- " + i.ToString() + "\n";
 
-                        if (!newRowTag)
+                        if (!newRequestFormattingTag)
                         {
                             if (items.First() == i)
                             {
@@ -322,14 +360,14 @@ Link Pharmacy";
                             {
                                 body += "\n<tr>";
                             }
-                            newRowTag = true;
+                            newRequestFormattingTag = true;
                         }
 
                         body += "\n<td style='padding: 5px'>" + i.ToString() + "</td>";
 
                         body += "\n</tr>";
 
-                        newRowTag = false;
+                        newRequestFormattingTag = false;
 
                         if (isSpecial)
                         {
