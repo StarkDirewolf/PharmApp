@@ -574,24 +574,12 @@ namespace PharmApp.src
                 {
                     Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
 
-<<<<<<< HEAD
-                OCR ocr = OCR.Get();
-                var thisScreenHashCode = ocr.ComputeHashCode(screenCap);
-
-                if (lastScreenHashCode != null)
-                {
-                    if (ocr.HashcodesEqual(thisScreenHashCode, lastScreenHashCode))
-=======
-                    var thisScreenHashCode = new Mat();
-                    PHash model = new PHash();
-                    model.Compute(screenCap, thisScreenHashCode);
-                    //ImageViewer.Show(screenCap);
+                    OCR ocr = OCR.Get();
+                    var thisScreenHashCode = ocr.ComputeHashCode(screenCap);
 
                     if (lastScreenHashCode != null)
->>>>>>> 81b9e2cc7a3d27e9b64ea2af3690111ccb7a6c71
                     {
-                        double score = model.Compare(lastScreenHashCode, thisScreenHashCode);
-                        if (score == 0)
+                        if (ocr.HashcodesEqual(thisScreenHashCode, lastScreenHashCode))
                         {
                             LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
                             return false;
@@ -600,28 +588,26 @@ namespace PharmApp.src
                     }
 
                     LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");
-
-
                     lastScreen = screenCap;
                     lastScreenHashCode = thisScreenHashCode;
                     return true;
                 }
 
+                    //IntPtr hdc = g.GetHdc();
+                    //if (!PrintWindow(proscriptHandle, hdc, 0))
+                    //{
+                    //    int error = Marshal.GetLastWin32Error();
+                    //    var exception = new System.ComponentModel.Win32Exception(error);
+                    //    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
+                    //}
+                    //g.ReleaseHdc(hdc);
 
-                //IntPtr hdc = g.GetHdc();
-                //if (!PrintWindow(proscriptHandle, hdc, 0))
-                //{
-                //    int error = Marshal.GetLastWin32Error();
-                //    var exception = new System.ComponentModel.Win32Exception(error);
-                //    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
-                //}
-                //g.ReleaseHdc(hdc);
+                    //croppedG.DrawImage(bitmap, -7, -9);
 
-                //croppedG.DrawImage(bitmap, -7, -9);
+                    //Image<Bgr, byte> screenCap = new Image<Bgr, byte>(croppedBitmap);
+                    ////ImageViewer.Show(screenCap);
+                    //return screenCap;
 
-                //Image<Bgr, byte> screenCap = new Image<Bgr, byte>(croppedBitmap);
-                ////ImageViewer.Show(screenCap);
-                //return screenCap;
             }
 
         }
