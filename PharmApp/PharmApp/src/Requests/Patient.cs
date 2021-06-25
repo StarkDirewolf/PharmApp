@@ -36,7 +36,7 @@ namespace PharmApp.src.Requests
             requests.Add(request);
         }
 
-        public bool hasNewRequest()
+        public bool HasNewRequest()
         {
             Request request = requests.FirstOrDefault(r => r.Status == Request.StatusType.TOBEREQUESTED);
             if (request == null)
@@ -44,6 +44,17 @@ namespace PharmApp.src.Requests
                 return false;
             }
 
+            return true;
+        }
+
+        public bool HasRequestsToChase()
+        {
+            Request request = requests.FirstOrDefault(r => r.IsEligibleForChasing());
+
+            if (request == null)
+            {
+                return false;
+            }
             return true;
         }
 
@@ -61,12 +72,13 @@ namespace PharmApp.src.Requests
             return str;
         }
 
-        public int GetTotalNumberOfRequestingItems(bool onlyNewRequests)
+        public int GetTotalNumberOfRequestingItems(bool newRequests)
         {
             int number = 0;
             foreach (Request r in requests)
             {
-                if (onlyNewRequests && r.Status != Request.StatusType.TOBEREQUESTED) continue;
+                if (newRequests && r.Status != Request.StatusType.TOBEREQUESTED) continue;
+                if (!newRequests && r.Status == Request.StatusType.TOBEREQUESTED) continue;
 
                 number += r.Items.Count;
             }

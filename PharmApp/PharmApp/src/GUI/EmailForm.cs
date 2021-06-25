@@ -21,10 +21,16 @@ namespace PharmApp.src.GUI
         private List<Request> requests;
         private Surgery surgery;
         private List<string> attachmentFileNames = new List<string>();
+        private bool newRequests = true;
 
         public Email()
         {
             InitializeComponent();
+        }
+
+        public void SetNewRequestsBool(bool newReqs)
+        {
+            newRequests = newReqs;
         }
 
         private void SendButton_Click(object sender, EventArgs e)
@@ -54,7 +60,10 @@ namespace PharmApp.src.GUI
 
             message.From.Add(new MailboxAddress("Link Pharmacy", "linkpharmacy.kingstmaidstone@nhs.net"));
             message.To.Add(new MailboxAddress("Surgery", toTextBox.Text));
-            message.Subject = "Repeat Requests";
+
+            if (newRequests) message.Subject = "Repeat Requests";
+            else message.Subject = "Overdue Repeat Requests";
+
             BodyBuilder builder = new BodyBuilder();
             builder.HtmlBody = body;
 
