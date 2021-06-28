@@ -30,9 +30,9 @@ namespace PharmApp.src.GUI
             {
                 SetOCRResult(args.OCRResult);
 
-                Dictionary<DateTime, string> requestHistory
+                //Dictionary<DateTime, string> requestHistory
 
-                    if ShouldBeVisible = true;
+               //     if ShouldBeVisible = true;
             }
         }
     }
