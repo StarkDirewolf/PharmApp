@@ -117,23 +117,23 @@ namespace PharmApp.src
             popup.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             popup.AutoSize = true;
 
-            PictureBox image = new PictureBox();
-            image.Image = ocrResult.GetImage().ToBitmap();
-            image.SizeMode = PictureBoxSizeMode.AutoSize;
-            popup.Controls.Add(image);
+            //PictureBox image = new PictureBox();
+            //image.Image = ocrResult.GetImage().ToBitmap();
+            //image.SizeMode = PictureBoxSizeMode.AutoSize;
+            //popup.Controls.Add(image);
 
-            PictureBox ocrImage = new PictureBox();
-            ocrImage.Image = ocrResult.GetOCRImage().ToImage<Bgr, byte>().ToBitmap();
-            ocrImage.SizeMode = PictureBoxSizeMode.AutoSize;
-            System.Drawing.Point location = image.Location;
-            location.Offset(image.Width, 0);
-            ocrImage.Location = location;
-            popup.Controls.Add(ocrImage);
+            //PictureBox ocrImage = new PictureBox();
+            //ocrImage.Image = ocrResult.GetOCRImage().ToImage<Bgr, byte>().ToBitmap();
+            //ocrImage.SizeMode = PictureBoxSizeMode.AutoSize;
+            //System.Drawing.Point location = image.Location;
+            //location.Offset(image.Width, 0);
+            //ocrImage.Location = location;
+            //popup.Controls.Add(ocrImage);
 
             Label text = new Label();
             text.Text = ocrResult.GetText();
-            location.Offset(0, ocrImage.Height);
-            text.Location = location;
+            //location.Offset(0, ocrImage.Height);
+            //text.Location = location;
             popup.Controls.Add(text);
 
             popup.Disposed += (s, e) => SetDefaultPopup();

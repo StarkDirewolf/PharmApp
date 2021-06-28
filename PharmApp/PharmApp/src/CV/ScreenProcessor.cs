@@ -17,9 +17,9 @@ using Emgu.CV.Structure;
 using PharmApp.src.CV.Screens;
 using log4net;
 using System.Drawing;
-using Emgu.CV.UI;
 using System.Drawing.Drawing2D;
 using Emgu.CV.ImgHash;
+using Emgu.CV.UI;
 
 namespace PharmApp.src
 {
@@ -579,8 +579,10 @@ namespace PharmApp.src
 
                 using (Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap))
                 {
-                    Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
-
+                    //An unhandled exception of type 'System.TypeInitializationException' occurred in Emgu.CV.Platform.NetStandard.dll
+                    //The type initializer for 'Emgu.CV.CvInvoke' threw an exception.
+                                        Image<Bgr, byte> screenCap = bitmap2.ToImage<Bgr, byte>();
+                    ImageViewer.Show(screenCap);
                     OCR ocr = OCR.Get();
                     Mat thisScreenHashCode = ocr.ComputeHashCode(screenCap);
 

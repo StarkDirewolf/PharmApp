@@ -1,7 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.ImgHash;
 using Emgu.CV.Structure;
-using Emgu.CV.UI;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

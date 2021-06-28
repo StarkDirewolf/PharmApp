@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using Emgu.CV;
 using Emgu.CV.OCR;
 using Emgu.CV.Structure;
-using Emgu.CV.UI;
 using Emgu.CV.Util;
 using Emgu.CV.Text;
 using static Emgu.CV.OCR.Tesseract;
@@ -20,6 +19,7 @@ using log4net;
 using PharmApp.Properties;
 using Emgu.CV.ImgHash;
 using PharmApp.src.GUI;
+using Emgu.CV.UI;
 
 namespace PharmApp
 {
@@ -776,43 +776,43 @@ namespace PharmApp
 
         // Old method for grabbing whole screen but will include overlay
         // Pretty sure this isn't cached but check if weird errors as it used to be
-        public Image<Bgr, byte> GetScreen(Rectangle screenArea)
-        {
-            if (Settings.Default.USE_EXAMPLE_PMR)
-            {
-                 return new Image<Bgr, byte>(ResourceManager.PATH_ROBERT_PRYDE_PMR);
-            }
+        //public Image<Bgr, byte> GetScreen(Rectangle screenArea)
+        //{
+        //    if (Settings.Default.USE_EXAMPLE_PMR)
+        //    {
+        //         return new Image<Bgr, byte>(ResourceManager.PATH_ROBERT_PRYDE_PMR);
+        //    }
 
-            Rectangle bounds = Screen.GetBounds(Point.Empty);
-            if (screenArea != Rectangle.Empty)
-            {
-                bounds = screenArea;
+        //    Rectangle bounds = Screen.GetBounds(Point.Empty);
+        //    if (screenArea != Rectangle.Empty)
+        //    {
+        //        bounds = screenArea;
 
-            }
+        //    }
 
-            using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
-            using (Graphics g = Graphics.FromImage(bitmap))
-            {
-                try
-                {
-                    g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
-                    Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
+        //    using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
+        //    using (Graphics g = Graphics.FromImage(bitmap))
+        //    {
+        //        try
+        //        {
+        //            g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
+        //            Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap);
 
-                    return screenCap;
-                }
-                catch (Exception e)
-                {
-                    LogManager.GetLogger(typeof(Program)).Debug("Exception on screencap: " + e.Message);
-                    return null;
-                }
-            }
+        //            return screenCap;
+        //        }
+        //        catch (Exception e)
+        //        {
+        //            LogManager.GetLogger(typeof(Program)).Debug("Exception on screencap: " + e.Message);
+        //            return null;
+        //        }
+        //    }
 
-        }
+        //}
 
-        public Image<Bgr, byte> GetScreen()
-        {
-            return GetScreen(Rectangle.Empty);
-        }
+        //public Image<Bgr, byte> GetScreen()
+        //{
+        //    return GetScreen(Rectangle.Empty);
+        //}
 
         //public bool IsResultStillVisible(OCRResult toCompare)
         //{
