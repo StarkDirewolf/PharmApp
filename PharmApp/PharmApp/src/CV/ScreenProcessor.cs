@@ -275,7 +275,7 @@ namespace PharmApp.src
             dele = new WinEventDelegate(WinEventProc);
             SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, dele, 0, 0, WINEVENT_OUTOFCONTEXT);
 
-            scanScreenRef = new ThreadStart(Process);
+            scanScreenRef = new ThreadStart(ProcessTick);
             scanScreen = new Thread(scanScreenRef);
             scanScreen.Start();
 
@@ -327,7 +327,7 @@ namespace PharmApp.src
             processing = !processing;
         }
 
-        public void Process()
+        public void ProcessTick()
         {
 
             LogManager.GetLogger(typeof(Program)).Debug("");
@@ -384,14 +384,14 @@ namespace PharmApp.src
 
                     ScreenIdentifier identifier = ScreenIdentifier.Get();
                     ScreenProScript screen = identifier.Identify(lastScreen);
-                    LogManager.GetLogger(typeof(Program)).Debug("Identifying screen took " + stopwatch.ElapsedMilliseconds + "ms");
-                    stopwatch.Restart();
-
 
                     viewingPMR = screen is ScreenPMR;
                     viewingRMS = screen is ScreenRMS;
                     viewingOrderPad = screen is ScreenOrderPad;
                     viewingGoodsIn = screen is ScreenGoodsIn;
+
+                    LogManager.GetLogger(typeof(Program)).Debug("Identifying screen took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
 
                     Image<Bgr, byte> subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
                     LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
@@ -404,8 +404,15 @@ namespace PharmApp.src
 
                     //ImageViewer.Show(subtractedImage);
                     List<OCRResult> visibleProductsOCRs = screen.GetPipcodes(subtractedImage);
-                    SelectedProductManager.Get().AddProductsFromOCRs(visibleProductsOCRs);
                     if (visibleProductsOCRs != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
+                    stopwatch.Restart();
+                    
+                    if (visibleProductsOCRs != null)
+                    {
+                        SelectedProductManager.Get().AddProductsFromOCRs(visibleProductsOCRs);
+                        LogManager.GetLogger(typeof(Program)).Debug("Finding pipcode details and display UI took " + stopwatch.ElapsedMilliseconds + "ms");
+                    }
+
                     stopwatch.Restart();
                 }
             }
@@ -575,7 +582,7 @@ namespace PharmApp.src
                     Image<Bgr, byte> screenCap = new Image<Bgr, byte>(bitmap2);
 
                     OCR ocr = OCR.Get();
-                    var thisScreenHashCode = ocr.ComputeHashCode(screenCap);
+                    Mat thisScreenHashCode = ocr.ComputeHashCode(screenCap);
 
                     if (lastScreenHashCode != null)
                     {
@@ -585,6 +592,7 @@ namespace PharmApp.src
                             return false;
                         }
                         lastScreen.Dispose();
+                        lastScreenHashCode.Dispose();
                     }
 
                     LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");

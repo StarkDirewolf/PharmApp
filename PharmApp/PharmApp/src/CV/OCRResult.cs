@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace PharmApp.src
 {
-    class OCRResult
+    class OCRResult : IDisposable
     {
         private Rectangle rect;
         private readonly string text;
@@ -60,16 +60,21 @@ namespace PharmApp.src
             screenshot.ROI = GetRectangle();
 
             OCR ocr = OCR.Get();
-            bool result = ocr.HashcodesEqual(ocr.ComputeHashCode(screenshot), hashCode);
 
-            // For testing
-            Image<Bgr, byte> testImage = screenshot.ConcateVertical(GetImage());
-            ImageViewer.Show(testImage, result.ToString());
+            using (Image<Bgr, byte> screenshotPip = screenshot.Copy())
+            using (Mat screenshotHash = ocr.ComputeHashCode(screenshotPip))
+            {
+                bool result = ocr.HashcodesEqual(screenshotHash, hashCode);
 
+                // For testing
+                //Image<Bgr, byte> testImage = screenshotPip.ConcateVertical(GetImage());
+                //ImageViewer.Show(testImage, result.ToString());
+                //testImage.Dispose();
 
-            screenshot.ROI = Rectangle.Empty;
+                screenshot.ROI = Rectangle.Empty;
 
-            return result;
+                return result;
+            }
         }
 
         public Point GetOffsetPoint()
@@ -84,5 +89,16 @@ namespace PharmApp.src
             return image;
         }
 
+        public void Dispose()
+        {
+            hashCode.Dispose();
+            image.Dispose();
+            ocrImage.Dispose();
+        }
+
+    ~OCRResult()
+        {
+            Dispose();
+        }
     }
 }

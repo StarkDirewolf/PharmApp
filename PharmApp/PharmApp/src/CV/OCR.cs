@@ -29,8 +29,6 @@ namespace PharmApp
         private static OCR obj;
         private PHash hashModel = new PHash();
 
-        private readonly Tesseract OCR_PROVIDER = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
-
         // CV settings
         private const int GRAY_THRESHOLD = 200,
             GRAY_MAX = 255,
@@ -325,6 +323,8 @@ namespace PharmApp
 
             List<OCRResult> textList = new List<OCRResult>();
 
+            Tesseract ocrProvider = new Tesseract(ResourceManager.PATH_TESS_DATA, "eng", OcrEngineMode.TesseractLstmCombined);
+
             foreach (Rectangle rect in ocrRects)
             {
                 //image.Draw(rect, new Bgr(0,0,255), 1);
@@ -369,19 +369,24 @@ namespace PharmApp
                 //CvInvoke.Threshold(gray, blackwhite, 150, 255, ThresholdType.BinaryInv);
 
                 image.ROI = Rectangle.Empty;
-                OCR_PROVIDER.SetImage(finalImage);
+                ocrProvider.SetImage(finalImage);
 
-                textList.Add(new OCRResult(OCR_PROVIDER.GetUTF8Text(), newRect, textImg, finalImage));
+                textList.Add(new OCRResult(ocrProvider.GetUTF8Text(), newRect, textImg, finalImage));
 
                 //Console.WriteLine(OCR_PROVIDER.GetUTF8Text());
                 //ImageViewer.Show(correctedImage);
+
+                finalImage2.Dispose();
+                correctedImage.Dispose();
+                gray.Dispose();
 
                 if (Settings.Default.SHOW_INDIVIDUAL_OCR_RECT)
                 {
                     ImageViewer.Show(finalImage);
                 }
             }
-                
+
+            ocrProvider.Dispose();
 
           return textList;
         }
@@ -429,6 +434,8 @@ namespace PharmApp
             Mat SE = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(STRUCTURING_RECT_WIDTH, STRUCTURING_RECT_HEIGHT), new Point(-1, -1));
             sobel = sobel.MorphologyEx(Emgu.CV.CvEnum.MorphOp.Dilate, SE, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar(255));
 
+            SE.Dispose();
+
             Console.WriteLine("Image optimised in " + stopwatch.ElapsedMilliseconds + "ms");
             return sobel;
         }
@@ -451,7 +458,9 @@ namespace PharmApp
             Mat m = new Mat();
 
             using (Image<Gray, byte> optImg = GetOptImage(img))
-                CvInvoke.FindContours(img, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+                CvInvoke.FindContours(optImg, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+
+            m.Dispose();
 
             List<Rectangle> list = new List<Rectangle>();
 

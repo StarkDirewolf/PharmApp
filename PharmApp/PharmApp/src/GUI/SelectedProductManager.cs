@@ -57,7 +57,11 @@ namespace PharmApp.src.GUI
 
             foreach (OCRResult ocrResult in productOCRs)
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 UseFreeForm(ocrResult);
+
+                //LogManager.GetLogger(typeof(Program)).Debug("Processing loop starting at " + DateTime.Now.ToString());
             }
 
 
@@ -119,6 +123,7 @@ namespace PharmApp.src.GUI
 
         private SelectedProductDrawing UseFreeForm(OCRResult ocr)
         {
+
             if (unusedForms.Count == 0)
             {
                 LogManager.GetLogger(typeof(Program)).Debug("No more available forms for pipcodes");
@@ -127,8 +132,12 @@ namespace PharmApp.src.GUI
             SelectedProductDrawing freeForm = unusedForms.Pop();
             currentForms.Add(freeForm);
             freeForm.SetOCRResult(ocr);
+
             Product product = ProductLookup.Get().FindByPIP(ocr.GetText());
+
+            //This is by far the most CPU intensive step
             freeForm.SetProduct(product);
+
             freeForm.ChangeLocationByOCRRect(ocr.GetRectangle());
             freeForm.ShouldBeVisible = true;
 
@@ -188,15 +197,19 @@ namespace PharmApp.src.GUI
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            OCR ocr = OCR.Get();
             foreach (KeyValuePair<Product, OCRResult> kv in productOCRCache)
             {
-                OCR ocr = OCR.Get();
-                if (ocr.HashcodesEqual(ocr.ComputeHashCode(image), kv.Value.GetImageHash()))
+                using (Mat hashCode = ocr.ComputeHashCode(image))
                 {
-                    kv.Value.UpdateRectangle(image.ROI);
-                    UseFreeForm(kv.Key, kv.Value);
-                    LogManager.GetLogger(typeof(Program)).Debug("Found pipcode image hash after " + stopwatch.ElapsedMilliseconds + "ms");
-                    return true;
+
+                    if (ocr.HashcodesEqual(hashCode, kv.Value.GetImageHash()))
+                    {
+                        kv.Value.UpdateRectangle(image.ROI);
+                        UseFreeForm(kv.Key, kv.Value);
+                        LogManager.GetLogger(typeof(Program)).Debug("Found pipcode image hash after " + stopwatch.ElapsedMilliseconds + "ms");
+                        return true;
+                    }
                 }
             }
 

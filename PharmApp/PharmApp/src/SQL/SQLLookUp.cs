@@ -11,7 +11,7 @@ namespace PharmApp.src.SQL
     {
         private T data;
         private Stopwatch timer;
-        private const int CACHE_TIME_MS = 3000;
+        protected const int CACHE_TIME_MS = 5000;
 
         public T GetData()
         {

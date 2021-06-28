@@ -1,4 +1,5 @@
-﻿using PharmApp.src.Product_Info;
+﻿using log4net;
+using PharmApp.src.Product_Info;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,7 +61,12 @@ namespace PharmApp.src.GUI
         public void SetProduct(Product product)
         {
             this.product = product;
+
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             SetTooltipToOrderHistory();
+
             tooltip_timer.Start();
             if (product.genericID == "0")
             {
@@ -70,6 +76,7 @@ namespace PharmApp.src.GUI
             {
                 if (product.IsOrdering())
                 {
+
                     if (product.orderingNote == null || product.orderingNote.note == "")
                     {
                         img.Image = Image.FromFile(ResourceManager.PATH_GREEN_CIRCLE);
@@ -96,7 +103,6 @@ namespace PharmApp.src.GUI
                 }
                 
             }
-
             SetOverridePopup();
             SetContextMenu();
         }
