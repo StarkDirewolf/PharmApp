@@ -347,7 +347,7 @@ namespace PharmApp.src
             while (true)
             {
                 // This should maybe be changed to use threads on a timer, but needs a lot of rejigging to not overlap processing
-                Thread.Sleep(200);
+                Thread.Sleep(2000);
 
 
                 if (proscriptHandle == IntPtr.Zero)
@@ -581,8 +581,8 @@ namespace PharmApp.src
                 {
                     //An unhandled exception of type 'System.TypeInitializationException' occurred in Emgu.CV.Platform.NetStandard.dll
                     //The type initializer for 'Emgu.CV.CvInvoke' threw an exception.
-                                        Image<Bgr, byte> screenCap = bitmap2.ToImage<Bgr, byte>();
-                    ImageViewer.Show(screenCap);
+                    Image<Bgr, byte> screenCap = bitmap2.ToImage<Bgr, byte>();
+                    //ImageViewer.Show(screenCap);
                     OCR ocr = OCR.Get();
                     Mat thisScreenHashCode = ocr.ComputeHashCode(screenCap);
 

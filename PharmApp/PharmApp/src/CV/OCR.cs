@@ -459,34 +459,39 @@ namespace PharmApp
 
             using (Image<Gray, byte> optImg = GetOptImage(img))
                 CvInvoke.FindContours(optImg, contours, m, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
-
+            
             m.Dispose();
 
             List<Rectangle> list = new List<Rectangle>();
 
             for (int i = 0; i < contours.Size; i++)
             {
-                Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
-
-                if (minSize != Size.Empty && maxSize != Size.Empty)
+                using (var contour = contours[i])
                 {
-                    // If text detection is desired, this filters out rectangles that are inappropriate dimensions
-                    //double ar = rect.Width / rect.Height;
-                    //if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
-                    //{
-                    //    list.Add(rect);
-                    //}
-                    if (rect.Width > minSize.Width && rect.Width < maxSize.Width && rect.Height > minSize.Height && rect.Height < maxSize.Height)
+
+                    Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
+
+                    if (minSize != Size.Empty && maxSize != Size.Empty)
+                    {
+                        // If text detection is desired, this filters out rectangles that are inappropriate dimensions
+                        //double ar = rect.Width / rect.Height;
+                        //if (ar > TEXT_MIN_WIDTH_HEIGHT_RATIO && rect.Width > TEXT_MIN_WIDTH && rect.Height > TEXT_MIN_HEIGHT && rect.Height < TEXT_MAX_HEIGHT)
+                        //{
+                        //    list.Add(rect);
+                        //}
+                        if (rect.Width > minSize.Width && rect.Width < maxSize.Width && rect.Height > minSize.Height && rect.Height < maxSize.Height)
+                        {
+                            list.Add(rect);
+                        }
+                    }
+                    else
                     {
                         list.Add(rect);
                     }
                 }
-                else
-                {
-                    list.Add(rect);
-                }
             }
 
+            contours.Dispose();
             Console.WriteLine("Bounding rectangles detected in " + stopwatch.ElapsedMilliseconds + "ms");
             return list;
         }
@@ -828,6 +833,7 @@ namespace PharmApp
             hashModel.Compute(image, hashcode);
 
             return hashcode;
+
         }
 
         public bool HashcodesEqual(Mat hashCode1, Mat hashCode2)
