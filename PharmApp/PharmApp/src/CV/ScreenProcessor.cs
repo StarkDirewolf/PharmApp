@@ -347,7 +347,7 @@ namespace PharmApp.src
             while (true)
             {
                 // This should maybe be changed to use threads on a timer, but needs a lot of rejigging to not overlap processing
-                Thread.Sleep(2000);
+                Thread.Sleep(200);
 
 
                 if (proscriptHandle == IntPtr.Zero)
@@ -562,6 +562,7 @@ namespace PharmApp.src
 
         public bool UpdateWindowImage()
         {
+
             Rectangle rc;
             GetWindowRect(proscriptHandle, out rc);
             {
@@ -570,27 +571,30 @@ namespace PharmApp.src
                 IntPtr hMemDc = CreateCompatibleDC(hWndDc);
                 IntPtr hBitmap = CreateCompatibleBitmap(hWndDc, rc.Width, rc.Height);
                 SelectObject(hMemDc, hBitmap);
-
+                
                 BitBlt(hMemDc, 0, 0, rc.Width, rc.Height, hWndDc, 8, 8, TernaryRasterOperations.SRCCOPY);
 
                 DeleteObject(hBitmap);
                 ReleaseDC(proscriptHandle, hWndDc);
                 ReleaseDC(IntPtr.Zero, hMemDc);
 
+                OCR ocr = OCR.Get();
+
                 using (Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap))
                 {
-                    //An unhandled exception of type 'System.TypeInitializationException' occurred in Emgu.CV.Platform.NetStandard.dll
-                    //The type initializer for 'Emgu.CV.CvInvoke' threw an exception.
+                    DeleteObject(hMemDc);
+
                     Image<Bgr, byte> screenCap = bitmap2.ToImage<Bgr, byte>();
-                    //ImageViewer.Show(screenCap);
-                    OCR ocr = OCR.Get();
                     Mat thisScreenHashCode = ocr.ComputeHashCode(screenCap);
 
+                    // This should only fail on first run
                     if (lastScreenHashCode != null)
                     {
                         if (ocr.HashcodesEqual(thisScreenHashCode, lastScreenHashCode))
                         {
                             LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
+                            screenCap.Dispose();
+                            thisScreenHashCode.Dispose();
                             return false;
                         }
                         lastScreen.Dispose();
@@ -603,20 +607,20 @@ namespace PharmApp.src
                     return true;
                 }
 
-                    //IntPtr hdc = g.GetHdc();
-                    //if (!PrintWindow(proscriptHandle, hdc, 0))
-                    //{
-                    //    int error = Marshal.GetLastWin32Error();
-                    //    var exception = new System.ComponentModel.Win32Exception(error);
-                    //    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
-                    //}
-                    //g.ReleaseHdc(hdc);
+                //IntPtr hdc = g.GetHdc();
+                //if (!PrintWindow(proscriptHandle, hdc, 0))
+                //{
+                //    int error = Marshal.GetLastWin32Error();
+                //    var exception = new System.ComponentModel.Win32Exception(error);
+                //    LogManager.GetLogger(typeof(Program)).Debug("Exception on grabbing image: " + exception.Message);
+                //}
+                //g.ReleaseHdc(hdc);
 
-                    //croppedG.DrawImage(bitmap, -7, -9);
+                //croppedG.DrawImage(bitmap, -7, -9);
 
-                    //Image<Bgr, byte> screenCap = new Image<Bgr, byte>(croppedBitmap);
-                    ////ImageViewer.Show(screenCap);
-                    //return screenCap;
+                //Image<Bgr, byte> screenCap = new Image<Bgr, byte>(croppedBitmap);
+                ////ImageViewer.Show(screenCap);
+                //return screenCap;
 
             }
 
