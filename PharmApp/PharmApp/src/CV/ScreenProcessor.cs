@@ -36,12 +36,14 @@ namespace PharmApp.src
         static private ThreadStart scanScreenRef;
         static private Thread scanScreen;
         private bool processing = false;
+        private ThreadStart pipcodeThreadRef;
+        private Thread pipcodeThread;
 
         private static ScreenProcessor singleton;
 
         private Image<Bgr, byte> lastScreen;
         private Mat lastScreenHashCode;
-
+        private ScreenProScript currentScreen;
 
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
@@ -327,6 +329,28 @@ namespace PharmApp.src
             processing = !processing;
         }
 
+        public void ProcessPipcodes()
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            Image<Bgr, byte> subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
+            LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
+
+            stopwatch.Restart();
+            List<OCRResult> visibleProductsOCRs = currentScreen.GetPipcodes(subtractedImage);
+
+            if (visibleProductsOCRs != null)
+            {
+                LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
+
+                stopwatch.Restart();
+                SelectedProductManager.Get().AddProductsFromOCRs(visibleProductsOCRs);
+                LogManager.GetLogger(typeof(Program)).Debug("Finding pipcode details and display UI took " + stopwatch.ElapsedMilliseconds + "ms");
+            }
+
+            subtractedImage.Dispose();
+        }
+
         public void ProcessTick()
         {
 
@@ -343,6 +367,7 @@ namespace PharmApp.src
             LogManager.GetLogger(typeof(Program)).Debug("Initialising orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
             stopwatch.Reset();
 
+            pipcodeThreadRef = new ThreadStart(ProcessPipcodes);
 
             while (true)
             {
@@ -374,44 +399,43 @@ namespace PharmApp.src
 
                     UpdateOrderpadProductList();
                     LogManager.GetLogger(typeof(Program)).Debug("Grabbing orderpad comments took " + stopwatch.ElapsedMilliseconds + "ms");
+                    
                     stopwatch.Restart();
-
                     bool screenHasChanged = UpdateWindowImage();
                     LogManager.GetLogger(typeof(Program)).Debug("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
-                    stopwatch.Restart();
+                    
 
-                    if (!screenHasChanged) continue;
+                    if (!screenHasChanged)
+                    {
+                        // Skip all others steps as the screen is the same so has already been processed
+                        continue;
+                    }
+
+                    // Cancel threads dependent on screen UI
+                    pipcodeThread?.Abort();
+
 
                     ScreenIdentifier identifier = ScreenIdentifier.Get();
-                    ScreenProScript screen = identifier.Identify(lastScreen);
+                    currentScreen = identifier.Identify(lastScreen);
 
-                    viewingPMR = screen is ScreenPMR;
-                    viewingRMS = screen is ScreenRMS;
-                    viewingOrderPad = screen is ScreenOrderPad;
-                    viewingGoodsIn = screen is ScreenGoodsIn;
+                    viewingPMR = currentScreen is ScreenPMR;
+                    viewingRMS = currentScreen is ScreenRMS;
+                    viewingOrderPad = currentScreen is ScreenOrderPad;
+                    viewingGoodsIn = currentScreen is ScreenGoodsIn;
 
+                    stopwatch.Restart();
                     LogManager.GetLogger(typeof(Program)).Debug("Identifying screen took " + stopwatch.ElapsedMilliseconds + "ms");
-                    stopwatch.Restart();
 
-                    Image<Bgr, byte> subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
-                    LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
-                    stopwatch.Restart();
-
-
-                    nhsNumber = screen.GetNhsNumber(lastScreen);
-                    if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
-                    stopwatch.Restart();
-
-                    //ImageViewer.Show(subtractedImage);
-                    List<OCRResult> visibleProductsOCRs = screen.GetPipcodes(subtractedImage);
-                    if (visibleProductsOCRs != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing pipcodes took " + stopwatch.ElapsedMilliseconds + "ms");
-                    stopwatch.Restart();
-                    
-                    if (visibleProductsOCRs != null)
+                    if (currentScreen.MayContainPipcodes())
                     {
-                        SelectedProductManager.Get().AddProductsFromOCRs(visibleProductsOCRs);
-                        LogManager.GetLogger(typeof(Program)).Debug("Finding pipcode details and display UI took " + stopwatch.ElapsedMilliseconds + "ms");
+                        pipcodeThread = new Thread(pipcodeThreadRef);
+                        pipcodeThread.Start();
+
                     }
+
+                    stopwatch.Restart();
+                    nhsNumber = currentScreen.GetNhsNumber(lastScreen);
+                    if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");                    
 
                     stopwatch.Restart();
                 }

@@ -15,5 +15,9 @@ namespace PharmApp.src.CV.Screens
             return true;
         }
 
+        public override bool MayContainPipcodes()
+        {
+            return false;
+        }
     }
 }

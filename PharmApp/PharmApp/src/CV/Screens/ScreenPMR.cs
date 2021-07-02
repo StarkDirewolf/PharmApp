@@ -90,5 +90,9 @@ namespace PharmApp.src.CV.Screens
             return OCR.Get().GetNhsNoFromScreen(screen, NHS_RECT);
         }
 
+        public override bool MayContainPipcodes()
+        {
+            return true;
+        }
     }
 }

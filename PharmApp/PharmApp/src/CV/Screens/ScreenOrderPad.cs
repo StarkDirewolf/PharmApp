@@ -82,5 +82,10 @@ namespace PharmApp.src.CV.Screens
 
             return OCR.Get().GetVisibleProducts(screen, searchAreaCache);
         }
+
+        public override bool MayContainPipcodes()
+        {
+            return true;
+        }
     }
 }
