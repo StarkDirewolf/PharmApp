@@ -39,6 +39,7 @@ namespace PharmApp.src.GUI
             AddForm(new NewETPBatch());
             AddForm(new OrderingCommentsDrawing());
             AddForm(new RequestsButtonDrawing());
+            AddForm(new CopyPatientDetailsButtonDrawing());
 
             PharmTrayIcon icon = new PharmTrayIcon();
             

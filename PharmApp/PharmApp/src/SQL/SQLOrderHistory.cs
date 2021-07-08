@@ -12,7 +12,7 @@ namespace PharmApp.src.SQL
         private string pip;
         public DateTime fromDate, endDate;
         private bool byGenericID;
-        private const int CACHE_TIME_MS = 1800000;
+        private const int CACHE_TIME_MS = 180000;
 
         public SQLOrderHistory(string pip, DateTime fromDate, DateTime endDate, bool byGenericID) : base(CACHE_TIME_MS)
         {

@@ -172,13 +172,16 @@ namespace PharmApp.src.GUI
 
         public Image<Bgr, byte> SubtractCurrentPips(Image<Bgr, byte> screenShot)
         {
+            screenShot.ROI = Rectangle.Empty;
+            Image<Bgr, byte> screenShotCopy = screenShot.Copy();
+
             List<SelectedProductDrawing> productsToDelete = new List<SelectedProductDrawing>();
             foreach (SelectedProductDrawing drawing in currentForms)
             {
                 OCRResult ocr = drawing.GetOCRResult();
-                if (ocr.IsInImage(screenShot))
+                if (ocr.IsInImage(screenShotCopy))
                 {
-                    screenShot.Draw(ocr.GetRectangle(), new Bgr(Color.White), -1);
+                    screenShotCopy.Draw(ocr.GetRectangle(), new Bgr(Color.White), -1);
                 } else
                 {
                     productsToDelete.Add(drawing);
@@ -189,7 +192,7 @@ namespace PharmApp.src.GUI
             {
                 FreeUpForm(drawing);
             }
-            return screenShot;
+            return screenShotCopy;
         }
 
         public bool FindProductByPIPImage(Image<Bgr, byte> image)

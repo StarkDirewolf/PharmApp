@@ -31,6 +31,7 @@ namespace PharmApp.src
 
         //private ScreenDrawingManager screenDrawingManager;
         private IntPtr proscriptHandle;
+        OCR ocr = OCR.Get();
 
         // Scanner Thread
         static private ThreadStart scanScreenRef;
@@ -42,6 +43,7 @@ namespace PharmApp.src
         private static ScreenProcessor singleton;
 
         private Image<Bgr, byte> lastScreen;
+        private Image<Bgr, byte> subtractedImage;
         private Mat lastScreenHashCode;
         private ScreenProScript currentScreen;
 
@@ -331,9 +333,12 @@ namespace PharmApp.src
 
         public void ProcessPipcodes()
         {
+            subtractedImage?.Dispose();
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            Image<Bgr, byte> subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
+            
+            subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
             LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
 
             stopwatch.Restart();
@@ -349,6 +354,7 @@ namespace PharmApp.src
             }
 
             subtractedImage.Dispose();
+            
         }
 
         public void ProcessTick()
@@ -401,19 +407,31 @@ namespace PharmApp.src
                     LogManager.GetLogger(typeof(Program)).Debug("Grabbing orderpad comments took " + stopwatch.ElapsedMilliseconds + "ms");
                     
                     stopwatch.Restart();
-                    bool screenHasChanged = UpdateWindowImage();
+                    Image<Bgr, byte> newScreen;
+                    Mat newHashCode;
+                    GrabWindowImage(out newScreen, out newHashCode);
+                    
+
                     LogManager.GetLogger(typeof(Program)).Debug("Grabbing new screenshot took " + stopwatch.ElapsedMilliseconds + "ms");
                     
 
-                    if (!screenHasChanged)
+                    if (lastScreenHashCode != null && ocr.HashcodesEqual(newHashCode, lastScreenHashCode))
                     {
                         // Skip all others steps as the screen is the same so has already been processed
+                        newHashCode.Dispose();
+                        newScreen.Dispose();
                         continue;
                     }
 
                     // Cancel threads dependent on screen UI
                     pipcodeThread?.Abort();
 
+                    lastScreen?.Dispose();
+                    lastScreenHashCode?.Dispose();
+                    lastScreen = newScreen;
+                    lastScreenHashCode = newHashCode;
+
+                    
 
                     ScreenIdentifier identifier = ScreenIdentifier.Get();
                     currentScreen = identifier.Identify(lastScreen);
@@ -432,6 +450,8 @@ namespace PharmApp.src
                         pipcodeThread.Start();
 
                     }
+
+                    
 
                     stopwatch.Restart();
                     nhsNumber = currentScreen.GetNhsNumber(lastScreen);
@@ -584,7 +604,7 @@ namespace PharmApp.src
 
 
 
-        public bool UpdateWindowImage()
+        public void GrabWindowImage(out Image<Bgr, byte> returnImage, out Mat returnHashCode)
         {
 
             Rectangle rc;
@@ -602,33 +622,31 @@ namespace PharmApp.src
                 ReleaseDC(proscriptHandle, hWndDc);
                 ReleaseDC(IntPtr.Zero, hMemDc);
 
-                OCR ocr = OCR.Get();
-
                 using (Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap))
                 {
                     DeleteObject(hMemDc);
 
-                    Image<Bgr, byte> screenCap = bitmap2.ToImage<Bgr, byte>();
-                    Mat thisScreenHashCode = ocr.ComputeHashCode(screenCap);
+                    returnImage = bitmap2.ToImage<Bgr, byte>();
+                    returnHashCode = ocr.ComputeHashCode(returnImage);
 
-                    // This should only fail on first run
-                    if (lastScreenHashCode != null)
-                    {
-                        if (ocr.HashcodesEqual(thisScreenHashCode, lastScreenHashCode))
-                        {
-                            LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
-                            screenCap.Dispose();
-                            thisScreenHashCode.Dispose();
-                            return false;
-                        }
-                        lastScreen.Dispose();
-                        lastScreenHashCode.Dispose();
-                    }
+                    //// This should only fail on first run
+                    //if (lastScreenHashCode != null)
+                    //{
+                    //    if (ocr.HashcodesEqual(thisScreenHashCode, lastScreenHashCode))
+                    //    {
+                    //        LogManager.GetLogger(typeof(Program)).Debug("Screen hasn't changed");
+                    //        screenCap.Dispose();
+                    //        thisScreenHashCode.Dispose();
+                    //        return false;
+                    //    }
+                    //    lastScreen.Dispose();
+                    //    lastScreenHashCode.Dispose();
+                    //}
 
-                    LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");
-                    lastScreen = screenCap;
-                    lastScreenHashCode = thisScreenHashCode;
-                    return true;
+                    //LogManager.GetLogger(typeof(Program)).Debug("Screenshot updated with new image");
+                    //lastScreen = screenCap;
+                    //lastScreenHashCode = thisScreenHashCode;
+                    //return true;
                 }
 
                 //IntPtr hdc = g.GetHdc();

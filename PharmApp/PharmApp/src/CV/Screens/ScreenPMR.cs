@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Structure;
+using Emgu.CV.UI;
 using log4net;
 using System;
 using System.Collections.Generic;
@@ -30,6 +31,9 @@ namespace PharmApp.src.CV.Screens
             PIPCODE_MIN_WIDTH = 55,
             PIPCODE_MAX_WIDTH = 75;
 
+        private OCRResult pipcodeColumnCache;
+        private Rectangle searchAreaCache;
+
         private readonly Rectangle NHS_RECT = new Rectangle(NHS_X, NHS_Y, NHS_WIDTH, NHS_HEIGHT);
 
         public override bool IsBeingViewed(Image<Bgr, byte> screen)
@@ -39,50 +43,51 @@ namespace PharmApp.src.CV.Screens
 
         public override List<OCRResult> GetPipcodes(Image<Bgr, byte> screen)
         {
-            Rectangle searchArea;
+            return new List<OCRResult>();
+            //Rectangle searchArea;
 
-            int edgePos = OCR.Get().FindAdjustableEdge(screen, PMR_PRODUCT_MIN_Y, PMR_PRODUCT_MAX_Y, PMR_PRODUCT_X, false);
+            //int edgePos = OCR.Get().FindAdjustableEdge(screen, PMR_PRODUCT_MIN_Y, PMR_PRODUCT_MAX_Y, PMR_PRODUCT_X, false);
 
-            if (edgePos == 0)
-            {
-                LogManager.GetLogger(typeof(Program)).Debug("Edge not found - cancelling search");
-                return null;
-            }
-            LogManager.GetLogger(typeof(Program)).Debug("Edge for pipcodes found at: " + edgePos);
+            //if (edgePos == 0)
+            //{
+            //    LogManager.GetLogger(typeof(Program)).Debug("Edge not found - cancelling search");
+            //    return null;
+            //}
+            //LogManager.GetLogger(typeof(Program)).Debug("Edge for pipcodes found at: " + edgePos);
 
-            Rectangle prodTabsRect = new Rectangle(PMR_PRODUCT_X, edgePos, PMR_PRODUCT_WIDTH, PMR_PRODUCT_TABS_HEIGHT);
+            //Rectangle prodTabsRect = new Rectangle(PMR_PRODUCT_X, edgePos, PMR_PRODUCT_WIDTH, PMR_PRODUCT_TABS_HEIGHT);
 
-            OCRResult pipCodesTab = OCR.Get().FindFirstText(screen, "Pip Code", prodTabsRect,
-                new Size(PIPCODE_MIN_WIDTH, PIPCODE_MIN_HEIGHT), new Size(PIPCODE_MAX_WIDTH, PIPCODE_MAX_HEIGHT));
+            //OCRResult pipCodesTab = OCR.Get().FindFirstText(screen, "Pip Code", prodTabsRect,
+            //    new Size(PIPCODE_MIN_WIDTH, PIPCODE_MIN_HEIGHT), new Size(PIPCODE_MAX_WIDTH, PIPCODE_MAX_HEIGHT));
 
-            if (pipCodesTab != null)
-            {
-                LogManager.GetLogger(typeof(Program)).Debug("Pipcodes column found");
-                Rectangle resultRect = pipCodesTab.GetRectangle();
+            //if (pipCodesTab != null)
+            //{
+            //    LogManager.GetLogger(typeof(Program)).Debug("Pipcodes column found");
+            //    Rectangle resultRect = pipCodesTab.GetRectangle();
 
-                int bottomOfRect = resultRect.Y + resultRect.Height;
+            //    int bottomOfRect = resultRect.Y + resultRect.Height;
 
-                searchArea = new Rectangle(resultRect.X, bottomOfRect, resultRect.Width, PMR_PRODUCT_MAX_Y - bottomOfRect);
+            //    searchArea = new Rectangle(resultRect.X, bottomOfRect, resultRect.Width, PMR_PRODUCT_MAX_Y - bottomOfRect);
 
-                if (searchArea.Height > 14)
-                {
-                    LogManager.GetLogger(typeof(Program)).Debug("Search area used: " + searchArea);
-                }
-                else
-                {
-                    LogManager.GetLogger(typeof(Program)).Debug("Pipcodes go off screen so stopping search");
-                    return null;
-                }
-            }
-            else
-            {
-                int searchHeight = PMR_PRODUCT_MAX_Y - prodTabsRect.Y;
-                LogManager.GetLogger(typeof(Program)).Debug("Pipcodes column not found - using default values with height: " + searchHeight);
-                searchArea = prodTabsRect;
-                searchArea.Height = searchHeight;
-            }
+            //    if (searchArea.Height > 14)
+            //    {
+            //        LogManager.GetLogger(typeof(Program)).Debug("Search area used: " + searchArea);
+            //    }
+            //    else
+            //    {
+            //        LogManager.GetLogger(typeof(Program)).Debug("Pipcodes go off screen so stopping search");
+            //        return null;
+            //    }
+            //}
+            //else
+            //{
+            //    int searchHeight = PMR_PRODUCT_MAX_Y - prodTabsRect.Y;
+            //    LogManager.GetLogger(typeof(Program)).Debug("Pipcodes column not found - using default values with height: " + searchHeight);
+            //    searchArea = prodTabsRect;
+            //    searchArea.Height = searchHeight;
+            //}
 
-            return OCR.Get().GetVisibleProducts(screen, searchArea);
+            //return OCR.Get().GetVisibleProducts(screen, searchArea);
         }
 
         public override OCRResult GetNhsNumber(Image<Bgr, byte> screen)

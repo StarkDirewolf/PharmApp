@@ -42,7 +42,7 @@ namespace PharmApp.src.Product_Info
             tickTime.Start();
 
             List<string> pips = query.GetData();
-
+            List<string> foundPips = new List<string>();
 
             //var toDeleteQuery =
             //    from prod in products.AsParallel()
@@ -60,7 +60,7 @@ namespace PharmApp.src.Product_Info
             {
                 if (pips.Contains(savedPip))
                 {
-                    pips.Remove(savedPip);
+                    foundPips.Add(savedPip);
                 }
                 else
                 {
@@ -76,7 +76,7 @@ namespace PharmApp.src.Product_Info
 
             foreach (string pip in pips)
             {
-                AddProduct(pip);
+                if (!foundPips.Contains(pip)) AddProduct(pip);
             }
 
             //List<Product> forDeleting = new List<Product>();
@@ -129,8 +129,12 @@ namespace PharmApp.src.Product_Info
                 select prod.Value;
 
             productsWithComments = parallelQuery.ToList();
-            LogManager.GetLogger(typeof(Program)).Debug("Comment updating took: " + test.ElapsedMilliseconds + "ms");
-            
+            LogManager.GetLogger(typeof(Program)).Debug("Parallel comment updating took: " + test.ElapsedMilliseconds + "ms");
+
+            //test.Restart();
+            //List<Product> list = products.Values.Where(p => p.orderingNote != null && p.orderingNote.requiresAction && p.GetCurrentOrders().IsOnOrder()).ToList();
+            //productsWithComments = list;
+            //LogManager.GetLogger(typeof(Program)).Debug("Comment updating took: " + test.ElapsedMilliseconds + "ms");
         }
 
         public List<Product> GetProductsRequiringAction()

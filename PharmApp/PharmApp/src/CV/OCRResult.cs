@@ -90,9 +90,9 @@ namespace PharmApp.src
 
         public void Dispose()
         {
-            hashCode.Dispose();
-            image.Dispose();
-            ocrImage.Dispose();
+            hashCode?.Dispose();
+            image?.Dispose();
+            ocrImage?.Dispose();
         }
 
     ~OCRResult()

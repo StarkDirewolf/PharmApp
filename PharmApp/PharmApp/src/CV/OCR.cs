@@ -251,6 +251,12 @@ namespace PharmApp
 
         public List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
         {
+            if (image.Data == null)
+            {
+                Console.WriteLine("Image contains no data - cancelling OCR");
+                return new List<OCRResult>();
+            }
+
             ILog log = LogManager.GetLogger(typeof(Program)); //Log4NET
 
             //if (image.Width < (area.X + area.Width)) throw new ArgumentException("Area to be analysed goes beyond image width (X:" + area.X + " W:" + area.Width + " Image:" + image.Width);
@@ -274,6 +280,7 @@ namespace PharmApp
             {
                 using (Image<Bgr, byte> imageForOcr = new Image<Bgr, byte>(image.Size))
                 {
+                    //ImageViewer.Show(image);
                     imageForOcr.SetValue(new Bgr(0, 0, 0));
 
                     image.ROI = area;
