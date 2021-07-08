@@ -43,7 +43,8 @@ namespace PharmApp.src.CV.Screens
 
         public override List<OCRResult> GetPipcodes(Image<Bgr, byte> screen)
         {
-            return new List<OCRResult>();
+            return OCR.Get().GetVisibleProducts(screen, new Rectangle(0, 0, screen.Width, screen.Height));
+
             //Rectangle searchArea;
 
             //int edgePos = OCR.Get().FindAdjustableEdge(screen, PMR_PRODUCT_MIN_Y, PMR_PRODUCT_MAX_Y, PMR_PRODUCT_X, false);

@@ -353,6 +353,10 @@ namespace PharmApp.src
                 LogManager.GetLogger(typeof(Program)).Debug("Finding pipcode details and display UI took " + stopwatch.ElapsedMilliseconds + "ms");
             }
 
+            stopwatch.Restart();
+            nhsNumber = currentScreen.GetNhsNumber(subtractedImage);
+            if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
+
             subtractedImage.Dispose();
             
         }
@@ -453,11 +457,11 @@ namespace PharmApp.src
 
                     
 
-                    stopwatch.Restart();
-                    nhsNumber = currentScreen.GetNhsNumber(lastScreen);
-                    if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");                    
+                    //stopwatch.Restart();
+                    //nhsNumber = currentScreen.GetNhsNumber(lastScreen);
+                    //if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");                    
 
-                    stopwatch.Restart();
+                    //stopwatch.Restart();
                 }
             }
             
