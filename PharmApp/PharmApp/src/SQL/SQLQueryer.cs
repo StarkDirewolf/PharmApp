@@ -628,6 +628,31 @@ namespace PharmApp
             return null;
         }
 
+        public static string GetPatientDetails(string nhsNumber)
+        {
+            QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.GETPATIENTDETAILS);
+            query.NhsNumber(nhsNumber);
+
+            string returnString;
+
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        //returnString = 
+                    }
+                }
+            }
+
+            return "none";
+        }
+
         //public static Product SearchOrderPad(string pipcode)
         //{
         //    QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.PREPARATIONCODE);

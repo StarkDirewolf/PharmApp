@@ -10,13 +10,15 @@ namespace PharmApp.src.GUI
 {
     class CopyPatientDetailsButtonDrawing : ScreenDrawing
     {
-        private const int WIDTH = 25, HEIGHT = 25, X = 200, Y = 162;
+        private const int WIDTH = 27, HEIGHT = 27, X = 132, Y = 92;
         private Button copyButton = new Button();
+        private string nhsNumber;
 
 
         public CopyPatientDetailsButtonDrawing() : base(new Rectangle(X, Y, WIDTH, HEIGHT), "", Color.White)
         {
             copyButton.Image = Image.FromFile(ResourceManager.PATH_COPY_ICON);
+            copyButton.Width = 27;
             copyButton.BackColor = Color.LightGray;
             copyButton.AutoSize = true;
             copyButton.Click += RequestsButton_Click;
@@ -25,18 +27,21 @@ namespace PharmApp.src.GUI
 
         private void RequestsButton_Click(object sender, EventArgs e)
         {
-            LoadingForm loadingForm = new LoadingForm();
+            //string copyText = SQLQueryer.GetPatientDetailsText(nhsNumber);
+            //Clipboard.SetText(copyText);
         }
 
-        public void OnStartViewingPMR(object source, EventArgs args)
+        public override void OnNHSNumberChanged(object source, OCRResultEventArgs args)
         {
-            ShouldBeVisible = true;
+            if (args == OCRResultEventArgs.Empty)
+            {
+                ShouldBeVisible = false;
+            } else
+            {
+                ShouldBeVisible = true;
+                nhsNumber = args.OCRResult.GetText();
+            }
 
-        }
-
-        public void OnStopViewingPMR(object Source, EventArgs args)
-        {
-            ShouldBeVisible = false;
         }
 
     }

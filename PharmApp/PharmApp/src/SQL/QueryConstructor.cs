@@ -66,6 +66,12 @@ SELECT DateModified, I.Description, I.OrderStatusReason, I.OrderQuantity, I.Rece
 JOIN ProScriptConnect.Ordering.OrderHistory O ON I.OrderHistoryId = O.OrderHistoryId
 JOIN PKBRuntime.Pharmacy.PreparationPack P ON I.PackCodeId = P.PackCodeId";
 
+        private const string PATIENTDETAILS = @"
+SELECT P.GivenName, P.Surname, P.DateOfBirth, A.HouseNameFlatNumber, A.NumberAndStreet, A.Postcode, Id.Value
+FROM ProScriptConnect.dbo.PatientIdentifier Id
+LEFT JOIN ProScriptConnect.dbo.Patient P ON Id.PatientId = P.PatientId
+LEFT JOIN ProScriptConnect.dbo.Address A ON A.AddressId = P.AddressId";
+
         private const string PRODUCTPATIENTHISTORY = @"
 SELECT DISTINCT V.AddedDate AS 'Date', Pat.Surname, Pat.CallingName AS 'First Name', Pa.Description, REPLACE(P.Quantity, '.000', '') AS 'Quantity'
 FROM ProScriptConnect.PMR.PrescriptionCollectionSummaryView V
@@ -226,6 +232,7 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
         private const string FILTER_VIRTUAL_ID = "VirtualProductPackId = '";
         private const string FILTER_PREP_CODE = "PreparationCodeId = '";
         private const string FILTER_PAGE = "PageNo = ";
+        private const string FILTER_NHS_ID = "Id.Value = '";
 
         private const string FILTER_AND = " AND ";
 
@@ -263,7 +270,8 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             SAVESURGERYEMAIL,
             REQUESTSENT,
             RECORDSENTEMAIL,
-            CHANGEREQUESTSTATUS
+            CHANGEREQUESTSTATUS,
+            GETPATIENTDETAILS
         }
 
         private enum Condition
@@ -516,7 +524,14 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
                         break;
 
                     case Condition.NHSNO:
-                        str = FILTER_NHSNO + condition.Value + FILTER_QUOTE_END;
+                        if (type == QueryType.GETPATIENTDETAILS)
+                        {
+                            str = FILTER_NHS_ID + condition.Value + FILTER_QUOTE_END;
+                        }
+                        else
+                        {
+                            str = FILTER_NHSNO + condition.Value + FILTER_QUOTE_END;
+                        }
                         break;
 
                     case Condition.PIPCODE:
@@ -672,6 +687,10 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
                     str += conditions.Find(c => c.Key == Condition.REQUESTID).Value;
                     str += UPDATE_REQUEST_STATUS_3;
                     conditions.RemoveAll(c => true);
+                    break;
+
+                case QueryType.GETPATIENTDETAILS:
+                    str = PATIENTDETAILS;
                     break;
             }
 
