@@ -278,7 +278,7 @@ namespace PharmApp.src.GUI
 
         public override void OnNHSNumberChanged(object source, OCRResultEventArgs args)
         {
-            ShouldBeVisible = false;
+            if (args == OCRResultEventArgs.Empty) ShouldBeVisible = false;
         }
     }
 }

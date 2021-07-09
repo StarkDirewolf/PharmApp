@@ -24,6 +24,10 @@ namespace PharmApp.src.CV.Screens
             return null;
         }
 
+        public abstract bool RequiresOCR();
+
         public abstract bool MayContainPipcodes();
+
+        public abstract bool MayContainNHSNumber();
     }
 }

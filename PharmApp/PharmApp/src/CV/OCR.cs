@@ -26,7 +26,12 @@ namespace PharmApp
     class OCR
     {
 
-        private static OCR obj;
+        public OCR()
+        {
+
+        }
+
+        //private static OCR obj;
         private PHash hashModel = new PHash();
 
         // CV settings
@@ -174,25 +179,11 @@ namespace PharmApp
         //}
 
 
-        private OCR()
-        {
-
-        }
-
-        public static OCR Get()
-        {
-            if (obj == null)
-            {
-                obj = new OCR();
-            }
-            return obj;
-        }
-
         public OCRResult GetNhsNoFromScreen(Image<Bgr, byte> screen, Rectangle nhsRect)
         {
-
+            
             List<OCRResult> patientDetails = OCRImage(screen, nhsRect);
-                
+            
             foreach (OCRResult detail in patientDetails)
             {
                 string trimmedDetail = Regex.Replace(detail.GetText(), @"\s+", "");
@@ -278,18 +269,53 @@ namespace PharmApp
             List<OCRResult> patientDetails = new List<OCRResult>();
             if (!area.IsEmpty)
             {
+                image.ROI = Rectangle.Empty;
                 using (Image<Bgr, byte> imageForOcr = new Image<Bgr, byte>(image.Size))
                 {
                     //ImageViewer.Show(image);
                     imageForOcr.SetValue(new Bgr(0, 0, 0));
 
                     image.ROI = area;
-                    Image<Bgr, byte> patientDetailsImage = image.Copy();
+
+                    //Image<Bgr, byte> patientDetailsImage = image.Copy()
+
+
+                    Image<Bgr, byte> patientDetailsImage = new Image<Bgr, byte>(image.ROI.Size);
+
+                    try
+                    {
+                        patientDetailsImage = image.Copy();
+                    }
+                    catch
+                    {
+                        // Sometimes nothing
+                        ImageViewer.Show(image);
+                    }
+
+
+
                     image.ROI = Rectangle.Empty;
 
                     imageForOcr.ROI = area;
-                    patientDetailsImage.CopyTo(imageForOcr);
+
+
+                    try
+                    {
+                        patientDetailsImage.CopyTo(imageForOcr);
+                    }
+                    catch
+                    {
+                        imageForOcr.ROI = Rectangle.Empty;
+                        ImageViewer.Show(patientDetailsImage);
+                        // sometimes black rectangle
+                        ImageViewer.Show(imageForOcr);
+                    }
+
+
+
                     imageForOcr.ROI = Rectangle.Empty;
+
+                    //ImageViewer.Show(imageForOcr);
 
                     List<Rectangle> rects = GetBoundingRectangles(imageForOcr, minSize, maxSize);
 

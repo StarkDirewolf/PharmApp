@@ -19,6 +19,7 @@ namespace PharmApp.src
         private readonly Image<Bgr, byte> image;
         private readonly Mat ocrImage;
         private readonly Mat hashCode = new Mat();
+        private readonly OCR ocr;
 
         public OCRResult(string text, Rectangle rect, Image<Bgr, byte> image, Mat ocrImage)
         {
@@ -26,7 +27,8 @@ namespace PharmApp.src
             this.rect = rect;
             this.image = image;
             this.ocrImage = ocrImage;
-            hashCode = OCR.Get().ComputeHashCode(image);
+            ocr = new OCR();
+            hashCode = ocr.ComputeHashCode(image);
         }
 
         public string GetText()
@@ -58,7 +60,7 @@ namespace PharmApp.src
         {
             screenshot.ROI = GetRectangle();
 
-            OCR ocr = OCR.Get();
+            OCR ocr = new OCR();
 
             using (Image<Bgr, byte> screenshotPip = screenshot.Copy())
             using (Mat screenshotHash = ocr.ComputeHashCode(screenshotPip))

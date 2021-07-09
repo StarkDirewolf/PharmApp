@@ -31,14 +31,16 @@ namespace PharmApp.src
 
         //private ScreenDrawingManager screenDrawingManager;
         private IntPtr proscriptHandle;
-        OCR ocr = OCR.Get();
+        OCR ocr = new OCR();
 
         // Scanner Thread
         static private ThreadStart scanScreenRef;
         static private Thread scanScreen;
         private bool processing = false;
-        private ThreadStart pipcodeThreadRef;
-        private Thread pipcodeThread;
+        private ThreadStart pipThreadRef;
+        private Thread pipThread;
+        private ThreadStart nhsThreadRef;
+        private Thread nhsThread;
 
         private static ScreenProcessor singleton;
 
@@ -86,27 +88,33 @@ namespace PharmApp.src
             get => _nhsNumber;
             set
             {
-                if (value != _nhsNumber)
+                if (value == null)
+                {
+                    if (_nhsNumber != null)
+                    {
+                        _nhsNumber = null;
+
+                        hasNewETP = false;
+                        hasETPBatch = false;
+                        hasUnprintedETPs = false;
+
+                        OnNHSNumberChanged(this, OCRResultEventArgs.Empty);
+                    }
+
+                }
+                else if (value.GetText() != _nhsNumber?.GetText())
                 {
                     // Wait until there's a subscriber to dispatch the event
                     if (OnNHSNumberChanged == null) return;
 
                     _nhsNumber = value;
                     
-                    if (value == null)
-                    {
-                        OnNHSNumberChanged(this, OCRResultEventArgs.Empty);
-                        hasNewETP = false;
-                    }
-                    else
-                    {
-                        OnNHSNumberChanged(this, new OCRResultEventArgs(value));
 
-                        hasNewETP = SQLQueryer.NewETPs(value.GetText(), out hasUnprintedETPs, out outETPBatch);
-                        hasETPBatch = outETPBatch;
-                    }
-                    
-                }
+                    hasNewETP = SQLQueryer.NewETPs(value.GetText(), out hasUnprintedETPs, out outETPBatch);
+                    hasETPBatch = outETPBatch;
+
+                    OnNHSNumberChanged(this, new OCRResultEventArgs(value));
+                }                    
             }
         }
 
@@ -225,7 +233,11 @@ namespace PharmApp.src
             {
                 if (value != viewingOrderPad)
                 {
-                    if (value) _onStartViewingOrderPad();
+                    if (value)
+                    {
+                        _onStartViewingOrderPad();
+                        SelectedProductManager.Get().DisplayFormsStillShowing(lastScreen);
+                    }
                     else _onStopViewingOrderPad();
                 }
 
@@ -242,7 +254,7 @@ namespace PharmApp.src
             {
                 if (value != viewingGoodsIn)
                 {
-                    if (value) ; //_onStartViewingGoodsIn();
+                    if (value) SelectedProductManager.Get().DisplayFormsStillShowing(lastScreen); //_onStartViewingGoodsIn();
                     else _onStopViewingGoodsIn();
                 }
 
@@ -266,7 +278,21 @@ namespace PharmApp.src
             }
         }
 
-        public bool viewingPMR = false;
+        private bool _viewingPMR = false;
+
+        public bool viewingPMR
+            {
+            get => _viewingPMR;
+            set
+            {
+                if (value != viewingPMR)
+                {
+                    if (value) SelectedProductManager.Get().DisplayFormsStillShowing(lastScreen);
+                }
+
+                _viewingRMS = value;
+            }
+        }
 
 
         public IntPtr GetProScriptHandle()
@@ -331,13 +357,23 @@ namespace PharmApp.src
             processing = !processing;
         }
 
-        public void ProcessPipcodes()
+        public void ProcessNHS()
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            nhsNumber = currentScreen.GetNhsNumber(lastScreen);
+            if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
+        }
+
+        public void ProcessPips()
         {
             subtractedImage?.Dispose();
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
+
             subtractedImage = SelectedProductManager.Get().SubtractCurrentPips(lastScreen);
             LogManager.GetLogger(typeof(Program)).Debug("Subtracting pipcodes from image took " + stopwatch.ElapsedMilliseconds + "ms");
 
@@ -352,10 +388,7 @@ namespace PharmApp.src
                 SelectedProductManager.Get().AddProductsFromOCRs(visibleProductsOCRs);
                 LogManager.GetLogger(typeof(Program)).Debug("Finding pipcode details and display UI took " + stopwatch.ElapsedMilliseconds + "ms");
             }
-
-            stopwatch.Restart();
-            nhsNumber = currentScreen.GetNhsNumber(subtractedImage);
-            if (nhsNumber != null) LogManager.GetLogger(typeof(Program)).Debug("Grabbing NHS number took " + stopwatch.ElapsedMilliseconds + "ms");
+            
 
             subtractedImage.Dispose();
             
@@ -377,7 +410,8 @@ namespace PharmApp.src
             LogManager.GetLogger(typeof(Program)).Debug("Initialising orderpad product list took " + stopwatch.ElapsedMilliseconds + "ms");
             stopwatch.Reset();
 
-            pipcodeThreadRef = new ThreadStart(ProcessPipcodes);
+            pipThreadRef = new ThreadStart(ProcessPips);
+            nhsThreadRef = new ThreadStart(ProcessNHS);
 
             while (true)
             {
@@ -428,7 +462,8 @@ namespace PharmApp.src
                     }
 
                     // Cancel threads dependent on screen UI
-                    pipcodeThread?.Abort();
+                    pipThread?.Abort();
+                    nhsThread?.Abort();
 
                     lastScreen?.Dispose();
                     lastScreenHashCode?.Dispose();
@@ -448,10 +483,14 @@ namespace PharmApp.src
                     stopwatch.Restart();
                     LogManager.GetLogger(typeof(Program)).Debug("Identifying screen took " + stopwatch.ElapsedMilliseconds + "ms");
 
+
+                    nhsThread = new Thread(nhsThreadRef);
+                    nhsThread.Start();
+
                     if (currentScreen.MayContainPipcodes())
                     {
-                        pipcodeThread = new Thread(pipcodeThreadRef);
-                        pipcodeThread.Start();
+                        pipThread = new Thread(pipThreadRef);
+                        pipThread.Start();
 
                     }
 
@@ -626,12 +665,24 @@ namespace PharmApp.src
                 ReleaseDC(proscriptHandle, hWndDc);
                 ReleaseDC(IntPtr.Zero, hMemDc);
 
-                using (Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap))
+                //System.Runtime.InteropServices.ExternalException: 'A generic error occurred in GDI+.'
+                try
                 {
-                    DeleteObject(hMemDc);
+                    using (Bitmap bitmap2 = Bitmap.FromHbitmap(hBitmap))
+                    {
+                        DeleteObject(hMemDc);
 
-                    returnImage = bitmap2.ToImage<Bgr, byte>();
+                        returnImage = bitmap2.ToImage<Bgr, byte>();
+                        returnHashCode = ocr.ComputeHashCode(returnImage);
+                    }
+                }
+                catch
+                {
+                    LogManager.GetLogger(typeof(Program)).Debug("GDI error - skipping screen grab");
+                    DeleteObject(hMemDc);
+                    returnImage = new Image<Bgr, byte>(1600, 900);
                     returnHashCode = ocr.ComputeHashCode(returnImage);
+                }
 
                     //// This should only fail on first run
                     //if (lastScreenHashCode != null)
@@ -651,7 +702,6 @@ namespace PharmApp.src
                     //lastScreen = screenCap;
                     //lastScreenHashCode = thisScreenHashCode;
                     //return true;
-                }
 
                 //IntPtr hdc = g.GetHdc();
                 //if (!PrintWindow(proscriptHandle, hdc, 0))

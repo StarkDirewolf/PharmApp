@@ -30,6 +30,7 @@ namespace PharmApp.src.CV.Screens
 
         private OCRResult pipcodeColumnCache;
         private Rectangle searchAreaCache;
+        private OCR ocr = new OCR();
 
 
 
@@ -40,9 +41,6 @@ namespace PharmApp.src.CV.Screens
 
         public override List<OCRResult> GetPipcodes(Image<Bgr, byte> screen)
         {
-
-            OCR ocr = OCR.Get();
-
 
             if (pipcodeColumnCache != null)
             {
@@ -80,12 +78,22 @@ namespace PharmApp.src.CV.Screens
                 LogManager.GetLogger(typeof(Program)).Debug("Pipcode column not found - using default search area");
             }
 
-            return OCR.Get().GetVisibleProducts(screen, searchAreaCache);
+            return ocr.GetVisibleProducts(screen, searchAreaCache);
+        }
+
+        public override bool RequiresOCR()
+        {
+            return true;
         }
 
         public override bool MayContainPipcodes()
         {
             return true;
+        }
+
+        public override bool MayContainNHSNumber()
+        {
+            return false;
         }
     }
 }

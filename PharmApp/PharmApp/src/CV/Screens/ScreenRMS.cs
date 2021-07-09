@@ -16,7 +16,17 @@ namespace PharmApp.src.CV.Screens
             return OCR.IsEveryColour(screen[149, 140], 195) && OCR.IsEveryColour(screen[149, 146], 0) && OCR.IsEveryColour(screen[149, 191], 195);
         }
 
+        public override bool MayContainNHSNumber()
+        {
+            return false;
+        }
+
         public override bool MayContainPipcodes()
+        {
+            return false;
+        }
+
+        public override bool RequiresOCR()
         {
             return false;
         }

@@ -18,6 +18,8 @@ namespace PharmApp.src.GUI
     class SelectedProductManager
     {
 
+        private OCR ocr = new OCR();
+
         private Stack<SelectedProductDrawing> unusedForms = new Stack<SelectedProductDrawing>();
         private List<SelectedProductDrawing> currentForms = new List<SelectedProductDrawing>();
         private static SelectedProductManager manager;
@@ -200,7 +202,6 @@ namespace PharmApp.src.GUI
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            OCR ocr = OCR.Get();
             foreach (KeyValuePair<Product, OCRResult> kv in productOCRCache)
             {
                 using (Mat hashCode = ocr.ComputeHashCode(image))
@@ -218,6 +219,40 @@ namespace PharmApp.src.GUI
 
             LogManager.GetLogger(typeof(Program)).Debug("Searching for product using image hashcode failed after " + stopwatch.ElapsedMilliseconds + "ms");
             return false;
+        }
+
+        public void DisplayFormsStillShowing(Image<Bgr, byte> image)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            List<SelectedProductDrawing> formsToFree = new List<SelectedProductDrawing>();
+
+            foreach (SelectedProductDrawing form in currentForms)
+            {
+                OCRResult ocrData = form.GetOCRResult();
+                image.ROI = ocrData.GetRectangle();
+
+                using (Image<Bgr, byte> pipImage = image.Copy())
+                using (Mat hashCode = ocr.ComputeHashCode(pipImage))
+                {
+
+                    if (ocr.HashcodesEqual(hashCode, ocrData.GetImageHash()))
+                    {
+                        LogManager.GetLogger(typeof(Program)).Debug("Pipcode still showing processed in " + stopwatch.ElapsedMilliseconds + "ms");
+                        form.ShouldBeVisible = true;
+                    }
+                    else
+                    {
+                        LogManager.GetLogger(typeof(Program)).Debug("Pipcode no longer showing processed in " + stopwatch.ElapsedMilliseconds + "ms");
+                        formsToFree.Add(form);
+                    }
+                }
+            }
+
+            image.ROI = Rectangle.Empty;
+
+            formsToFree.ForEach(f => FreeUpForm(f));
         }
 
     }

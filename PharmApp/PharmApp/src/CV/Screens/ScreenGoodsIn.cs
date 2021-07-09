@@ -22,6 +22,8 @@ namespace PharmApp.src.CV.Screens
             ORDERPAD_WIDTH = 1435,
             ORDERPAD_HEIGHT = 460;
 
+        private OCR ocr = new OCR();
+
         public override bool IsBeingViewed(Image<Bgr, byte> screen)
         {
             return OCR.IsEveryColour(screen[100, 240], 239) && OCR.IsEveryColour(screen[100, 300], 255);
@@ -30,7 +32,7 @@ namespace PharmApp.src.CV.Screens
         public override List<OCRResult> GetPipcodes(Image<Bgr, byte> screen)
         {
             Rectangle searchArea;
-            int edgePos = OCR.Get().FindAdjustableEdge(screen, GOODS_IN_X_MIN, GOODS_IN_X_MAX, GOODS_IN_Y);
+            int edgePos = ocr.FindAdjustableEdge(screen, GOODS_IN_X_MIN, GOODS_IN_X_MAX, GOODS_IN_Y);
 
             if (edgePos != 0)
             {
@@ -44,12 +46,22 @@ namespace PharmApp.src.CV.Screens
                 LogManager.GetLogger(typeof(Program)).Debug("Edge position not found");
             }
 
-            return OCR.Get().GetVisibleProducts(screen, searchArea);
+            return ocr.GetVisibleProducts(screen, searchArea);
+        }
+
+        public override bool RequiresOCR()
+        {
+            return true;
         }
 
         public override bool MayContainPipcodes()
         {
             return true;
+        }
+
+        public override bool MayContainNHSNumber()
+        {
+            return false;
         }
     }
 }

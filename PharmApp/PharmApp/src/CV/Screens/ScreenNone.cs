@@ -15,7 +15,17 @@ namespace PharmApp.src.CV.Screens
             return true;
         }
 
+        public override bool MayContainNHSNumber()
+        {
+            return false;
+        }
+
         public override bool MayContainPipcodes()
+        {
+            return false;
+        }
+
+        public override bool RequiresOCR()
         {
             return false;
         }
