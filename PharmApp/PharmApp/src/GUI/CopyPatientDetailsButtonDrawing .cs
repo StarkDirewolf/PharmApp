@@ -21,14 +21,14 @@ namespace PharmApp.src.GUI
             copyButton.Width = 27;
             copyButton.BackColor = Color.LightGray;
             copyButton.AutoSize = true;
-            copyButton.Click += RequestsButton_Click;
+            copyButton.Click += CopyDetailsButton_Click;
             this.Controls.Add(copyButton);
         }
 
-        private void RequestsButton_Click(object sender, EventArgs e)
+        private void CopyDetailsButton_Click(object sender, EventArgs e)
         {
-            //string copyText = SQLQueryer.GetPatientDetailsText(nhsNumber);
-            //Clipboard.SetText(copyText);
+            string copyText = SQLQueryer.GetPatientDetailsText(nhsNumber);
+            Clipboard.SetText(copyText);
         }
 
         public override void OnNHSNumberChanged(object source, OCRResultEventArgs args)

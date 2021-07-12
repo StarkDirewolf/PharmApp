@@ -194,6 +194,14 @@ AS Y ON R.RequestId = Y.RequestId
 WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AND Y.Received = Y.Total AND R.Deleted = 0
 )";
 
+        public const string SURGERY_EMAIL_FROM_NHS = @"SELECT presc.Name, E.Email
+FROM ProScriptConnect.dbo.PatientIdentifier Id
+LEFT JOIN ProScriptConnect.dbo.PatientPrescriber P ON Id.PatientId = P.PatientId
+LEFT JOIN ProScriptConnect.dbo.PrescriberPrescribingOrganisation Org ON Org.PrescriberPrescribingOrganisationId = P.PrescriberPrescribingOrganisationId
+LEFT JOIN App.dbo.SurgeryEmail E ON Org.PrescribingOrganisationId = E.SurgeryCode
+LEFT JOIN ProScriptConnect.dbo.PrescribingOrganisation Presc ON Presc.PrescribingOrganisationId = Org.PrescribingOrganisationId
+WHERE PatientPrescriberTypeId = 1 AND Id.Value = '";
+
         public const string UPDATE_REQUEST_STATUS = @"UPDATE ProScriptConnect.PTS.PrescriptionTracking SET PrescriptionTrackingStatusTypeId = ";
         public const string UPDATE_REQUEST_STATUS_2 = @"WHERE PrescriptionTrackingId = (SELECT PrescriptionTrackingId FROM ProScriptConnect.RMS.Request WHERE RequestId = ";
 
@@ -271,7 +279,8 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
             REQUESTSENT,
             RECORDSENTEMAIL,
             CHANGEREQUESTSTATUS,
-            GETPATIENTDETAILS
+            GETPATIENTDETAILS,
+            SURGERYEMAILFROMNHS
         }
 
         private enum Condition
@@ -691,6 +700,11 @@ WHERE Pt.PrescriptionTrackingStatusTypeId = 12 AND R.DateAdded > '03/01/2021' AN
 
                 case QueryType.GETPATIENTDETAILS:
                     str = PATIENTDETAILS;
+                    break;
+
+                case QueryType.SURGERYEMAILFROMNHS:
+                    str = SURGERY_EMAIL_FROM_NHS + conditions.Find(c => c.Key == Condition.NHSNO).Value + FILTER_QUOTE_END;
+                    conditions.Clear();
                     break;
             }
 

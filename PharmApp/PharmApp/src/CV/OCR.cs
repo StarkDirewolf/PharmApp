@@ -242,11 +242,6 @@ namespace PharmApp
 
         public List<OCRResult> OCRImage(Image<Bgr, byte> image, Rectangle area, Size minSize, Size maxSize)
         {
-            if (image.Data == null)
-            {
-                Console.WriteLine("Image contains no data - cancelling OCR");
-                return new List<OCRResult>();
-            }
 
             ILog log = LogManager.GetLogger(typeof(Program)); //Log4NET
 
@@ -267,8 +262,12 @@ namespace PharmApp
             }
 
             List<OCRResult> patientDetails = new List<OCRResult>();
-            if (!area.IsEmpty)
+
+            try
             {
+
+                //if (!area.IsEmpty)
+                //{
                 image.ROI = Rectangle.Empty;
                 using (Image<Bgr, byte> imageForOcr = new Image<Bgr, byte>(image.Size))
                 {
@@ -282,15 +281,8 @@ namespace PharmApp
 
                     Image<Bgr, byte> patientDetailsImage = new Image<Bgr, byte>(image.ROI.Size);
 
-                    try
-                    {
-                        patientDetailsImage = image.Copy();
-                    }
-                    catch
-                    {
-                        // Sometimes nothing
-                        ImageViewer.Show(image);
-                    }
+
+                    patientDetailsImage = image.Copy();
 
 
 
@@ -299,17 +291,8 @@ namespace PharmApp
                     imageForOcr.ROI = area;
 
 
-                    try
-                    {
-                        patientDetailsImage.CopyTo(imageForOcr);
-                    }
-                    catch
-                    {
-                        imageForOcr.ROI = Rectangle.Empty;
-                        ImageViewer.Show(patientDetailsImage);
-                        // sometimes black rectangle
-                        ImageViewer.Show(imageForOcr);
-                    }
+                    patientDetailsImage.CopyTo(imageForOcr);
+
 
 
 
@@ -337,7 +320,14 @@ namespace PharmApp
 
                     patientDetailsImage.Dispose();
                 }
+                //}
+                
             }
+            catch (Exception e)
+            {
+                LogManager.GetLogger(typeof(Program)).Debug("OCR failed: " + e.Message);
+            }
+            // Should return all data found so far even if exception occurs maybe
             return patientDetails;
         }
 
@@ -451,6 +441,8 @@ namespace PharmApp
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            //There is an error converting Emgu.CV.Structure.Bgr to Emgu.CV.Structure.Gray: Requested value 'Bgr2Bgr' was not found.'
+
             // Converts image to black and white
             Image<Gray, byte> imgGray = img.Convert<Gray, byte>().ThresholdBinary(new Gray(GRAY_THRESHOLD), new Gray(GRAY_MAX));
             //ImageViewer.Show(imgGray);
@@ -471,6 +463,7 @@ namespace PharmApp
 
             Console.WriteLine("Image optimised in " + stopwatch.ElapsedMilliseconds + "ms");
             return sobel;
+            
         }
 
 

@@ -24,5 +24,6 @@ namespace PharmApp
         public const string PATH_RMS_SHEET_BREWER = @"../../Resources/RMS Empty Brewer.png";
         public const string PATH_REORDER = @"../../Resources/Test images/example_reorder.bmp";
         public const string PATH_COPY_ICON = @"../../Resources/copy_120015.png";
+        public const string PATH_EMAIL_ICON = @"../../Resources/email_icon.png";
     }
 }

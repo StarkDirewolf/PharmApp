@@ -103,6 +103,35 @@ namespace PharmApp
             }
         }
 
+        public static void GetSurgeryEmailFromNHS(string nhs, out string surgeryName, out string surgeryEmail)
+        {
+            using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+
+                QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.SURGERYEMAILFROMNHS);
+
+                query.NhsNumber(nhs);
+
+                SqlCommand command = new SqlCommand(query.ToString(), connection);
+
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        surgeryName = reader.GetString(0);
+                        surgeryEmail = reader.GetString(1);
+                    }
+                    else
+                    {
+                        surgeryName = "NOT FOUND";
+                        surgeryEmail = "NOT FOUND";
+                    }
+                }
+            }
+        }
+
         public static void CleanRMS1()
         {
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
@@ -628,12 +657,10 @@ namespace PharmApp
             return null;
         }
 
-        public static string GetPatientDetails(string nhsNumber)
+        public static string GetPatientDetailsText(string nhsNumber)
         {
             QueryConstructor query = new QueryConstructor(QueryConstructor.QueryType.GETPATIENTDETAILS);
             query.NhsNumber(nhsNumber);
-
-            string returnString;
 
             using (SqlConnection connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -645,12 +672,22 @@ namespace PharmApp
                 {
                     if (reader.Read())
                     {
-                        //returnString = 
+                        string returnString;
+                        returnString = reader.GetString(0) + " " + reader.GetString(1);
+                        returnString += "\n";
+                        returnString += reader.GetDateTime(2).ToString("dd/MM/yyyy");
+                        returnString += "\n";
+                        returnString += reader.GetString(3) + " " + reader.GetString(4);
+                        returnString += "\n";
+                        returnString += reader.GetString(5);
+                        returnString += "\n";
+                        returnString += reader.GetString(6);
+                        return returnString;
                     }
                 }
             }
 
-            return "none";
+            return "patient not found";
         }
 
         //public static Product SearchOrderPad(string pipcode)
